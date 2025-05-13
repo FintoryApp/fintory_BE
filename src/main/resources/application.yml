@@ -1,5 +1,5 @@
 chatgpt:
-  api-key: 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
+  api-key: ${chatgpt.api-key}
   model: text-davinci-003
 openai:
   url:
