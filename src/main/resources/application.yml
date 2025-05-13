@@ -1,0 +1,9 @@
+chatgpt:
+  api-key: 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
+  model: text-davinci-003
+openai:
+  url:
+    model: https://api.openai.com/v1/models
+    model-list: https://api.openai.com/v1/models
+    legacy-prompt: https://api.openai.com/v1/completions
+    prompt: https://api.openai.com/v1/chat/completions
