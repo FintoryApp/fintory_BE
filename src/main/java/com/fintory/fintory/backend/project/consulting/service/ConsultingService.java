@@ -2,12 +2,14 @@ package com.fintory.fintory.backend.project.consulting.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.fintory.backend.project.consulting.config.ChatGptConfig;
 import com.fintory.fintory.backend.project.consulting.dto.ChatCompletionDto;
+import io.github.flashvayne.chatgpt.dto.ChatResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,15 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ConsultService {
+public class ConsultingService {
 
     private final ChatGptConfig chatGptConfig;
     private final RestTemplate restTemplate;
@@ -60,4 +60,6 @@ public class ConsultService {
         }
         return result;
     }
+
+
 }

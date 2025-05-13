@@ -1,5 +1,9 @@
+spring:
+  ai:
+    openai:
+      api-key:
 chatgpt:
-  api-key: ${OPENAI_API_KEY}
+  api-key:
   model: text-davinci-003
 openai:
   url:
