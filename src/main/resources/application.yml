@@ -1,5 +1,5 @@
 chatgpt:
-  api-key: ${chatgpt.api-key}
+  api-key: ${OPENAI_API_KEY}
   model: text-davinci-003
 openai:
   url:
