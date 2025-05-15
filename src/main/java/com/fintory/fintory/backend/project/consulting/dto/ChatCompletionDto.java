@@ -6,6 +6,7 @@ import java.util.List;
 
 @Getter
 @ToString
+@Setter
 @NoArgsConstructor(access= AccessLevel.PROTECTED)
 public class ChatCompletionDto {
 
@@ -13,6 +14,7 @@ public class ChatCompletionDto {
     private String model;
 
     private List<ChatRequestMessageDto> messages;
+
 
     @Builder
     public ChatCompletionDto(String model, List<ChatRequestMessageDto> messages){

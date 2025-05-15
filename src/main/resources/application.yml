@@ -1,9 +1,17 @@
 spring:
   ai:
     openai:
-      api-key:
+      api-key: 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
+  datasource:
+    url: jdbc:mysql://localhost:1306/mysql
+    username: root
+    password: fintory
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 chatgpt:
-  api-key:
+  api-key: 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
   model: text-davinci-003
 openai:
   url:
@@ -11,3 +19,5 @@ openai:
     model-list: https://api.openai.com/v1/models
     legacy-prompt: https://api.openai.com/v1/completions
     prompt: https://api.openai.com/v1/chat/completions
+
+
