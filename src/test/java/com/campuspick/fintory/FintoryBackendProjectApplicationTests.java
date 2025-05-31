@@ -1,4 +1,4 @@
-package com.fintory.fintory.backend.project;
+package com.campuspick.fintory;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

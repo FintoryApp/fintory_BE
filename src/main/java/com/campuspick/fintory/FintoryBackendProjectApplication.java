@@ -1,4 +1,4 @@
-package com.fintory.fintory.backend.project;
+package com.campuspick.fintory;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
