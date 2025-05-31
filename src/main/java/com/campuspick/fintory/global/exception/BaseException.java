@@ -1,4 +1,4 @@
-package com.fintory.fintory.backend.project.common.exception;
+package com.campuspick.fintory.global.exception;
 
 public class BaseException extends RuntimeException {
 

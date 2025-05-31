@@ -1,6 +1,6 @@
-package com.fintory.fintory.backend.project.common.exception;
+package com.campuspick.fintory.global.exception;
 
-import com.fintory.fintory.backend.project.common.response.ApiResponse;
+import com.campuspick.fintory.global.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
