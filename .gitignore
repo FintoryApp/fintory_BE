@@ -98,6 +98,9 @@ fabric.properties
 # Compiled class file
 *.class
 
+### QueryDSL generated Q classes ###
+/src/main/generated/
+
 # Log file
 *.log
 
