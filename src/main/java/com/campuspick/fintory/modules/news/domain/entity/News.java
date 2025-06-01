@@ -1,4 +1,4 @@
-package com.campuspick.fintory.modules.news;
+package com.campuspick.fintory.modules.news.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
