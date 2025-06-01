@@ -1,4 +1,4 @@
-package com.fintory.fintory.backend.project.common.exception;
+package com.campuspick.fintory.global.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     VALIDATION_FAIL(HttpStatus.BAD_REQUEST, "VALIDATION_FAIL", "입력값이 유효하지 않습니다."),
-    USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER_NOT_FOUND", "유저를 찾을 수 없습니다.");
+    USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER_NOT_FOUND", "유저를 찾을 수 없습니다."),
+    NEWS_NOT_FOUND(HttpStatus.BAD_REQUEST, "NEWS_NOT_FOUND", "뉴스를 찾을 수 없습니다");
 
     private final HttpStatus httpStatus;
     private final String code;

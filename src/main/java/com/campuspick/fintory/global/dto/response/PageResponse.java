@@ -1,4 +1,4 @@
-package com.fintory.fintory.backend.project.common.response;
+package com.campuspick.fintory.global.dto.response;
 
 import lombok.Getter;
 import org.springframework.data.domain.Page;
