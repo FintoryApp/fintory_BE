@@ -1,4 +1,4 @@
-package com.campuspick.fintory.global.response;
+package com.campuspick.fintory.global.dto.response;
 
 import com.campuspick.fintory.global.exception.ErrorCode;
 import lombok.AccessLevel;
