@@ -1,8 +1,6 @@
 package com.campuspick.fintory.modules.news.domain.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -16,4 +14,14 @@ public class News {
     private Long id;
 
     private String title;
+
+    private String content;
+
+    private String publisher;
+
+    @Column(name="thumbnail_image_url")
+    private String thumbnailImageUrl;
+
+    @OneToOne(mappedBy = "news")
+    private Quizzes quiz;
 }
