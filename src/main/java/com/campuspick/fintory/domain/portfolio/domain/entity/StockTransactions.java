@@ -29,7 +29,7 @@ public class StockTransactions {
     private int amount;
 
     @Column(name = "price_per_share", precision = 15, scale = 2)
-    private float pricePerShare;
+    private BigDecimal pricePerShare;
 
     private int quantity;
 

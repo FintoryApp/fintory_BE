@@ -5,6 +5,7 @@ import com.campuspick.fintory.domain.point.domain.entity.Points;
 import com.campuspick.fintory.domain.badge.domain.entity.UserBadges;
 import com.campuspick.fintory.domain.quiz.domain.entity.DailyQuizzAttempts;
 import com.campuspick.fintory.domain.account.domain.entity.Accounts;
+import com.campuspick.fintory.domain.quiz.domain.entity.MyQuizzes;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
 import com.campuspick.fintory.domain.alarms.domain.entity.Alarms;
 import com.campuspick.fintory.domain.challenge.domain.entity.Challenges;
@@ -50,7 +51,7 @@ public class Childs  extends BaseTimeEntity {
     private List<Points> point;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
-    private List<Quizzes> quizzes;
+    private List<MyQuizzes> myQuizzes;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
     private List<DailyQuizzAttempts> dailyQuizzAttempts;

@@ -54,6 +54,7 @@ public class Accounts extends BaseTimeEntity {
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
     private List<Reports> reports;
 
-    @OneToOne(cascade=CascadeType.ALL,mappedBy="account")
+    @OneToOne(cascade=CascadeType.ALL)
+    @JoinColumn(name="child_id")
     private Childs child;
 }

@@ -29,6 +29,6 @@ public class Quizzes extends BaseTimeEntity {
     @JoinColumn(name="term_id")
     private EconomicTerms term;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "quizz")
-    private List<MyQuizzes> quizzes;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "quiz")
+    private List<MyQuizzes> myQuizzes;
 }
