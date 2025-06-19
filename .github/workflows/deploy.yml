@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - dev #실제 배포할 땐 main으로
-      - feature/domain-setup  # 테스트용 추가
 
 permissions:
   contents: read
