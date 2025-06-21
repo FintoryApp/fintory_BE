@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Table(name = "order_books")
-public class OrderBooks extends BaseTimeEntity {
+public class OrderBook extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -145,5 +145,5 @@ public class OrderBooks extends BaseTimeEntity {
     // 연관관계
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id", insertable = false, updatable = false)
-    private Stocks stock;
+    private Stock stock;
 }

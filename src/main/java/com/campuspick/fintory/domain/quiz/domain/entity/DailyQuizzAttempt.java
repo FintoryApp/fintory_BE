@@ -1,6 +1,6 @@
 package com.campuspick.fintory.domain.quiz.domain.entity;
 
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
+import com.campuspick.fintory.domain.child.domain.entity.Child;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 @Table(name="daily_quizz_attempts")
-public class DailyQuizzAttempts extends BaseTimeEntity {
+public class DailyQuizzAttempt extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +21,5 @@ public class DailyQuizzAttempts extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

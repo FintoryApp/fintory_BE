@@ -1,6 +1,6 @@
 package com.campuspick.fintory.domain.attendance.domain.entity;
 
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
+import com.campuspick.fintory.domain.child.domain.entity.Child;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name="visit_logs")
-public class VisitLogs {
+public class VisitLog {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +22,5 @@ public class VisitLogs {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

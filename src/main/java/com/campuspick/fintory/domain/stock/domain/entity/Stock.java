@@ -1,8 +1,8 @@
 package com.campuspick.fintory.domain.stock.domain.entity;
 
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.portfolio.domain.entity.OwnedStocks;
-import com.campuspick.fintory.domain.portfolio.domain.entity.StockTransactions;
+import com.campuspick.fintory.domain.portfolio.domain.entity.OwnedStock;
+import com.campuspick.fintory.domain.portfolio.domain.entity.StockTransaction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name="stocks")
-public class Stocks extends BaseTimeEntity {
+public class Stock extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -43,17 +43,17 @@ public class Stocks extends BaseTimeEntity {
 
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")
-    private LiveStockPrices liveStockPrice;
+    private LiveStockPrice liveStockPrice;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy="stock")
-    private List<StockTransactions> stockTransaction;
+    private List<StockTransaction> stockTransaction;
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="stock")
-    private List<StockPriceHistories> stockPriceHistories;
+    private List<StockPriceHistory> stockPriceHistories;
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="stock")
-    private List<OwnedStocks> ownedStocks;
+    private List<OwnedStock> ownedStocks;
 
     @OneToOne(cascade=CascadeType.ALL, mappedBy="stock")
-    private OrderBooks orderBook;
+    private OrderBook orderBook;
 }

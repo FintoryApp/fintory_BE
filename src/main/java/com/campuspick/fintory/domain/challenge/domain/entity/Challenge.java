@@ -1,8 +1,8 @@
 package com.campuspick.fintory.domain.challenge.domain.entity;
 
+import com.campuspick.fintory.domain.child.domain.entity.Child;
+import com.campuspick.fintory.domain.parent.domain.entity.Parent;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
-import com.campuspick.fintory.domain.parent.domain.entity.Parents;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Table(name="challenges")
-public class Challenges extends BaseTimeEntity {
+public class Challenge extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,14 +31,14 @@ public class Challenges extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "challenge_category_id")
-    private ChallengeCategories challengeCategory;
+    private ChallengeCategory challengeCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private Parents parents;
+    private Parent parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
-    private Childs child;
+    private Child child;
 
 }

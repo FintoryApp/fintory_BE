@@ -1,6 +1,6 @@
 package com.campuspick.fintory.domain.point.domain.entity;
 
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
+import com.campuspick.fintory.domain.child.domain.entity.Child;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Table(name="points")
-public class Points{
+public class Point {
     // 이렇게 되면 포인트 테이블이 아닌 포인트 history 테이블이 됨. -> amount를 계산하려면 SUM(amount)가 된다는 사실 기억
 
     @Id
@@ -27,5 +27,5 @@ public class Points{
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

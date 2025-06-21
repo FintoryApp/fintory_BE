@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Table(name="stock_price_histories")
-public class StockPriceHistories {
+public class StockPriceHistory {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class StockPriceHistories {
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="stock_id")
-    private Stocks stock;
+    private Stock stock;
 
 }
 

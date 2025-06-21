@@ -13,3 +13,32 @@ spring:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: ${SPRING_PROFILES_DOCKER}
+  datasource:
+    url: ${DB_URL_DOCKER}
+    username: ${DB_USERNAME_DOCKER}
+    password: ${DB_PASSWORD_DOCKER}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

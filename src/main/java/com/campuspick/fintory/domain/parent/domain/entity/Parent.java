@@ -1,8 +1,8 @@
 package com.campuspick.fintory.domain.parent.domain.entity;
 
+import com.campuspick.fintory.domain.challenge.domain.entity.Challenge;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.challenge.domain.entity.Challenges;
-import com.campuspick.fintory.domain.account.domain.entity.DepositTransactions;
+import com.campuspick.fintory.domain.account.domain.entity.DepositTransaction;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Table(name="parents")
-public class Parents extends BaseTimeEntity {
+public class Parent extends BaseTimeEntity {
     @Id
     private String id;
 
@@ -36,8 +36,8 @@ public class Parents extends BaseTimeEntity {
 
     //연관관계 설정
     @OneToMany(mappedBy="parent") //cascade 설정 일부러 안함
-    private List<DepositTransactions> depositTransactions;
+    private List<DepositTransaction> depositTransactions;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="parent")
-    private List<Challenges> challenges;
+    private List<Challenge> challenges;
 }
