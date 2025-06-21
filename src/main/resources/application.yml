@@ -33,7 +33,6 @@ spring:
     url: ${DB_URL_DOCKER}
     username: ${DB_USERNAME_DOCKER}
     password: ${DB_PASSWORD_DOCKER}
-
 management:
   endpoints:
     web:
