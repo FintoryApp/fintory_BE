@@ -1,6 +1,6 @@
 package com.campuspick.fintory.domain.quiz.domain.entity;
 
-import com.campuspick.fintory.domain.term.domain.entity.EconomicTerms;
+import com.campuspick.fintory.domain.term.domain.entity.EconomicTerm;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name="quizzes")
-public class Quizzes extends BaseTimeEntity {
+public class Quizz extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +27,8 @@ public class Quizzes extends BaseTimeEntity {
     //현재는 term - quiz가 일대일 관계로 변경했으나, 수정 자유
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="term_id")
-    private EconomicTerms term;
+    private EconomicTerm term;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "quiz")
-    private List<MyQuizzes> myQuizzes;
+    private List<MyQuizz> myQuizzes;
 }

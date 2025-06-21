@@ -1,0 +1,28 @@
+services:
+  app:
+    image: ghcr.io/fintoryapp/fintory-server:latest
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    env_file:
+      - .env.compose
+    ports:
+      - "8080:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+  database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: fintory
+      MYSQL_ROOT_PASSWORD: fintory
+      MYSQL_USER: fintory
+      MYSQL_PASSWORD: fintory
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "1306:3306"
+    healthcheck:
+      test: ["CMD","mysqladmin","ping","-h","localhost"]
+      start_period: 30s
+volumes:
+  mysql_data:

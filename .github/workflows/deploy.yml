@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev #실제 배포할 땐 main으로
+      - feature/domain-setup # 테스트용
 
 permissions:
   contents: read
@@ -23,7 +24,9 @@ jobs:
           java-version: 17
 
       - name: .env 파일 만들기
-        run: echo "${{secrets.ENV_VARS}}" > ./.env
+        run: |
+             echo "${{secrets.ENV_DB}}" >> ./.env
+             echo "${{secrets.ENV_PROFILE}}" >> ./.env
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
@@ -35,9 +38,46 @@ jobs:
           username: ${{github.actor}}
           password: ${{secrets.GITHUB_TOKEN}}
 
-      - name: 컨테이너 이미지 빌드 및 푸시
-        run: |
+      - name: 컨테이너 이미지 빌드
+        run:
           docker build -t ghcr.io/fintoryapp/fintory-server:latest -t ghcr.io/fintoryapp/fintory-server:${{ github.sha }} .
+
+      - name: 통합 테스트 환경 시작
+        run: |
+           echo "${{secrets.ENV_DB}}" >> .env.compose
+           echo "${{secrets.ENV_PROFILE}}" >> .env.compose
+           docker compose --env-file .env.compose up -d
+
+      - name: 컨테이너 헬스체크 대기
+        run: |
+          timeout 60 bash -c 'until docker compose ps database | grep "healthy\|Up"; do
+          echo "데이터베이스 시작 중"
+          sleep 3
+          done'
+          echo "데이터베이스 준비 완료"
+
+      - name: 어플리케이션 헬스체크 대기
+        run: |
+          timeout 120 bash -c 'until curl -f http://localhost:8080/health 2>/dev/null; do
+          echo "어플리케이션 시작 중"
+          sleep 5
+          done'
+          echo "어플리케이션 준비 완료"
+
+      - name: 컨테이너 헬스체크
+        run : |
+          curl -f http://localhost:8080/health 
+          echo "헬스체크 통과"
+
+      - name: 테스트 환경 정리
+        if: always()
+        run: |
+          docker compose down
+          docker system prune -f
+
+      - name: 컨테이너 이미지 푸시
+        if: success()
+        run: |
           docker push ghcr.io/fintoryapp/fintory-server:latest
           docker push ghcr.io/fintoryapp/fintory-server:${{ github.sha }}
 

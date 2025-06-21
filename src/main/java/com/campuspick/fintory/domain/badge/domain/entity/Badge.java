@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name="badges")
-public class Badges extends BaseTimeEntity {
+public class Badge extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,5 +27,5 @@ public class Badges extends BaseTimeEntity {
 
     //연관관계 설정
     @OneToMany(mappedBy="badge")
-    private List<UserBadges> userBadge;
+    private List<UserBadge> userBadge;
 }

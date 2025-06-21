@@ -2,7 +2,7 @@ package com.campuspick.fintory.domain.alarms.domain.entity;
 
 
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
+import com.campuspick.fintory.domain.child.domain.entity.Child;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Table(name="alarms")
-public class Alarms extends BaseTimeEntity {
+public class Alarm extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +26,5 @@ public class Alarms extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

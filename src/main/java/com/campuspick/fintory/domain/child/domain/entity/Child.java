@@ -1,15 +1,14 @@
 package com.campuspick.fintory.domain.child.domain.entity;
 
-import com.campuspick.fintory.domain.attendance.domain.entity.VisitLogs;
-import com.campuspick.fintory.domain.point.domain.entity.Points;
-import com.campuspick.fintory.domain.badge.domain.entity.UserBadges;
-import com.campuspick.fintory.domain.quiz.domain.entity.DailyQuizzAttempts;
-import com.campuspick.fintory.domain.account.domain.entity.Accounts;
-import com.campuspick.fintory.domain.quiz.domain.entity.MyQuizzes;
+import com.campuspick.fintory.domain.account.domain.entity.Account;
+import com.campuspick.fintory.domain.attendance.domain.entity.VisitLog;
+import com.campuspick.fintory.domain.point.domain.entity.Point;
+import com.campuspick.fintory.domain.badge.domain.entity.UserBadge;
+import com.campuspick.fintory.domain.quiz.domain.entity.DailyQuizzAttempt;
+import com.campuspick.fintory.domain.quiz.domain.entity.MyQuizz;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.alarms.domain.entity.Alarms;
-import com.campuspick.fintory.domain.challenge.domain.entity.Challenges;
-import com.campuspick.fintory.domain.quiz.domain.entity.Quizzes;
+import com.campuspick.fintory.domain.alarms.domain.entity.Alarm;
+import com.campuspick.fintory.domain.challenge.domain.entity.Challenge;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Table(name="childs")
-public class Childs  extends BaseTimeEntity {
+public class Child extends BaseTimeEntity {
 
 
     @Id
@@ -42,29 +41,29 @@ public class Childs  extends BaseTimeEntity {
 
     //연관관계
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
-    private Accounts account;
+    private Account account;
 
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
-    private ParentChildMappings parentChildMapping;
+    private ParentChildMapping parentChildMapping;
 
     @OneToMany(cascade = CascadeType.ALL,mappedBy="child")
-    private List<Points> point;
+    private List<Point> point;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
-    private List<MyQuizzes> myQuizzes;
+    private List<MyQuizz> myQuizzes;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
-    private List<DailyQuizzAttempts> dailyQuizzAttempts;
+    private List<DailyQuizzAttempt> dailyQuizzAttempts;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<UserBadges> userBadge;
+    private List<UserBadge> userBadge;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<Challenges> challenges;
+    private List<Challenge> challenges;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<Alarms> alarms;
+    private List<Alarm> alarms;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<VisitLogs> visitLogs;
+    private List<VisitLog> visitLogs;
 }

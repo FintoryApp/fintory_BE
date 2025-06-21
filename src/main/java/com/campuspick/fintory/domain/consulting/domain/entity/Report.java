@@ -1,7 +1,7 @@
 package com.campuspick.fintory.domain.consulting.domain.entity;
 
+import com.campuspick.fintory.domain.account.domain.entity.Account;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.account.domain.entity.Accounts;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(name="reports")
-public class Reports extends BaseTimeEntity {
+public class Report extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,6 +25,6 @@ public class Reports extends BaseTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
-    private Accounts account;
+    private Account account;
 
 }

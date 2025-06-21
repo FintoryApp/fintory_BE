@@ -1,10 +1,10 @@
 package com.campuspick.fintory.domain.account.domain.entity;
 
-import com.campuspick.fintory.domain.child.domain.entity.Childs;
-import com.campuspick.fintory.domain.portfolio.domain.entity.OwnedStocks;
-import com.campuspick.fintory.domain.portfolio.domain.entity.StockTransactions;
+import com.campuspick.fintory.domain.child.domain.entity.Child;
+import com.campuspick.fintory.domain.consulting.domain.entity.Report;
+import com.campuspick.fintory.domain.portfolio.domain.entity.OwnedStock;
+import com.campuspick.fintory.domain.portfolio.domain.entity.StockTransaction;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.consulting.domain.entity.Reports;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Table(name="accounts")
-public class Accounts extends BaseTimeEntity {
+public class Account extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,18 +43,18 @@ public class Accounts extends BaseTimeEntity {
     private int totalValuation;
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<DepositTransactions> depositTransactions;
+    private List<DepositTransaction> depositTransactions;
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<OwnedStocks> ownedStocks;
+    private List<OwnedStock> ownedStocks;
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<StockTransactions> stockTransactions;
+    private List<StockTransaction> stockTransactions;
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<Reports> reports;
+    private List<Report> reports;
 
     @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

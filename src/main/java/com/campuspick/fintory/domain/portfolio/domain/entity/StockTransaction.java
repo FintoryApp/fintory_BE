@@ -1,8 +1,8 @@
 package com.campuspick.fintory.domain.portfolio.domain.entity;
 
 
-import com.campuspick.fintory.domain.account.domain.entity.Accounts;
-import com.campuspick.fintory.domain.stock.domain.entity.Stocks;
+import com.campuspick.fintory.domain.account.domain.entity.Account;
+import com.campuspick.fintory.domain.stock.domain.entity.Stock;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StockTransactions {
+public class StockTransaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,14 +55,14 @@ public class StockTransactions {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id")
-    private Stocks stock;
+    private Stock stock;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
-    private Accounts account;
+    private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="owned_stock_id")
-    private OwnedStocks ownedStock;
+    private OwnedStock ownedStock;
 
 }
