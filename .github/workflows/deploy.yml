@@ -67,7 +67,7 @@ jobs:
 
       - name: 컨테이너 헬스체크
         run : |
-          curl -f http://localhost:8080/health 
+          curl -f http://localhost:8080/actuator/health 
           echo "헬스체크 통과"
 
       - name: 테스트 환경 정리
