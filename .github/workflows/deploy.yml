@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev #실제 배포할 땐 main으로
+      - feature/domain-setup
 
 permissions:
   contents: read
@@ -24,8 +25,8 @@ jobs:
 
       - name: .env 파일 만들기
         run: |
-             echo "${{secrets.ENV_DB}}" >> ./.env
-             echo "${{secrets.ENV_PROFILE}}" >> ./.env
+             echo "${{secrets.ENV_LOCAL_DB}}" > ./.env
+             echo "${{secrets.ENV_LOCAL_PROFILES}}" >> ./.env
 
       - name: 테스트 및 빌드하기
         run: ./gradlew clean build
@@ -38,14 +39,13 @@ jobs:
           password: ${{secrets.GITHUB_TOKEN}}
 
       - name: 컨테이너 이미지 빌드
-        run:
-          docker build -t ghcr.io/fintoryapp/fintory-server:latest -t ghcr.io/fintoryapp/fintory-server:${{ github.sha }} .
+        run: docker build -t ghcr.io/fintoryapp/fintory-server:latest -t ghcr.io/fintoryapp/fintory-server:${{ github.sha }} .
 
       - name: 통합 테스트 환경 시작
         run: |
-           echo "${{secrets.ENV_DB}}" >> .env.compose
-           echo "${{secrets.ENV_PROFILE}}" >> .env.compose
-           docker compose --env-file .env.compose up -d
+          echo "${{secrets.ENV_DOCKER_PROFILES}}" > ./.env.compose
+          echo "${{secrets.ENV_DOCKER_DB}}" >> ./.env.compose
+          docker compose up -d
 
       - name: 컨테이너 헬스체크 대기
         run: |
