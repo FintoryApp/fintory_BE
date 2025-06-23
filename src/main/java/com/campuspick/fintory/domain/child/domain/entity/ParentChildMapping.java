@@ -1,8 +1,7 @@
 package com.campuspick.fintory.domain.child.domain.entity;
 
 
-import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.parent.domain.entity.Parents;
+import com.campuspick.fintory.domain.parent.domain.entity.Parent;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 @Table(name="parent_child_mappings")
-public class ParentChildMappings {
+public class ParentChildMapping {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +25,9 @@ public class ParentChildMappings {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="parent_id")
-    private Parents parent;
+    private Parent parent;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="child_id")
-    private Childs child;
+    private Child child;
 }

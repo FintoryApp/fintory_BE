@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @Table(name="live_stock_prices")
-public class LiveStockPrices extends BaseTimeEntity {
+public class LiveStockPrice extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -27,5 +27,5 @@ public class LiveStockPrices extends BaseTimeEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="stock_id")
-    private Stocks stock;
+    private Stock stock;
 }

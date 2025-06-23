@@ -1,9 +1,9 @@
 package com.campuspick.fintory.domain.portfolio.domain.entity;
 
 
-import com.campuspick.fintory.domain.account.domain.entity.Accounts;
+import com.campuspick.fintory.domain.account.domain.entity.Account;
 import com.campuspick.fintory.global.entity.BaseTimeEntity;
-import com.campuspick.fintory.domain.stock.domain.entity.Stocks;
+import com.campuspick.fintory.domain.stock.domain.entity.Stock;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @Table(name="owned_stocks")
-public class OwnedStocks extends BaseTimeEntity {
+public class OwnedStock extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -40,13 +40,13 @@ public class OwnedStocks extends BaseTimeEntity {
     private BigDecimal purchaseAmount; //총 매수 금액
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy ="ownedStock")
-    private List<StockTransactions> stockTransactions;
+    private List<StockTransaction> stockTransactions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="stock_id")
-    private Stocks stock;
+    private Stock stock;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
-    private Accounts account;
+    private Account account;
 }

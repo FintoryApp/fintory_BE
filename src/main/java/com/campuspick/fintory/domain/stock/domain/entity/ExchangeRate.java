@@ -1,6 +1,5 @@
 package com.campuspick.fintory.domain.stock.domain.entity;
 
-import com.campuspick.fintory.global.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name="exchange_rates")
-public class ExchangeRates {
+public class ExchangeRate {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
