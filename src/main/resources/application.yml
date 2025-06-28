@@ -28,12 +28,11 @@ management:
 spring:
   config:
     activate:
-      on-profile: ${SPRING_PROFILES_DOCKER}
+      on-profile: docker
   datasource:
     url: ${DB_URL_DOCKER}
     username: ${DB_USERNAME_DOCKER}
     password: ${DB_PASSWORD_DOCKER}
-
 management:
   endpoints:
     web:
