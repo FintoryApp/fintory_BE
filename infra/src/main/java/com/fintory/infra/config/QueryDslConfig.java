@@ -1,4 +1,4 @@
-package com.campuspick.fintory.global.config;
+package com.fintory.infra.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
