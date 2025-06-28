@@ -1,6 +1,6 @@
-package com.campuspick.fintory.global.dto.response;
+package com.fintory.common.response;
 
-import com.campuspick.fintory.global.exception.ErrorCode;
+import com.fintory.common.exception.ErrorCode;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
