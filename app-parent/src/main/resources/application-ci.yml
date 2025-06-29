@@ -1,0 +1,29 @@
+server:
+  port: 8081
+
+spring:
+  config:
+    activate:
+      on-profile: ci
+
+  datasource:
+    url:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/testdb
+      username: root
+      password: password
+
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: create-drop
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

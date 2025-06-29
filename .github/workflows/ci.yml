@@ -1,0 +1,72 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "dev" ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  Deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -u root -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Github Repository에 올린 파일들을 불러오기
+        uses: actions/checkout@v4
+
+      - name: JDK 17버전 설치하기
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x ./gradlew
+
+      - name: 모든 모듈 빌드하기
+        run: ./gradlew clean build -x test
+
+
+      # build and run app-child
+      - name: Build Docker image for app-child
+        run: |
+          docker build -t app-child \
+            -f ./app-child/Dockerfile \
+            ./app-child
+
+      - name: Run app-child container (ci profile)
+        run: |
+          docker run -d \
+            --name app-child \
+            -p 8080:8080 \
+            app-child
+
+      # build and run app-parent
+      - name: Build Docker image for app-parent
+        run: |
+          docker build -t app-parent \
+            -f ./app-parent/Dockerfile \
+            ./app-parent
+
+      - name: Run app-parent container (ci profile)
+        run: |
+          docker run -d \
+            --name app-parent \
+            -p 8081:8080 \
+            app-parent
