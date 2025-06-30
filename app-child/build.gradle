@@ -49,9 +49,15 @@ dependencies {
     /* Test */
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'com.h2database:h2'
 
     /* Actuator */
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    /* selenium */
+    implementation 'org.seleniumhq.selenium:selenium-java:4.31.0'
+    implementation 'io.github.bonigarcia:webdrivermanager:5.9.2'
+
 }
 
 test {
