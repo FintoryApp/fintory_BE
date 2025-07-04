@@ -31,7 +31,6 @@ configurations {
 dependencies {
 
     implementation project(":domain")
-    implementation project(":common")
 
     /* .env 자동 로딩 */
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
