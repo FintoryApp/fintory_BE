@@ -1,5 +1,7 @@
 package com.fintory.child.stock.service;
 
+import com.fintory.common.exception.BaseException;
+import com.fintory.common.exception.ErrorCode;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.infra.repositoryimpl.StockRepository;
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -10,12 +12,17 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -26,6 +33,8 @@ public class StockServiceImpl {
     private final StockRepository stockRepository;
 
     private static final String koreanStockUrl = "https://kr.tradingview.com/markets/stocks-korea/market-movers-large-cap/";
+    private static final String tokenUrl = "https://openapivts.koreainvestment.com:29443/oauth2/tokenP";
+
 
     // 국내 stock 주식 종목 웹스크래핑 - 시가총액 20순위
     public List<String> getKoreanStockMarketCapTop20() throws IOException {
@@ -82,6 +91,40 @@ public class StockServiceImpl {
 
 
         driver = new ChromeDriver(options);
+    }
+
+    // 토큰 발급
+    public String getAccessToken(){
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("User-Agent","Mozilla/5.0");
+
+        MultiValueMap<String,String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type","client_credentials");
+        body.add("appkey",appkey);
+        body.add("appsecret",appsecret);
+
+        HttpEntity<MultiValueMap<String,String>> request = new HttpEntity<>(body,headers);
+
+        try{
+            ResponseEntity<String> response = restTemplate.exchange(
+                    tokenUrl,
+                    HttpMethod.POST,
+                    request,
+                    Map.class
+            );
+
+            if(response.getStatusCode()==HttpStatus.OK && response.getBody() != null){
+                return (String) response.getBody().get("access_token");
+            }
+
+        }catch(Exception e){
+            throw new BaseException(ErrorCode.TOKEN_REQUEST_FAILED);
+        }
+
     }
 
 }
