@@ -4,9 +4,7 @@ import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.portfolio.model.OwnedStock;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -14,9 +12,11 @@ import java.util.List;
 @Getter
 @Table(name="stock")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Stock extends BaseEntity {
 
-    private String ticker;
+    //private String ticker;
 
     private String code;
 
@@ -28,15 +28,15 @@ public class Stock extends BaseEntity {
 
     private String name;
 
-    private String eng_name;
+    private String engName;
 
     private String category;
 
-    @Column(name="sell_unit")
-    private int sellUnit;
-
-    @Column(name="buy_unit")
-    private int buyUnit;
+//    @Column(name="sell_unit")
+//    private int sellUnit;
+//
+//    @Column(name="buy_unit")
+//    private int buyUnit;
 
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")

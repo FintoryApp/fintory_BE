@@ -23,7 +23,7 @@ public class OwnedStock extends BaseEntity {
     @Column(name="average_purchase_price", precision=12, scale=2)
     private BigDecimal averagePurchasePrice; // 한 주당 평균 매입 가격
 
-    @Column(name="valuation_profit_and_loss", precision=3, scale=2)
+    @Column(name="valuation_profit_and_loss", precision=15, scale=2)
     private BigDecimal valuationProfitAndLoss; //현재 평가 손익(평가금액 - 매수금액)
 
     @Column(name="return_rate",precision=3, scale=2)
