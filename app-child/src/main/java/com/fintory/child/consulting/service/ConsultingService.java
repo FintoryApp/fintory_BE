@@ -49,10 +49,7 @@ public class ConsultingService {
     private final OwnedStockRepository ownedStockRepository;
 
     private static final String API_BASE_URL = "https://api.openai.com/";
-
-//    @Value("${spring.ai.openai.api-key}")
-//    private String API_KEY;
-
+    
     public ConsultingService(
             @Value("${spring.ai.openai.api-key}") String API_KEY,
             StockTransactionService stockTransactionService,
