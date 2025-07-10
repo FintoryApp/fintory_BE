@@ -47,20 +47,19 @@ public class ConsultingService {
     private final StockTransactionService stockTransactionService;
     private final ReportRepository reportRepository;
     private final OwnedStockRepository ownedStockRepository;
-//
-//    @Value("${spring.ai.openai.api-key}")
-//    private String apiKey;
 
     private static final String API_BASE_URL = "https://api.openai.com/";
-    private static final String API_KEY ="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";
-    public ConsultingService(
 
+//    @Value("${spring.ai.openai.api-key}")
+//    private String API_KEY;
+
+    public ConsultingService(
+            @Value("${spring.ai.openai.api-key}") String API_KEY,
             StockTransactionService stockTransactionService,
             ReportRepository reportRepository,
             OwnedStockRepository ownedStockRepository
     ) {
-
-       RestClient.Builder restClientBuilder = RestClient.builder()
+        RestClient.Builder restClientBuilder = RestClient.builder()
                .defaultHeader("Authorization","Bearer "+API_KEY)
                .defaultHeader("Accept-Encoding","identity");
 
