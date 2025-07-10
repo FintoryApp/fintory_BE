@@ -52,6 +52,19 @@ spring:
     basename: messages
     encoding: UTF-8
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_MODEL}
+          temperature: ${OPENAI_TEMPERATURE}
+          max-tokens: ${OPENAI_MAXTOKENS}
+    cloud:
+      function:
+        scan:
+          enabled: false
+
 
 jwt:
   secret: ${JWT_SECRET_KEY}
@@ -70,6 +83,7 @@ management:
 
 eos:
   api-key: ${EOS_API_KEY}
+
 hantu-openapi:
   appkey: ${HANTU_APPKEY}
   appsecret: ${HANTU_APPSECRET}
@@ -80,5 +94,7 @@ db-openapi:
   db-appkey: ${DB_APPKEY}
   db-appsecret: ${DB_APPSECRET}
   base-url: https://openapi.dbsec.co.kr:8443
+
+
 
 
