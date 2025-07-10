@@ -24,7 +24,6 @@ public class ConsultingController {
     //테스트용
     @PostMapping("/test/consulting-report")
     public void triggerConsultingReport() {
-
          schedulerService.scheduledGenerateConsultingReport();
     }
 

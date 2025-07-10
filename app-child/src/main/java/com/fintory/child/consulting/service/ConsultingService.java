@@ -40,6 +40,7 @@ import static com.fintory.child.consulting.dto.ReportDetail.*;
 @Service
 public class ConsultingService {
 
+    // 하드코딩 -> 로그인 기능 완성되면 바꿀 예정
     private static final String TEMP_CHILD_ID = "TEST";
     private static final String TEMP_CHILD_NAME="TEST";
 
@@ -117,12 +118,6 @@ public class ConsultingService {
         }
     }
 
-    public ReportDetail getDetailConsulting(Long reportId) {
-        Report report = reportRepository.findById(reportId).orElseThrow(() -> new IllegalArgumentException("발견할 수 없는 리포트입니다."));
-        return fromReport(report);
-
-    }
-
     public ReportDetail getConsultingByDate(String date)  {
             Report report = reportRepository.findByReportMonth(date).orElseThrow(()-> new BaseException(ErrorCode.REPORT_NOT_FOUND));
             return fromReport(report);
@@ -135,17 +130,11 @@ public class ConsultingService {
             YearMonth reportMonth = YearMonth.now();
             List<OwnedStock> ownedStocks = ownedStockRepository.findAll();
             AiResponse aiResponse = getConsulting(stockTransactions);
-            System.out.println("-------------------------------1");
             InvestmentStyle investmentStyle = InvestmentStyle.builder().childId(TEMP_CHILD_ID).childName(TEMP_CHILD_NAME).investmentStyle(aiResponse.getInvestmentStyle()).build();
-            System.out.println("-------------------------------2");
             List<InvestmentArea> investmentAreas = getInvestmentArea(ownedStocks);
-            System.out.println("-------------------------------3");
             InvestmentSummary investmentSummary = InvestmentSummary.builder().totalInvestmentsCount(getTotalInvestmentsCount(stockTransactions)).totalReturnRate(getTotalReturnRate(ownedStocks)).build();
-            System.out.println("-------------------------------4");
             TopStock topStock = getTopStock(ownedStocks);
-            System.out.println("-------------------------------5");
             BottomStock bottomStock = getBottomStock(ownedStocks);
-            System.out.println("-------------------------------6");
 
 
             ReportDetail reportDetail = ReportDetail.builder()
@@ -162,9 +151,6 @@ public class ConsultingService {
             reportRepository.save(report);
         }catch(Exception e){
 
-            System.out.println(e.getMessage());
-            System.out.println("============");
-            e.printStackTrace();
             throw new BaseException(ErrorCode.JSON_PROCESSING_FAILED);
         }
     }
@@ -273,5 +259,11 @@ public class ConsultingService {
         }
 
         return sb.toString();
+    }
+
+    public ReportDetail getDetailConsulting(Long reportId) {
+        Report report = reportRepository.findById(reportId).orElseThrow(() -> new IllegalArgumentException("발견할 수 없는 리포트입니다."));
+        return fromReport(report);
+
     }
 }
