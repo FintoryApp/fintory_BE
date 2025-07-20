@@ -42,6 +42,12 @@ spring:
     function:
       scan:
         enabled: false
+  server:
+    servlet:
+      encoding:
+        charset: UTF-8
+        enabled: true
+        force: true
 
 hantu-openapi:
     appkey: ${HANTU_APPKEY}

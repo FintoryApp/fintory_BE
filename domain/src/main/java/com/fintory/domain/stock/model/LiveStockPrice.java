@@ -3,12 +3,14 @@ package com.fintory.domain.stock.model;
 
 import com.fintory.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @Table(name="live_stock_price")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class LiveStockPrice extends BaseEntity {
@@ -17,17 +19,18 @@ public class LiveStockPrice extends BaseEntity {
     private int currentPrice;
 
     @Column(name="price_change")
-    private String priceChange;
+    private BigDecimal priceChange;
 
     @Column(name="price_change_rate")
-    private String priceChangeRate;
+    private BigDecimal priceChangeRate;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="stock_id")
     private Stock stock;
 
+    private String time;
 
-    public LiveStockPrice update(String priceChange, String priceChangeRate, int currentPrice) {
+    public LiveStockPrice update(BigDecimal priceChange, BigDecimal priceChangeRate, int currentPrice) {
         this.priceChange = priceChange;
         this.priceChangeRate = priceChangeRate;
         this.currentPrice = currentPrice;

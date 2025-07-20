@@ -11,5 +11,25 @@ spring:
   h2:
     console:
       enabled:true
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
 
 
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_MODEL}
+          temperature: ${OPENAI_TEMPERATURE}
+          max-tokens: ${OPENAI_MAXTOKENS}
+  cloud:
+    function:
+      scan:
+        enabled: false
+
+hantu-openapi:
+  appkey: ${HANTU_APPKEY}
+  appsecret: ${HANTU_APPSECRET}

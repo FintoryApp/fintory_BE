@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class StockInfoHeader {
 
     @JsonProperty("content-type")
+    @Builder.Default
     private String contentType="application/json;charset=utf-8";
 
     @JsonProperty("authorization")
@@ -25,8 +26,10 @@ public class StockInfoHeader {
     private String appsecret;
 
     @JsonProperty("tr_id")
+    @Builder.Default
     private String trId="CTPF1002R";
 
     @JsonProperty("custtype")
+    @Builder.Default
     private String custtype="P";
 }

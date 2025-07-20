@@ -18,6 +18,7 @@ public class Stock extends BaseEntity {
 
     //private String ticker;
 
+    @Column(unique = true)
     private String code;
 
     @Column(name="market_name")
@@ -53,4 +54,7 @@ public class Stock extends BaseEntity {
 
     @OneToOne(cascade=CascadeType.ALL, mappedBy="stock")
     private OrderBook orderBook;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "stock")
+    private List<StockRank> stockRanks;
 }

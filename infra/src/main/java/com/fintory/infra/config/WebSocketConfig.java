@@ -6,12 +6,19 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 @Configuration
-@EnableWebSocket
+@EnableWebSocket //WebSocket 기능 활성화
 public class WebSocketConfig implements WebSocketConfigurer {
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new StockWebSocketHandler(),"/ws://ops.koreainvestment.com:21000/tryitout/H0STCNT0")
+        registry.addHandler(new RealPriceWebSocketHandler(),"/stock/ws/realprice")
                 .setAllowedOrigins("*");
+        registry.addHandler(new PriceQuoteWebSocketHandler(),"/stock/ws/pricequote")
+                .setAllowedOrigins("*");
+        registry.addHandler(new OverseasRealPriceWebSocketHandler(),"/stock/ws/overseas/realprice")
+                .setAllowedOrigins("*");
+
     }
+    
+   
 }
