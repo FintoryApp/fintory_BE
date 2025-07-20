@@ -100,7 +100,7 @@ public class KoreanStockServiceImpl {
     private static final String koreanROCStockUrl = "https://kr.tradingview.com/markets/stocks-korea/market-movers-gainers/";
     private final Set<String> currentSubscriptions = new HashSet<>();
 
-    /*
+
     //완전한 준비 후에 실행되는 이벤트 리스너
     @EventListener(ApplicationReadyEvent.class)
     public void initializeStockData(){
@@ -119,7 +119,7 @@ public class KoreanStockServiceImpl {
         saveStockRank();
         saveStockPriceHistory();
         log.info("순위 정보 업데이트 완료");
-    }*/
+    }
 
     /* 매일 오전 8시에 실행 */
     @Scheduled(cron="0 0 8 * *  MON-FRI")
