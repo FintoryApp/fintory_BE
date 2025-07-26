@@ -1,4 +1,4 @@
-rootProject.name = 'fintory-BE'
+rootProject.name = 'fintory_BE'
 
 include 'app-child'
 include 'app-parent'
