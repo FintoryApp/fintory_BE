@@ -1,4 +1,4 @@
-package com.fintory.infra.config;
+package com.fintory.infra.querydsl;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
