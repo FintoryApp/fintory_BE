@@ -32,12 +32,6 @@ public class Stock extends BaseEntity {
 
     private String category;
 
-    @Column(name="sell_unit")
-    private int sellUnit;
-
-    @Column(name="buy_unit")
-    private int buyUnit;
-
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")
     private LiveStockPrice liveStockPrice;

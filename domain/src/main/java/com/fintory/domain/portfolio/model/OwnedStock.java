@@ -20,19 +20,19 @@ public class OwnedStock extends BaseEntity {
     @Column(precision=15, scale=3)
     private BigDecimal quantity;
 
-    @Column(name="average_purchase_price", precision=12, scale=2)
+    @Column(name="average_purchase_price")
     private BigDecimal averagePurchasePrice; // 한 주당 평균 매입 가격
 
-    @Column(name="valuation_profit_and_loss", precision=3, scale=2)
+    @Column(name="valuation_profit_and_loss")
     private BigDecimal valuationProfitAndLoss; //현재 평가 손익(평가금액 - 매수금액)
 
-    @Column(name="return_rate",precision=3, scale=2)
+    @Column(name="return_rate")
     private BigDecimal returnRate; //수익률
 
-    @Column(name="valuation_amount", precision=12,scale=2)
+    @Column(name="valuation_amount")
     private BigDecimal valuationAmount; //현재 평가 금액(quantity * 현재 주가)
 
-    @Column(name="purchase_amount",precision=12, scale=2)
+    @Column(name="purchase_amount")
     private BigDecimal purchaseAmount; //총 매수 금액
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy ="ownedStock")
