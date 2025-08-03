@@ -6,6 +6,6 @@ import com.fintory.domain.portfolio.dto.PortfolioSummary;
 import java.util.List;
 
 public interface PortfolioService {
-    public List<OwnedStockList> getOwendStockList();
+    public List<OwnedStockList> getOwnedStockList();
     public PortfolioSummary getPortfolioSummary();
 }

@@ -32,7 +32,7 @@ public class PortfolioControllerImpl implements PortfolioController {
     @Override
     @GetMapping("/stocks")
     public ResponseEntity<ApiResponse<List<OwnedStockList>>> getOwnedStockList() {
-        List<OwnedStockList> ownedStockList = portfolioService.getOwendStockList();
+        List<OwnedStockList> ownedStockList = portfolioService.getOwnedStockList();
         return ResponseEntity.ok(ApiResponse.ok(ownedStockList));
     }
 }
