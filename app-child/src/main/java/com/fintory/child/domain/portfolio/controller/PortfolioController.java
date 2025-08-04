@@ -1,6 +1,6 @@
 package com.fintory.child.domain.portfolio.controller;
 
-import com.fintory.domain.portfolio.dto.OwnedStockList;
+import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
 import com.fintory.domain.portfolio.dto.PortfolioSummary;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -18,5 +18,5 @@ public interface PortfolioController {
 
     @Operation(summary = "보유 주식 목록 조회", description = "현재 보유 중인 모든 주식의 상세 정보를 조회합니다")
     @ApiResponse(responseCode = "200", description = "보유 주식 목록 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OwnedStockList>>> getOwnedStockList();
+    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OwnedStockMetrics>>> getOwnedStockList();
 }

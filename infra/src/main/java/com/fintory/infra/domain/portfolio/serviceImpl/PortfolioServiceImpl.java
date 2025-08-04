@@ -3,9 +3,12 @@ package com.fintory.infra.domain.portfolio.serviceImpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.model.Account;
-import com.fintory.domain.portfolio.dto.OwnedStockList;
+import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
 import com.fintory.domain.portfolio.dto.PortfolioSummary;
+import com.fintory.domain.portfolio.dto.StockMetricsResult;
+import com.fintory.domain.portfolio.dto.StockTransactionInfo;
 import com.fintory.domain.portfolio.model.OwnedStock;
+import com.fintory.domain.portfolio.model.Status;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
 import com.fintory.domain.portfolio.service.PortfolioService;
@@ -33,20 +36,36 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final AccountRepository accountRepository;
 
     @Transactional(readOnly = true)
-    public List<OwnedStockList>  getOwnedStockList() {
+    public List<OwnedStockMetrics>  getOwnedStockMetrics() {
+        Account account = accountRepository.findByChildId(1L).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
         try {
-            Account account = accountRepository.findByChildId(1L);
             List<OwnedStock> ownedStocks = ownedStockRepository.findByAccount(account); //로그인 기능 이후 리팩토링 예정
+            return ownedStocks.stream().map(ownedStock->{
+                //사용자의 거래 내역 db로부터 조회
+                List<StockTransaction> transactionList = stockTransactionRepository.findByStockAndStatusOrderByExecutedAt(ownedStock.getStock(), Status.COMPLETED);
 
-            return ownedStocks.stream()
-                    .map(stock -> {
-                        Map<String, BigDecimal> ownedMap = getByTransaction(stock.getStock());
-                        return new OwnedStockList(stock.getStock().getCode(),
-                                        stock.getStock().getName(),
-                                ownedMap.get("evaluationAmount"),
-                                ownedMap.get("profit"),
-                                ownedMap.get("returnRate"));
-                    }).collect(Collectors.toList());
+                // 필요한 필드로만 구성해서 dto 생성
+                List<StockTransactionInfo> stockTransactionInfos = transactionList.stream().map(transaction->
+                     new StockTransactionInfo(
+                            transaction.getPricePerShare(),
+                            transaction.getQuantity(),
+                            transaction.getExchangeRate(),
+                            transaction.getTransactionType(),
+                            transaction.getExecutedAt()
+                     )).collect(Collectors.toList());
+
+                StockMetricsResult result = calculateCurrentMetrics(transactionList);
+
+                // 주식별 거래내역이 포함된 OwnedStockMetrics 생성
+                return new OwnedStockMetrics(
+                        ownedStock.getStock().getCode(),
+                        ownedStock.getStock().getName(),
+                        result.avgPurchasePrice(),
+                        result.currentQuantity(),
+                        stockTransactionInfos
+                );
+            }).collect(Collectors.toList());
+
         }catch(Exception e){
             log.info("소유 종목 리스트 조회 시 에러 발생:{}",e.getMessage());
             throw new DomainException(DomainErrorCode.OWNED_STOCK_LIST_ERROR);
@@ -55,130 +74,66 @@ public class PortfolioServiceImpl implements PortfolioService {
 
     @Transactional(readOnly = true)
     public PortfolioSummary getPortfolioSummary(){
+        Account account = accountRepository.findByChildId(1L).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND)); // 로그인 기능 완성되면 @AuthencationPrincipal로 주입받을 예정
+
         try {
-            Account account = accountRepository.findByChildId(1L); // 로그인 기능 완성되면 @AuthencationPrincipal로 주입받을 예정
             List<OwnedStock> ownedStocks = ownedStockRepository.findByAccount(account);
-            Map<String, BigDecimal> ownedMap;
 
-            BigDecimal totalEvaluationAmount = BigDecimal.ZERO; //총 평가 금액
-            BigDecimal totalPurchasePrice = BigDecimal.ZERO; // 총 매수 금액
-            BigDecimal totalReturnRate = BigDecimal.ZERO; //수익률
+            // 총 매수 금액
+            BigDecimal totalPurchasePrice = ownedStocks.stream()
+                    .map(ownedStock->{
+                        List<StockTransaction> transactionList = stockTransactionRepository.findByStockAndStatusOrderByExecutedAt(ownedStock.getStock(), Status.COMPLETED);
+                        return calculateCurrentMetrics(transactionList).totalInvestment();
+                    }).reduce(BigDecimal.ZERO,BigDecimal::add);
 
-            // 사용자가 소유한 주식 대상
-            for (OwnedStock own : ownedStocks) {
-                ownedMap = getByTransaction(own.getStock());
-                totalEvaluationAmount = totalEvaluationAmount.add(ownedMap.get("evaluationAmount"));
-                totalPurchasePrice = totalPurchasePrice.add(ownedMap.get("totalPurchasePrice"));
-            }
-
-            BigDecimal totalProfit = totalEvaluationAmount.subtract(totalPurchasePrice); //총 손실 금액
-
-            if (totalPurchasePrice.compareTo(BigDecimal.ZERO) > 0) {
-                totalReturnRate = totalProfit.divide(totalPurchasePrice, 2, RoundingMode.HALF_UP)
-                        .multiply(new BigDecimal(100));
-            }
             return new PortfolioSummary(
-                    totalEvaluationAmount,
-                    totalReturnRate,
-                    totalPurchasePrice.setScale(0, RoundingMode.HALF_UP),
+                    totalPurchasePrice,
                     BigDecimal.valueOf(account.getTotalAssets()));
+
         }catch (Exception e){
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.PORTFOLIO_CALCULATION_ERROR);
         }
     }
 
-    // 거래 내역으로부터 데이터 조회
-    private Map<String, BigDecimal> getByTransaction(Stock stock){
-        List<StockTransaction> transactionList = stockTransactionRepository.findByStock(stock);
+    //주식별 평균 매수가, 총 매수 수량, 총 매수가 계산
+    private StockMetricsResult calculateCurrentMetrics(List<StockTransaction> stockTransactionList){
+        BigDecimal totalInvestment = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
 
-        // 매수/매도 거래로부터 특정 주식에 해당하는 현재 보유 매수금액과 보유 수량 계산
-        Map<String, BigDecimal> map = calculateCurrentHolding
-                (transactionList);
+        for(StockTransaction transaction:stockTransactionList){
+            //거래 금액 = 주당가격 * 보유수량 *환율 반영
+            BigDecimal amount = transaction.getPricePerShare()
+                    .multiply(BigDecimal.valueOf(transaction.getQuantity()))
+                    .multiply(transaction.getExchangeRate()); //USD=1300, KRW는 1.0이라는 가정
 
-        // 보유 주식이 없는 경우
-        if(map.get("totalQuantity").compareTo(BigDecimal.ZERO) <= 0){
-            return createEmptyResult(new HashMap<>());
-        }
+            if(transaction.getTransactionType().equals(TransactionType.BUY)){
+                //매수 시 투자금액과 보유수량 증가
+                totalInvestment = totalInvestment.add(amount);
+                totalQuantity =  totalQuantity.add(BigDecimal.valueOf(transaction.getQuantity()));
+            }else{
+                if(totalQuantity.compareTo(BigDecimal.ZERO) > 0){
+                    //매도 시 평균 매수가 기준으로 처리
+                    BigDecimal avgPrice =totalInvestment.divide(totalQuantity,0, RoundingMode.HALF_UP);
+                    BigDecimal sellAmount = avgPrice.multiply(BigDecimal.valueOf(transaction.getQuantity()));
 
-        map =  calculateStockMetrics(stock,map);
-        return map;
-    }
-
-    // 매수/매도 거래로부터 특정 주식에 해당하는 현재 보유 매수금액과 보유 수량 계산
-    private Map<String, BigDecimal> calculateCurrentHolding (List<StockTransaction> transactionList){
-        BigDecimal totalPurchasePrice = BigDecimal.ZERO; //현재 보유 주식의 총 매수 금액
-        BigDecimal totalQuantity = BigDecimal.ZERO; //현재 보유 수량
-
-        // 매수/매도 계산
-        for(StockTransaction transaction : transactionList){
-            if(TransactionType.BUY.equals(transaction.getTransactionType())) { //BUY
-                totalPurchasePrice = totalPurchasePrice.add(
-                        transaction.getPricePerShare().multiply(BigDecimal.valueOf(transaction.getQuantity()))
-                );
-                totalQuantity = totalQuantity.add(BigDecimal.valueOf(transaction.getQuantity())); // 재할당!
-            } else { // SELL
-                totalPurchasePrice = totalPurchasePrice.subtract(
-                        transaction.getPricePerShare().multiply(BigDecimal.valueOf(transaction.getQuantity()))
-                ).setScale(0, RoundingMode.HALF_UP);
-                totalQuantity = totalQuantity.subtract(BigDecimal.valueOf(transaction.getQuantity())); // 재할당!
-
-                // 0주가 되면 초기화
-                if(totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
-                    totalPurchasePrice = BigDecimal.ZERO;
+                    totalInvestment = totalInvestment.subtract(sellAmount);
+                    totalQuantity = totalQuantity.subtract(BigDecimal.valueOf(transaction.getQuantity()));
                 }
             }
         }
+        //0으로 나누기 방지
+        BigDecimal avgPurchasePrice = totalQuantity.compareTo(BigDecimal.ZERO) > 0
+                ? totalInvestment.divide(totalQuantity,0, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO;
 
-        Map<String, BigDecimal> result = new HashMap<>();
-        result.put("totalPurchasePrice", totalPurchasePrice);
-        result.put("totalQuantity", totalQuantity);
-        return result;
+
+        return new StockMetricsResult(
+                avgPurchasePrice,
+                totalQuantity.intValue(),
+                totalInvestment.setScale(0, RoundingMode.HALF_UP)
+        );
     }
 
-    //현재 평가 금액 및 수익/손실 계산
-    private Map<String,BigDecimal> calculateStockMetrics(Stock stock, Map<String,BigDecimal> map){
-
-        BigDecimal totalPurchasePrice = map.get("totalPurchasePrice");
-        BigDecimal totalQuantity = map.get("totalQuantity");
-
-        // 현재 평가금액과 수익 계산
-        BigDecimal currentPrice = BigDecimal.valueOf(stock.getLiveStockPrice().getCurrentPrice());
-
-        // USD면 환율 적용
-        if("USD".equals(stock.getCurrencyName())) {
-            BigDecimal exchangeRate = BigDecimal.valueOf(1300); //환율 테이블 찾기
-            totalPurchasePrice = totalPurchasePrice.multiply(exchangeRate);
-            currentPrice = currentPrice.multiply(exchangeRate);
-        }
-
-        BigDecimal currentValue = currentPrice.multiply(totalQuantity);
-        BigDecimal profit = currentValue.subtract(totalPurchasePrice).setScale(0, RoundingMode.HALF_UP);
-
-        map.put("evaluationAmount", currentValue);
-        map.put("profit", profit);
-        map.put("totalPurchasePrice", totalPurchasePrice); // 환율 적용된 값으로 업데이트
-        map.put("returnRate",calculateReturnRate(profit,totalPurchasePrice));
-        return map;
-    }
-
-    // 수익률 계산
-    private BigDecimal calculateReturnRate(BigDecimal profit, BigDecimal totalPurchasePrice){
-        if(totalPurchasePrice.compareTo(BigDecimal.ZERO) > 0) {
-            return profit.divide(totalPurchasePrice, 2, RoundingMode.HALF_UP)
-                    .multiply(BigDecimal.valueOf(100));
-        }
-        return BigDecimal.ZERO;
-    }
-
-
-    //보유 주식이 없는 경우
-    private Map<String,BigDecimal> createEmptyResult(Map<String,BigDecimal> map){
-        map.put("evaluationAmount", BigDecimal.ZERO);
-        map.put("profit", BigDecimal.ZERO);
-        map.put("totalPurchasePrice", BigDecimal.ZERO);
-        map.put("returnRate", BigDecimal.ZERO);
-        return map;
-    }
 
 }

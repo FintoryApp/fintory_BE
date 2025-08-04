@@ -2,7 +2,7 @@ package com.fintory.child.domain.portfolio.controller;
 
 
 import com.fintory.common.api.ApiResponse;
-import com.fintory.domain.portfolio.dto.OwnedStockList;
+import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
 import com.fintory.domain.portfolio.dto.PortfolioSummary;
 import com.fintory.domain.portfolio.service.PortfolioService;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +31,8 @@ public class PortfolioControllerImpl implements PortfolioController {
 
     @Override
     @GetMapping("/stocks")
-    public ResponseEntity<ApiResponse<List<OwnedStockList>>> getOwnedStockList() {
-        List<OwnedStockList> ownedStockList = portfolioService.getOwnedStockList();
-        return ResponseEntity.ok(ApiResponse.ok(ownedStockList));
+    public ResponseEntity<ApiResponse<List<OwnedStockMetrics>>> getOwnedStockList() {
+        List<OwnedStockMetrics> ownedStockMetrics = portfolioService.getOwnedStockMetrics();
+        return ResponseEntity.ok(ApiResponse.ok(ownedStockMetrics));
     }
 }
