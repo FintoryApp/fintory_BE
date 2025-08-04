@@ -41,7 +41,11 @@ public class PortfolioServiceImpl implements PortfolioService {
             return ownedStocks.stream()
                     .map(stock -> {
                         Map<String, BigDecimal> ownedMap = getByTransaction(stock.getStock());
-                        return OwnedStockList.builder().stockCode(stock.getStock().getCode()).stockName(stock.getStock().getName()).evaluationAmount(ownedMap.get("evaluationAmount")).profit(ownedMap.get("profit")).returnRate(ownedMap.get("returnRate")).build();
+                        return new OwnedStockList(stock.getStock().getCode(),
+                                        stock.getStock().getName(),
+                                ownedMap.get("evaluationAmount"),
+                                ownedMap.get("profit"),
+                                ownedMap.get("returnRate"));
                     }).collect(Collectors.toList());
         }catch(Exception e){
             log.info("소유 종목 리스트 조회 시 에러 발생:{}",e.getMessage());
@@ -73,12 +77,11 @@ public class PortfolioServiceImpl implements PortfolioService {
                 totalReturnRate = totalProfit.divide(totalPurchasePrice, 2, RoundingMode.HALF_UP)
                         .multiply(new BigDecimal(100));
             }
-            return PortfolioSummary.builder()
-                    .totalEvaluationAmount(totalEvaluationAmount)
-                    .totalReturnRate(totalReturnRate)
-                    .totalPurchasePrice(totalPurchasePrice.setScale(0, RoundingMode.HALF_UP))
-                    .totalMoney(BigDecimal.valueOf(account.getTotalAssets()))
-                    .build();
+            return new PortfolioSummary(
+                    totalEvaluationAmount,
+                    totalReturnRate,
+                    totalPurchasePrice.setScale(0, RoundingMode.HALF_UP),
+                    BigDecimal.valueOf(account.getTotalAssets()));
         }catch (Exception e){
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.PORTFOLIO_CALCULATION_ERROR);
