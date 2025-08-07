@@ -24,6 +24,7 @@ dependencies {
     implementation project(':common')
     implementation project(':domain')
     implementation project(':infra')
+    implementation project(':auth')
 
     /* .env 자동 로딩 */
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
@@ -39,12 +40,18 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
+    /* Security */
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    /* Spring Security OAuth2 Client */
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
     /* lombok */
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
     /* swagger */
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
     /* Test */
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
