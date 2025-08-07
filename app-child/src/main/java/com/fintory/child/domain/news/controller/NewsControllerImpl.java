@@ -39,7 +39,7 @@ public class NewsControllerImpl implements NewsController{
     @PostMapping("/crawl-test")
     public ResponseEntity<ApiResponse<Void>> triggerCrawling() {
         newsCrawlerService.crawlAndSaveLatestNews();
-        return ResponseEntity.ok(ApiResponse.okWithNoData(null));
+        return ResponseEntity.ok(ApiResponse.ok(null));
     }
 
 }
