@@ -71,6 +71,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 객체를 JSON 으로 변환 후 응답에 기록
             response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        } catch (Exception e) {
+            SecurityContextHolder.clearContext();
+            log.error("예상치 못한 서버 오류", e);
+
+            ExceptionResponse exceptionResponse =
+                    new ExceptionResponse(DomainErrorCode.INTERNAL_SERVER_ERROR);
+
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
         }
     }
 
