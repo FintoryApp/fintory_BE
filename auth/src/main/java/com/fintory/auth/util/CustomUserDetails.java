@@ -1,6 +1,8 @@
 package com.fintory.auth.util;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -9,10 +11,11 @@ import java.util.Collection;
 import java.util.List;
 
 @Getter
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, CredentialsContainer {
 
     private final String username;
-    private final String password;
+    @JsonIgnore
+    private String password;
     private final String nickname;
     private final String role;
 
@@ -21,6 +24,11 @@ public class CustomUserDetails implements UserDetails {
         this.password = password;
         this.nickname = nickname;
         this.role = role;
+    }
+
+    @Override
+    public void eraseCredentials() {
+        this.password = null;
     }
 
     @Override

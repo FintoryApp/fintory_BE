@@ -3,6 +3,7 @@ package com.fintory.auth.service;
 import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.SignUpRequest;
 import com.fintory.auth.jwt.JwtTokenProvider;
+import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.child.model.Child;
@@ -85,7 +86,10 @@ public class AuthService {
             //authenticate()가 내부적으로 CustomUserService.loadUserByUsername 호출하여 userDetails 반환
             //userDetails를 포함한 모든 인증 정보를 Authentication에 담음.
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof CustomUserDetails customUserDetails) {
+                log.info("인증 직후 password 값: {}", customUserDetails.getPassword());
+            }
             // 인증 성공 시 SecurityContext에 등록
             SecurityContextHolder.getContext().setAuthentication(authentication);
             log.info("authentication: {}", authentication);
