@@ -1,19 +1,76 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
-group = 'com.campuspick'
+group = 'com.fintory'
 version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
+
+    implementation project(':common')
+    implementation project(':domain')
+    implementation project(':infra')
+
+    /* Lombok */
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    /* Web */
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    /* Spring Security */
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    /* Redis */
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    /* jpa */
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    /* Validation */
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    /* Spring Security OAuth2 Client */
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    /* JWT (jjwt) */
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6' // 또는 최신 버전
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6' // FasterXML Jackson Databind
+
+    /* swagger */
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 test {
     useJUnitPlatform()
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
 }

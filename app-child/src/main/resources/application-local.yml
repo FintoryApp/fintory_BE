@@ -3,7 +3,7 @@ server:
 
 spring:
   config:
-    import: "optional:file:.env[.properties]"
+    import: "optional:file:.env"
     activate:
       on-profile: local
 
@@ -22,9 +22,19 @@ spring:
       hibernate:
         format_sql: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
   messages:
     basename: messages
     encoding: UTF-8
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: ${ACCESS_TOKEN_EXPIRATION_MINUTES}
+  refresh-token-expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS}
 
 management:
   endpoints:

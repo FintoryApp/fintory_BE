@@ -12,6 +12,17 @@ public enum DomainErrorCode {
 
     //user
     USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "USER_NOT_FOUND", "유저를 찾을 수 없습니다."),
+    DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "DUPLICATE_EMAIL", "이미 존재하는 이메일입니다."),
+    LOGINED_USER_NOT_FOUND(HttpStatus.BAD_REQUEST, "LOGINED_USER_NOT_FOUND", "사용자가 로그인되어 있지 않습니다" ),
+    WRONG_EMAIL_OR_PASSWORD(HttpStatus.BAD_REQUEST, "WRONG_EMAIL_OR_PASSWORD", "아이디 또는 비밀번호가 일치하지 않습니다."),
+
+    //jwt
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "EXPIRED_TOKEN", "만료된 토큰입니다."),
+    UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "UNSUPPORTED_TOKEN", "지원하지 않는 토큰입니다."),
+    EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "EMPTY_TOKEN", "토큰이 존재하지 않습니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", "유효하지 않은 리프레쉬 토큰입니다."),
+    INVALID_TOKEN_TYPE(HttpStatus.BAD_REQUEST, "INVALID_TOKEN_TYPE", "토큰 카테고리가 일치하지 않습니다"),
 
     //news
     NEWS_LINK_GET_FAILED(HttpStatus.BAD_GATEWAY, "NEWS_LINK_GET_FAILED", "최신 뉴스 기사 링크 불러오기 실패"),
