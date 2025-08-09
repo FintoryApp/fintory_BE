@@ -16,8 +16,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stock extends BaseEntity {
 
-    private String ticker;
-
     private String code;
 
     @Column(name="market_name")
