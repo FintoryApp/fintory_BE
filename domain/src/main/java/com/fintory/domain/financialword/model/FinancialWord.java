@@ -13,9 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class FinancialWord extends BaseEntity {
 
-    private String content;
+    private String word;
 
-    private String title;
+    private String definition;
+
+    private String moreInfo;
 
     @OneToOne(mappedBy = "word")
     private Quiz quiz;
