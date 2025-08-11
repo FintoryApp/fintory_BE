@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,12 +38,26 @@ public class GlobalExceptionHandler {
                 .body(new ExceptionResponse(DomainErrorCode.VALIDATION_FAIL, errorMap));
     }
 
-    //RequestParam, PathVariable 사용시 valid에서 ConstraintViolationException가 터짐
+    //RequestParam, PathVariable 사용시 클래스 단위의 @validated에서 ConstraintViolationException가 터짐
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ExceptionResponse> handleConstraintViolation(ConstraintViolationException ex) {
         String message = ex.getConstraintViolations()
                 .stream()
                 .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining("; "));
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(new ExceptionResponse(DomainErrorCode.VALIDATION_FAIL, message));
+    }
+
+    // Spring 6.2+에서 RequestParam, PathVariable 유효성 검사 실패 시
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ExceptionResponse> handleHandlerMethodValidation(HandlerMethodValidationException ex) {
+        String message = ex.getParameterValidationResults() // 변경된 메서드
+                .stream()
+                .flatMap(result -> result.getResolvableErrors().stream())
+                .map(error -> error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
 
         return ResponseEntity

@@ -29,6 +29,8 @@ public enum DomainErrorCode {
     NEWS_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "NEWS_NOT_FOUND", "저장된 뉴스 기사 불러오기 실패"),
     NEWS_CRAWLING_FAILED(HttpStatus.BAD_GATEWAY, "NEWS_CRAWLING_FAILED", "뉴스 기사 크롤링 실패"),
 
+    //financial word
+    WORD_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "WORD_NOT_FOUND", "경제 용어 불러오기 실패"),
     //account
     ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"ACCOUNT_NOT_FOUND","계좌 불러오기 실패"),
 
