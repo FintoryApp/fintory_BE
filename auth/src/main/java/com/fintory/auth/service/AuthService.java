@@ -4,12 +4,15 @@ import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.SignUpRequest;
 import com.fintory.auth.jwt.JwtTokenProvider;
 import com.fintory.auth.util.CustomUserDetails;
+import com.fintory.auth.util.GoogleTokenVerifier;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.Role;
 import com.fintory.infra.domain.child.repository.ChildRepository;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,9 +44,11 @@ public class AuthService {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final GoogleTokenVerifier googleIdTokenVerifier;
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final ChildRepository childRepository;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Transactional
     public AuthToken signup(SignUpRequest request) {
@@ -50,17 +56,18 @@ public class AuthService {
         // 이메일 중복 최종 검증: 이메일 중복 api를 통해 사용자는 이미 1차 검증을 하지만,
         // 회원가입 도중에 다른 사용자가 같은 이메일로 가입을 완료했다면 최종적으로 중복이 됨
         if (checkDuplicateEmail(request.email())) {
-            throw new DomainException(DomainErrorCode.DUPLICATE_EMAIL);
+            throw new DomainException(DomainErrorCode.ALREADY_REGISTERED_EMAIL);
         }
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        Child child = Child.builder()
+        Child child = Child.idPwBuilder()
                 .email(request.email())
                 .password(encodedPassword)
                 .nickname(request.nickname())
                 .role(Role.CHILD)
                 .status(Status.ACTIVE)
+                .loginType(LoginType.EMAIL)
                 .build();
 
         childRepository.save(child);
@@ -175,15 +182,58 @@ public class AuthService {
 
     /**
      * 로그아웃 처리: Redis 에서 RefreshToken 삭제
-     * @param email 로그아웃할 사용자의 로그인 이메일
+     * @param username 로그아웃할 사용자의 로그인 이메일
      */
-    public void logout(String email) {
-        if (!redisTemplate.hasKey(email)) {
+    public void logout(String username) {
+        if (!redisTemplate.hasKey(username)) {
             throw new DomainException(DomainErrorCode.LOGINED_USER_NOT_FOUND);
         }
 
-        redisTemplate.delete(email);
-        log.info("refresh deleted: {}", email);
+        redisTemplate.delete(username);
+        log.info("refresh deleted: {}", username);
     }
 
+    @Transactional
+    public AuthToken handleGoogleLoginOrRegister(String idToken) {
+        GoogleIdToken.Payload payload = googleIdTokenVerifier.verifyGoogleToken(idToken);
+
+        String nickname = (String) payload.get("name");
+        String googleEmail = payload.getEmail();
+        String socialId = payload.getSubject();
+
+        //idpw로 가입되어있는지 검사
+        Optional<Child> check = childRepository.findByEmail(googleEmail);
+        if (check.isPresent() && check.get().getLoginType() != LoginType.GOOGLE) {
+            throw new DomainException(DomainErrorCode.ALREADY_REGISTERED_EMAIL);
+        }
+
+        Child child = childRepository.findBySocialId(socialId) // 소셜로만 가입되있는 경우 -> 로그인
+                .orElseGet(() -> { // 소셜로그인 가입 안되어있는 경우 -> 등록 후 로그인
+                    Child newChild = new Child(nickname, googleEmail, socialId, LoginType.GOOGLE, Role.CHILD, Status.ACTIVE);
+                    return childRepository.save(newChild);
+                });
+        // 인증 객체 생성 (비밀번호 없이)
+        CustomUserDetails userDetails = new CustomUserDetails(
+                child.getSocialId(),  // username
+                null,                 // password: 소셜 로그인은 비밀번호 불필요
+                child.getNickname(),
+                child.getRole().getKey(),
+                child.getLoginType()
+        );
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String accessToken = jwtTokenProvider.generateAccessToken(authentication);
+        String refreshToken = jwtTokenProvider.generateRefreshToken(authentication.getName());
+
+        log.info("authentication.getName(): {}", authentication.getName());
+        redisTemplate.opsForValue().set(
+                authentication.getName(),
+                refreshToken,
+                jwtTokenProvider.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000L,
+                TimeUnit.MILLISECONDS
+        );
+        log.info("at: {}, rt: {}", accessToken, refreshToken);
+        return new AuthToken(accessToken, refreshToken);
+    }
 }

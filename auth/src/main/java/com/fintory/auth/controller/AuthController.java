@@ -4,6 +4,7 @@ import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.LoginRequest;
 import com.fintory.auth.dto.request.ReissueRequest;
 import com.fintory.auth.dto.request.SignUpRequest;
+import com.fintory.auth.dto.request.SocialLoginRequest;
 import com.fintory.auth.util.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,6 +46,11 @@ public interface AuthController{
             @RequestBody
             @Valid
             LoginRequest request
+    );
+
+    ResponseEntity<com.fintory.common.api.ApiResponse<AuthToken>> socialLogin(
+            @RequestBody
+            SocialLoginRequest request
     );
 
     @Operation(summary = "로그아웃", description = "at 토큰을 헤더에 포함해서 요청해야 함, axios.get(\"/api/user\", {\n" +
