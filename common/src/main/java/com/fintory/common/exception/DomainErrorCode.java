@@ -32,6 +32,20 @@ public enum DomainErrorCode {
     //account
     ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"ACCOUNT_NOT_FOUND","계좌 불러오기 실패"),
 
+    //API
+    API_FAILED(HttpStatus.SERVICE_UNAVAILABLE,"API_FAILED","API 응답 받기 실패"),
+
+    STOCK_PRICE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,"STOCK_PRICE_HISTORY_NOT_FOUND","기간별 시세 데이터 불러오기 실패"),
+
+    //order_book
+    ORDER_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_BOOK_NOT_FOUND","호가 데이터를 찾을 수 없습니다."),
+
+    //stock
+    STOCK_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"STOCK_NOT_FOUND","주식 불러오기 실패"),
+
+    //live_stock_price
+    LIVE_STOCK_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND,"LIVE_STOCK_PRICE_NOT_FOUND","현재가 데이터를 찾을 수 없습니다."),
+
     //ownedStock
     OWNED_STOCK_LIST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OWNED_STOCK_LIST_ERROR", "보유 종목 리스트 조회 중 오류 발생"),
     PORTFOLIO_CALCULATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"PORTFOLIO_CALCULATION_ERROR","포트폴리오 계산 중 오류 발생");

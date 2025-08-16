@@ -46,3 +46,5 @@ management:
     health:
       show-details: always
 
+market-stack:
+  access-key: ${MARKET_STACK_ACCESS_KEY}
