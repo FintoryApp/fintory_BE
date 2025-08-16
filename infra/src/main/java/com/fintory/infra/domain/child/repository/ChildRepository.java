@@ -7,5 +7,8 @@ import java.util.Optional;
 
 public interface ChildRepository extends JpaRepository<Child, Long> {
 
-    Optional<Child> findByEmail(String loginId);
+    Optional<Child> findByEmail(String email);
+
+    Optional<Child> findBySocialId(String socialId);
+
 }
