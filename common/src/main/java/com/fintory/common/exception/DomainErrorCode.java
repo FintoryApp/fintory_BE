@@ -33,8 +33,9 @@ public enum DomainErrorCode {
     ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"ACCOUNT_NOT_FOUND","계좌 불러오기 실패"),
 
     //API
-    API_FAILED(HttpStatus.SERVICE_UNAVAILABLE,"API_FAILED","API 응답 받기 실패"),
-
+    API_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "API_FAILED", "일시적으로 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요"),
+    API_RESPONSE_NULL(HttpStatus.BAD_GATEWAY,"API_RESPONSE_NULL","API 응답이 비어있습니다."),
+    //Stock Price History
     STOCK_PRICE_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND,"STOCK_PRICE_HISTORY_NOT_FOUND","기간별 시세 데이터 불러오기 실패"),
 
     //order_book
