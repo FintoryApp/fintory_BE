@@ -6,9 +6,7 @@ import com.fintory.common.exception.DomainException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,7 +23,6 @@ import java.util.stream.Collectors;
 @Slf4j
 @Getter
 @Component
-@RequiredArgsConstructor
 public class JwtTokenProvider {
 
     private final SecretKey key;
@@ -33,7 +30,6 @@ public class JwtTokenProvider {
     private final long refreshTokenExpirationDays;
     private final CustomUserDetailsService customUserDetailsService;
 
-    @Autowired
     public JwtTokenProvider(
             @Value("${jwt.secret}") String key,
             @Value("${jwt.access-token-expiration-minutes}") long accessTokenExpirationMin,
@@ -101,8 +97,9 @@ public class JwtTokenProvider {
             throw new JwtException("권한 정보가 없는 토큰입니다.");
         }
 
-        String email = claims.getSubject();
-        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        String username = claims.getSubject();
+        log.info("username: {}", username);
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
