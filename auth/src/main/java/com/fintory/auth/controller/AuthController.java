@@ -48,6 +48,8 @@ public interface AuthController{
             LoginRequest request
     );
 
+    @Operation(summary = "구글 로그인")
+    @ApiResponse(responseCode = "200", description = "로그인 성공: Access와 Refresh token 반환")
     ResponseEntity<com.fintory.common.api.ApiResponse<AuthToken>> socialLogin(
             @RequestBody
             SocialLoginRequest request
