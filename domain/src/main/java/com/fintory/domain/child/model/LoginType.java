@@ -1,7 +1,8 @@
 package com.fintory.domain.child.model;
 
-public enum SocialType {
+public enum LoginType {
 
+    EMAIL,
     GOOGLE,
     KAKAO;
 
