@@ -1,11 +1,10 @@
 package com.fintory.auth.controller;
 
 import com.fintory.auth.dto.AuthToken;
-import com.fintory.auth.dto.request.LoginRequest;
-import com.fintory.auth.dto.request.ReissueRequest;
-import com.fintory.auth.dto.request.SignUpRequest;
-import com.fintory.auth.dto.request.SocialLoginRequest;
+import com.fintory.auth.dto.request.*;
 import com.fintory.auth.service.AuthService;
+import com.fintory.auth.service.GoogleOauthService;
+import com.fintory.auth.service.KakaoOauthService;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
@@ -30,6 +29,8 @@ import java.util.Map;
 public class AuthControllerImpl implements AuthController{
 
     private final AuthService authService;
+    private final GoogleOauthService googleOauthService;
+    private final KakaoOauthService kakaoOauthService;
 
     @Override
     @PostMapping("/signup")
@@ -50,8 +51,15 @@ public class AuthControllerImpl implements AuthController{
 
     @Override
     @PostMapping("/social-login/google")
-    public ResponseEntity<ApiResponse<AuthToken>> socialLogin(@RequestBody SocialLoginRequest request) {
-        AuthToken token = authService.handleGoogleLoginOrRegister(request.idToken());
+    public ResponseEntity<ApiResponse<AuthToken>> googleLogin(@RequestBody GoogleLoginRequest request) {
+        AuthToken token = googleOauthService.handleGoogleLoginOrRegister(request.idToken());
+        return ResponseEntity.ok(ApiResponse.ok(token));
+    }
+
+    @Override
+    @PostMapping("/social-login/kakao")
+    public ResponseEntity<ApiResponse<AuthToken>> kakaoLogin(@RequestBody KakaoLoginRequest request) {
+        AuthToken token = kakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
         return ResponseEntity.ok(ApiResponse.ok(token));
     }
 
