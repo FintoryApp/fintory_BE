@@ -41,11 +41,9 @@ public class AuthService {
 
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final JwtTokenProvider jwtTokenProvider;
-    private final GoogleOauthService googleIdTokenVerifier;
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final ChildRepository childRepository;
-    private final CustomUserDetailsService customUserDetailsService;
 
     @Transactional
     public AuthToken signup(SignUpRequest request) {

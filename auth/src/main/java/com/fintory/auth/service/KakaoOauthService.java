@@ -60,14 +60,12 @@ public class KakaoOauthService {
             throw new DomainException(DomainErrorCode.ALREADY_REGISTERED_EMAIL);
         }
 
-        // DB 조회 or 등록
         Child child = childRepository.findBySocialId(kakaoId)
                 .orElseGet(() -> {
                     Child newChild = new Child(nickname, kakaoEmail, kakaoId, LoginType.KAKAO, Role.CHILD, Status.ACTIVE);
                     return childRepository.save(newChild);
                 });
 
-        // 4. CustomUserDetails 생성
         CustomUserDetails userDetails = new CustomUserDetails(
                 child.getSocialId(),
                 null,
@@ -76,16 +74,13 @@ public class KakaoOauthService {
                 child.getLoginType()
         );
 
-        // 5. 인증 객체 생성 및 등록
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // 6. JWT 발급
         String accessToken = jwtTokenProvider.generateAccessToken(authentication);
         String refreshToken = jwtTokenProvider.generateRefreshToken(authentication.getName());
 
-        // 7. Redis 저장
         redisTemplate.opsForValue().set(
                 authentication.getName(),
                 refreshToken,
