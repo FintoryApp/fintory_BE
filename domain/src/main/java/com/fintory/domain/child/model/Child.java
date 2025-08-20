@@ -57,7 +57,7 @@ public class Child extends BaseEntity {
         this.loginType = loginType;
         this.status = status;
     }
-    // social 생성자
+    // social login 생성자
     public Child(String nickname, String email, String socialId, LoginType loginType, Role role, Status status) {
         this.nickname = nickname;
         this.email = email;

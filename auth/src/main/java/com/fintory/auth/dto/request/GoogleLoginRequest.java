@@ -1,6 +1,6 @@
 package com.fintory.auth.dto.request;
 
-public record SocialLoginRequest(
+public record GoogleLoginRequest(
         String idToken
 ) {
 }
