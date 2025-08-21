@@ -50,4 +50,15 @@ public class LiveStockPrice extends BaseEntity {
             this.priceChangeRate = rate;
             return this;
     }
+
+    public LiveStockPrice updateLiveStockPrice(BigDecimal currentPrice,LiveStockPrice liveStockPrice){
+        if(liveStockPrice.priceChange!=null){
+            this.currentPrice = currentPrice;
+            this.priceChange = currentPrice.subtract(liveStockPrice.priceChange);
+            this.priceChangeRate = priceChange.divide(liveStockPrice.priceChange, 2, BigDecimal.ROUND_HALF_UP)
+                    .multiply(BigDecimal.valueOf(100));
+            return this;
+        }
+        return liveStockPrice;
+    }
 }

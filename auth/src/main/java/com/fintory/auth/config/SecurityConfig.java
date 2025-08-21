@@ -5,6 +5,7 @@ import com.fintory.auth.util.OpenApiList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -73,8 +74,7 @@ public class SecurityConfig {
 
         // 허용할 프론트 도메인 설정
         configuration.setAllowedOriginPatterns(List.of(
-                "http://localhost:8081",
-                "https://localhost:8081"
+               "*" //NOTE 실제 운영환경에서는 도메인을 명시해야 하지만, 웹소켓 테스트를 위해 일시적으로 설정함.
         ));
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));

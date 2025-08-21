@@ -30,7 +30,10 @@ public class OpenApiList {
 
             //stock
             //NOTE 시중에 나와있는 앱들은 로그인 없이도 주식 데이터 확인이 가능해서 일단 열어둠. 추후 변경 가능
-            "/api/child/stock/**"
+            "/api/child/stock/**",
+            "/ws/**",
+            "/app/**",
+            "/topic/**"
 
     };
 }

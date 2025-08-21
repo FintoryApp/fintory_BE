@@ -50,11 +50,13 @@ public class EODataServiceImpl implements StockDataService {
     public void getAllEOD() {
         try {
             String stockCodes = getStockCodes();
+            log.info(stockCodes);
             EODResponseWrapper wrapper = fetchEODData(stockCodes);
             processStockData(wrapper);
             //REVIEW API를 사용 시 발생할 수 있는 에러들이 많아서(Doc에 명시됨) 광범위하게 범위를 결정함 -> 좋은 방법 찾아보기.
         } catch (Exception e) {
             log.error("EOD 조회 중 에러 발생: {}", e);
+            e.printStackTrace();
             throw new DomainException(DomainErrorCode.API_FAILED);
         }
     }
@@ -108,7 +110,7 @@ public class EODataServiceImpl implements StockDataService {
     // RestTemplate을 통한 MarketStack API 서버와 통신하는 메소드
     private EODResponseWrapper fetchEODData(String symbols) {
         LocalDate today = LocalDate.now();
-        LocalDate yesterday = today.minusDays(4); // 장이 열리지 않는 날을 고려하여 여유 있는 날짜 범위 선택
+        LocalDate yesterday = today.minusDays(7); // 장이 열리지 않는 날을 고려하여 여유 있는 날짜 범위 선택
 
         String url = UriComponentsBuilder.fromUriString("http://api.marketstack.com/v1/eod")
                 .queryParam("access_key", accessKey)
@@ -129,6 +131,7 @@ public class EODataServiceImpl implements StockDataService {
 
     // EOD API를 통해 받은 데이터를 liveStockPrice, StockRank Entity에 저장하는 통합 메소드
     // NOTE 해당 기능을 구현할 구현체도 없고 다른 모듈에서도 사용하지 않지만 같은 트랜잭션을 보장하기 위해 public으로 설정함(인터페이스에선 없음 참고)
+    //@PostConstruct -> 트랜잭션 범위 밖에서 실행됨. hibernate 세션이 없어서 Loading 실패
     @Transactional
     public void processStockData(EODResponseWrapper wrapper) {
         if (wrapper == null || wrapper.eodResponseList() == null || wrapper.eodResponseList().isEmpty()) {
@@ -153,7 +156,7 @@ public class EODataServiceImpl implements StockDataService {
             if (stockResponse.size() >= 2) {
                 saveEachLiveStockPrice(stockResponse, stock);
             } else {
-                log.warn("주식 {} - 데이터 부족으로 LiveStockPrice 업데이트 건너뜀 (받은 데이터: {}개)",
+                log.warn("주식 {} - 데이터 부족으로 LiveStockPrice 업데이트 건너뜀 (받은 데이터: {}개) ",
                         stock.getCode(), stockResponse.size());
                 //TODO 데이터가 2개 미만이라고 에러를 던지진 않음 -> 일단 현재 서버는 이전 서버와는 달리 에러를 거의 던지지 않고,
                 //  만약 데이터를 못가져왔다고 해도 DB에서 이전에 저장된 데이터를 보여주면 되니까. -> 해당 방법 고민해보기
@@ -162,7 +165,7 @@ public class EODataServiceImpl implements StockDataService {
     }
 
     private void updateStockRanks(EODResponseWrapper wrapper) {
-        List<StockRank> stockRankList = stockRankRepository.findAll();
+        List<StockRank> stockRankList = stockRankRepository.findAllStockRanks();
 
         for (StockRank rank : stockRankList) {
             List<EODResponse> stockResponse = wrapper.eodResponseList().stream()

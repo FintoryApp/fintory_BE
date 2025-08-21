@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface StockRankRepository extends JpaRepository<StockRank,Long> {
+    @Query("SELECT sr FROM StockRank sr JOIN FETCH sr.stock")
+    List<StockRank> findAllStockRanks();
+
     @Query("SELECT sr FROM StockRank sr JOIN FETCH sr.stock WHERE sr.stock = :stock")
     Optional<StockRank> findByStock(@Param("stock") Stock stock);
 

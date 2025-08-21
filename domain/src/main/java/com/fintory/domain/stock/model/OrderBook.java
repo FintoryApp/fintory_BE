@@ -2,15 +2,14 @@ package com.fintory.domain.stock.model;
 
 import com.fintory.domain.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
+import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
 @Getter
 @Table(name = "order_book")
+@Builder
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderBook extends BaseEntity {
 
@@ -142,5 +141,4 @@ public class OrderBook extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id")
     private Stock stock;
-
 }

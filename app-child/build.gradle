@@ -59,6 +59,10 @@ dependencies {
 
     /* Actuator */
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    /* WebSocket */
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
 }
 
 test {
