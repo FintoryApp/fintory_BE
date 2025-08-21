@@ -14,6 +14,8 @@ public class OpenApiList {
             "/api/auth/login",
             "/api/auth/signup",
             "/api/auth/check-email",
+            "/api/auth/social-login/google",
+            "/api/auth/social-login/kakao",
 
             // refresh
             "/api/auth/reissue",

@@ -8,6 +8,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import static com.fintory.domain.child.model.LoginType.EMAIL;
+
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
@@ -15,10 +17,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final ChildRepository childRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return childRepository.findByEmail(email)
-                .map(child -> new CustomUserDetails(child.getEmail(), child.getPassword(), child.getNickname(), child.getRole().getKey()))
-                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다: " + email));
+    public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
+        return childRepository.findBySocialId(id)
+                .or(() -> childRepository.findByEmail(id))
+                .map(child -> new CustomUserDetails(
+                        child.getLoginType() == EMAIL ? child.getEmail() : child.getSocialId(),
+                        child.getPassword(),
+                        child.getNickname(),
+                        child.getRole().getKey(),
+                        child.getLoginType()))
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다" + id));
     }
 
 }

@@ -1,10 +1,10 @@
 package com.fintory.auth.controller;
 
 import com.fintory.auth.dto.AuthToken;
-import com.fintory.auth.dto.request.LoginRequest;
-import com.fintory.auth.dto.request.ReissueRequest;
-import com.fintory.auth.dto.request.SignUpRequest;
+import com.fintory.auth.dto.request.*;
 import com.fintory.auth.service.AuthService;
+import com.fintory.auth.service.GoogleOauthService;
+import com.fintory.auth.service.KakaoOauthService;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
@@ -27,6 +27,8 @@ import java.util.Map;
 public class AuthControllerImpl implements AuthController{
 
     private final AuthService authService;
+    private final GoogleOauthService googleOauthService;
+    private final KakaoOauthService kakaoOauthService;
 
     @Override
     @PostMapping("/signup")
@@ -46,11 +48,25 @@ public class AuthControllerImpl implements AuthController{
     }
 
     @Override
+    @PostMapping("/social-login/google")
+    public ResponseEntity<ApiResponse<AuthToken>> googleLogin(@RequestBody GoogleLoginRequest request) {
+        AuthToken token = googleOauthService.handleGoogleLoginOrRegister(request.idToken());
+        return ResponseEntity.ok(ApiResponse.ok(token));
+    }
+
+    @Override
+    @PostMapping("/social-login/kakao")
+    public ResponseEntity<ApiResponse<AuthToken>> kakaoLogin(@RequestBody KakaoLoginRequest request) {
+        AuthToken token = kakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
+        return ResponseEntity.ok(ApiResponse.ok(token));
+    }
+
+    @Override
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<String>> logout(@AuthenticationPrincipal CustomUserDetails user) {
-        String email = user.getUsername(); // 로그인된 사용자의 이메일 반환
-        log.info("로그아웃할 계정(로그인 되어있는 계정): {}", email);
-        authService.logout(email);
+        String username = user.getUsername(); // 로그인된 사용자의 이메일 반환
+        log.info("로그아웃할 계정(로그인 되어있는 계정): {}", username);
+        authService.logout(username);
         return ResponseEntity.ok(ApiResponse.ok("로그아웃 성공"));
     }
 
@@ -89,9 +105,10 @@ public class AuthControllerImpl implements AuthController{
         if (user == null) {
             throw new DomainException(DomainErrorCode.LOGINED_USER_NOT_FOUND);
         }
-        log.info("user: {}", user.getUsername());
+        log.info("user: {}", user);
+        log.info("user.getUsername: {}", user.getUsername());
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
-                "email", user.getUsername(),
+                "username", user.getUsername(),
                 "nickname", user.getNickname(),
                 "role", user.getRole()
         )));

@@ -1,9 +1,7 @@
 package com.fintory.auth.controller;
 
 import com.fintory.auth.dto.AuthToken;
-import com.fintory.auth.dto.request.LoginRequest;
-import com.fintory.auth.dto.request.ReissueRequest;
-import com.fintory.auth.dto.request.SignUpRequest;
+import com.fintory.auth.dto.request.*;
 import com.fintory.auth.util.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -45,6 +43,18 @@ public interface AuthController{
             @RequestBody
             @Valid
             LoginRequest request
+    );
+
+    @Operation(summary = "구글 로그인")
+    @ApiResponse(responseCode = "200", description = "로그인 성공: Access와 Refresh token 반환")
+    ResponseEntity<com.fintory.common.api.ApiResponse<AuthToken>> googleLogin(
+            @RequestBody
+            GoogleLoginRequest request
+    );
+
+    ResponseEntity<com.fintory.common.api.ApiResponse<AuthToken>> kakaoLogin(
+            @RequestBody
+            KakaoLoginRequest request
     );
 
     @Operation(summary = "로그아웃", description = "at 토큰을 헤더에 포함해서 요청해야 함, axios.get(\"/api/user\", {\n" +

@@ -7,6 +7,7 @@ import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.Role;
 import com.fintory.infra.domain.child.repository.ChildRepository;
@@ -50,17 +51,18 @@ public class AuthService {
         // 이메일 중복 최종 검증: 이메일 중복 api를 통해 사용자는 이미 1차 검증을 하지만,
         // 회원가입 도중에 다른 사용자가 같은 이메일로 가입을 완료했다면 최종적으로 중복이 됨
         if (checkDuplicateEmail(request.email())) {
-            throw new DomainException(DomainErrorCode.DUPLICATE_EMAIL);
+            throw new DomainException(DomainErrorCode.ALREADY_REGISTERED_EMAIL);
         }
 
         String encodedPassword = passwordEncoder.encode(request.password());
 
-        Child child = Child.builder()
+        Child child = Child.idPwBuilder()
                 .email(request.email())
                 .password(encodedPassword)
                 .nickname(request.nickname())
                 .role(Role.CHILD)
                 .status(Status.ACTIVE)
+                .loginType(LoginType.EMAIL)
                 .build();
 
         childRepository.save(child);
@@ -175,15 +177,14 @@ public class AuthService {
 
     /**
      * 로그아웃 처리: Redis 에서 RefreshToken 삭제
-     * @param email 로그아웃할 사용자의 로그인 이메일
+     * @param username 로그아웃할 사용자의 로그인 이메일
      */
-    public void logout(String email) {
-        if (!redisTemplate.hasKey(email)) {
+    public void logout(String username) {
+        if (!redisTemplate.hasKey(username)) {
             throw new DomainException(DomainErrorCode.LOGINED_USER_NOT_FOUND);
         }
 
-        redisTemplate.delete(email);
-        log.info("refresh deleted: {}", email);
+        redisTemplate.delete(username);
+        log.info("refresh deleted: {}", username);
     }
-
 }

@@ -24,10 +24,10 @@ public class Child extends BaseEntity {
     @Column(length = 20)
     private String nickname;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column
     private String password;
 
     // 시큐리티에서 자격 검사할때 필요해서 추가(인증에는 필요없지만, 인가에 필요)
@@ -37,38 +37,34 @@ public class Child extends BaseEntity {
     private Role role;
 
     //social login column
-    @Column(name="social_id")
+    @Column(name="social_id", unique = true)
     private String socialId;
 
     @Column(name="social_type")
     @Enumerated(EnumType.STRING)
-    private SocialType socialType;
+    private LoginType loginType;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
     // id&pw 생성자
-    @Builder
-    public Child(String nickname, String email, String password, Role role, Status status) {
+    @Builder(builderMethodName = "idPwBuilder")
+    public Child(String nickname, String email, String password, Role role, LoginType loginType, Status status) {
         this.nickname = nickname;
         this.email = email;
         this.password = password;
         this.role = role;
+        this.loginType = loginType;
         this.status = status;
     }
-    // social 생성자
-    @Builder
-    public Child(String nickname, String email, String socialId, SocialType socialType, Status status) {
+    // social login 생성자
+    public Child(String nickname, String email, String socialId, LoginType loginType, Role role, Status status) {
         this.nickname = nickname;
         this.email = email;
         this.socialId = socialId;
-        this.socialType = socialType;
+        this.loginType = loginType;
+        this.role = role;
         this.status = status;
-    }
-    // id&pw 방식으로 계정 생성후 social 로그인 추가하는 setter method
-    public void updateSocialInfo (String socialId, SocialType socialType) {
-        this.socialId = socialId;
-        this.socialType = socialType;
     }
 
     public void updateStatus(Status status) {

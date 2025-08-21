@@ -1,6 +1,7 @@
 package com.fintory.auth.util;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fintory.domain.child.model.LoginType;
 import lombok.Getter;
 import org.springframework.security.core.CredentialsContainer;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,12 +19,14 @@ public class CustomUserDetails implements UserDetails, CredentialsContainer {
     private String password;
     private final String nickname;
     private final String role;
+    private final LoginType loginType;
 
-    public CustomUserDetails(String username, String password, String nickname, String role) {
+    public CustomUserDetails(String username, String password, String nickname, String role, LoginType loginType) {
         this.username = username;
         this.password = password;
         this.nickname = nickname;
         this.role = role;
+        this.loginType = loginType;
     }
 
     @Override
