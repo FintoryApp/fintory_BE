@@ -1,4 +1,4 @@
-package com.fintory.domain.stock.service;
+package com.fintory.domain.stock.service.common;
 
 
 import com.fintory.domain.stock.dto.korean.response.StockSearchResponse;
