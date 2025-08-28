@@ -52,11 +52,6 @@ spring:
     basename: messages
     encoding: UTF-8
 
-jwt:
-  secret: ${JWT_SECRET_KEY}
-  access-token-expiration-minutes: ${ACCESS_TOKEN_EXPIRATION_MINUTES}
-  refresh-token-expiration-days: ${REFRESH_TOKEN_EXPIRATION_DAYS}
-
 management:
   endpoints:
     web:
@@ -66,4 +61,15 @@ management:
   endpoint:
     health:
       show-details: always
+
+hantu-openapi:
+  appkey: ${HANTU_APPKEY}
+  appsecret: ${HANTU_APPSECRET}
+  base-url: https://openapi.koreainvestment.com:9443
+
+
+db-openapi:
+  db-appkey: ${DB_APPKEY}
+  db-appsecret: ${DB_APPSECRET}
+  base-url: https://openapi.dbsec.co.kr:8443
 

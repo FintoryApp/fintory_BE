@@ -1,5 +1,5 @@
 package com.fintory.domain.stock.model;
 
 public enum IntervalType {
-    daily, monthly, yearly
+    DAILY,WEEKLY,QUARTERLY, YEARLY, FIVE_YEARLY, TOTAL
 }
