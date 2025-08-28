@@ -10,25 +10,17 @@ import java.util.Optional;
 
 @Repository
 public interface StockRankRepository extends JpaRepository<StockRank, Long> {
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.code=:code")
     Optional<StockRank> findByStockCode(String code);
 
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName ORDER BY sr.marketCap DESC")
-    List<StockRank> findAllOrderByMarketCap(String currencyName);
+    @Query("SELECT sr, lsp FROM StockRank sr JOIN FETCH sr.stock s JOIN LiveStockPrice lsp ON lsp.stock =s WHERE  sr.stock.currencyName=:currencyName ORDER BY sr.marketCapRank ASC")
+    List<Object[]> findMarketCapTop20(String currencyName);
 
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName ORDER BY sr.rocRate DESC")
-    List<StockRank> findAllOrderByRocRate(String currencyName);
+    @Query("SELECT sr, lsp FROM StockRank sr JOIN FETCH sr.stock s JOIN LiveStockPrice lsp ON lsp.stock = s WHERE sr.stock.currencyName=:currencyName ORDER BY sr.rocRank ASC")
+    List<Object[]> findROCTop20(String currencyName);
 
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName ORDER BY ABS(sr.tradingVolume) DESC")
-    List<StockRank> findAllOrderByTradingVolume(String currencyName);
+    @Query("SELECT sr, lsp FROM StockRank sr JOIN FETCH sr.stock s JOIN LiveStockPrice lsp ON lsp.stock = s WHERE sr.stock.currencyName=:currencyName ORDER BY sr.tradingVolumeRank ASC")
+    List<Object[]> findTradingVolumeTop20(String currencyName);
 
-    @Query("SELECT sr FROM StockRank sr WHERE  sr.stock.currencyName=:currencyName ORDER BY sr.marketCapRank ASC")
-    List<StockRank> findMarketCapTop20(String currencyName);
-
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName ORDER BY sr.rocRank ASC")
-    List<StockRank> findROCTop20(String currencyName);
-
-    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName ORDER BY sr.tradingVolumeRank ASC")
-    List<StockRank> findTradingVolumeTop20(String currencyName);
-
+    @Query("SELECT sr FROM StockRank sr WHERE sr.stock.currencyName=:currencyName")
+    List<StockRank> findByCurrencyName(String currencyName);
 }
