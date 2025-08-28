@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -27,9 +28,11 @@ public class StockPriceHistory extends BaseEntity {
     @Column(name="low_price")
     private BigDecimal lowPrice;
 
-
     @Enumerated(EnumType.STRING)
     private IntervalType intervalType;
+
+    @Column(name = "date")
+    private LocalDate date;
 
     @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name="stock_id")

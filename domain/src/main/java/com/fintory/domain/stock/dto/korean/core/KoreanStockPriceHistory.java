@@ -1,12 +1,12 @@
 package com.fintory.domain.stock.dto.korean.core;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import lombok.Builder;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 import java.math.BigDecimal;
 
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public record KoreanStockPriceHistory (
 
     @JsonAlias("stck_oprc")
