@@ -11,7 +11,7 @@ public interface DBTokenIssueService {
      * DB API로부터 접근 토큰을 발급하는 메서드
      * @return String 접근 토큰, 만료까지 남은 시간
      */
-     Mono<DBTokenResponse> getNewDBToken();
+     DBTokenResponse getNewDBToken();
 
 
 }
