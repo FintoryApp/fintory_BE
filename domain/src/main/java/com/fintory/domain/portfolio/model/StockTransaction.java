@@ -22,13 +22,14 @@ public class StockTransaction extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int amount;
+    private BigDecimal amount; //NOTE quantity * price가 맞나?
 
     @Column(name = "price_per_share", precision = 15, scale = 2)
     private BigDecimal pricePerShare;
 
     private int quantity;
 
+    //REVIEW 즉시 체결이므로 requestDate는 없어도 되지 않을까
     @Column(name = "request_date")
     private LocalDateTime requestDate;
 
@@ -36,12 +37,13 @@ public class StockTransaction extends BaseEntity {
     private LocalDateTime executedAt;
 
     @Column(name = "exchange_rate", precision = 10, scale = 4)
-    private BigDecimal exchangeRate;
+    private BigDecimal exchangeRate; //NOTE 평가 금액 업데이트 시 현재 환율을 다시 적용해야함. 여긴 매수시 환율
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type")
     private TransactionType transactionType;
 
+    //REVIEW 즉시 체결이므로 status는 없어도 되지 않을까
     @Enumerated(EnumType.STRING)
     private Status status;
 
