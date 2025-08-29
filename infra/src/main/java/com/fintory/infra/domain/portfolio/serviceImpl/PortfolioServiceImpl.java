@@ -88,7 +88,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
             return new PortfolioSummary(
                     totalPurchasePrice,
-                    BigDecimal.valueOf(account.getTotalAssets()));
+                    account.getTotalAssets());
 
         }catch (Exception e){
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
@@ -126,7 +126,6 @@ public class PortfolioServiceImpl implements PortfolioService {
         BigDecimal avgPurchasePrice = totalQuantity.compareTo(BigDecimal.ZERO) > 0
                 ? totalInvestment.divide(totalQuantity,0, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO;
-
 
         return new StockMetricsResult(
                 avgPurchasePrice,

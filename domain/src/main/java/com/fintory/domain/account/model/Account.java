@@ -73,6 +73,12 @@ public class Account extends BaseEntity {
         updateTotalAssets();
     }
 
+    //NOTE DB에는 현재 부정확한 평가금액이 저장됨. (현재가를 실시간으로 받아오지만 평가금액을 update하는 로직이 없음)
+    // 그러나 포트폴리오를 조회할 땐 평가금액 대신 계산에 필요한 정확한 데이터(quantity, avgPurchasePrice, totalInvestment 등)를 제공하기 때문에 현재 valuationAmount, returnRate 등은 거래 시점에서의 기록용으로만 사용하고 있음
+    // => 이는 프론트에서 값을 계산해서 보여주고 있기 때문
+
+    // REVIEW DB에는 거래 기록과 보유 수량만 저장하고 현재 평가금액은 조회 시점에서 계산하는 현재 방식이 -> DB를 계속 업데이트(실시간)하는 것보다 효율적이라고 생각함.
+    // 단 필드명을 바꾸는 것 정도는 고려해볼만 함
     public void updateTotalValuation(){
         BigDecimal totalValuation = BigDecimal.ZERO;
         for(OwnedStock ownedStock : ownedStocks){
