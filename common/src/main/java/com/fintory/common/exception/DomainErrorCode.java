@@ -36,8 +36,11 @@ public enum DomainErrorCode {
 
     //ownedStock
     OWNED_STOCK_LIST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OWNED_STOCK_LIST_ERROR", "보유 종목 리스트 조회 중 오류 발생"),
-    PORTFOLIO_CALCULATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"PORTFOLIO_CALCULATION_ERROR","포트폴리오 계산 중 오류 발생");
+    PORTFOLIO_CALCULATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"PORTFOLIO_CALCULATION_ERROR","포트폴리오 계산 중 오류 발생"),
 
+    //Exchange Rate
+    PARSING_ERROR(HttpStatus.UNPROCESSABLE_ENTITY,"PARSING_ERROR","환율 정보 파싱 중 에러 발생"),
+    EXCHANGE_RATE_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"EXCHANGE_RATE_ERROR","환율 정보를 가져올 수 없습니다.");
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
