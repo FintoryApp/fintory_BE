@@ -31,11 +31,17 @@ public enum DomainErrorCode {
 
     //financial word
     WORD_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR, "WORD_NOT_FOUND", "경제 용어 불러오기 실패"),
+
     //account
     ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"ACCOUNT_NOT_FOUND","계좌 불러오기 실패"),
+    INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST,"INSUFFICIENT_BALANCE","계좌 내 금액이 부족합니다"),
+
+    //stock
+    STOCK_NOT_FOUND(HttpStatus.NOT_FOUND,"STOCK_NOT_FOUND","주식을 찾을 수 없습니다."),
 
     //ownedStock
     OWNED_STOCK_LIST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OWNED_STOCK_LIST_ERROR", "보유 종목 리스트 조회 중 오류 발생"),
+    OWNED_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "OWNED_STOCK_NOT_FOUND", "보유하지 않은 종목입니다."),
     PORTFOLIO_CALCULATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"PORTFOLIO_CALCULATION_ERROR","포트폴리오 계산 중 오류 발생"),
 
     //Exchange Rate
