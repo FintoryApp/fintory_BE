@@ -77,28 +77,25 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+            export RDS_URL=${{ secrets.RDS_URL }}
+            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            export ACCESS_TOKEN_EXPIRATION_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRATION_MINUTES }}
+            export REFRESH_TOKEN_EXPIRATION_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRATION_DAYS }}
+            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            export KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }}
+            export KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+            export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
+            
             aws ecr get-login-password --region ap-northeast-2 | \
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
 
-            docker stop app-child || true
-            docker rm app-child || true
             docker pull ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
 
-            docker run -d \
-              --name app-child \
-              -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=deploy \
-              -e DB_URL=${{ secrets.RDS_URL }} \
-              -e DB_USERNAME=${{ secrets.RDS_USERNAME }} \
-              -e DB_PASSWORD=${{ secrets.RDS_PASSWORD }} \
-              -e JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
-              -e ACCESS_TOKEN_EXPIRATION_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRATION_MINUTES }} \
-              -e REFRESH_TOKEN_EXPIRATION_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRATION_DAYS }} \
-              -e GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
-              -e KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }} \
-              -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
-              -e REDIS_HOST=${{ secrets.AWS_REDIS_HOST }} \
-              ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
+            docker-compose down
+            docker-compose up -d
 
             docker image prune -f
-
+            
