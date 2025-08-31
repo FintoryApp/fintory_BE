@@ -67,8 +67,8 @@ jobs:
         run: |
           ./gradlew :app-child:clean :app-child:build
           docker build -t app-child:latest ./app-child
-          docker tag app-child:latest ${{ steps.login-ecr.outputs.registry }}/app-child:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/app-child:latest
+          docker tag app-child:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -82,7 +82,7 @@ jobs:
 
             docker stop app-child || true
             docker rm app-child || true
-            docker pull ${{ steps.login-ecr.outputs.registry }}/app-child:latest
+            docker pull ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
 
             docker run -d \
               --name app-child \
@@ -98,7 +98,7 @@ jobs:
               -e KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }} \
               -e KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }} \
               -e REDIS_HOST=${{ secrets.AWS_REDIS_HOST }} \
-              ${{ steps.login-ecr.outputs.registry }}/app-child:latest
+              ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
 
             docker image prune -f
 
