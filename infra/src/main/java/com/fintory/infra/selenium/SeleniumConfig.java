@@ -16,7 +16,7 @@ public class SeleniumConfig {
     public WebDriver chromeDriver() {
 
         //ec2 내 크롬드라이버 위치 명시적으로 지정
-        System.setProperty("webdriver.chrome.driver", "/snap/chromium/3235/usr/lib/chromium-browser/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
 
         ChromeOptions options = new ChromeOptions();
         // 헤드리스 모드: GUI 없이 백그라운드에서 브라우저 실행
