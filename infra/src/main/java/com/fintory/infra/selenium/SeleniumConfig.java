@@ -15,21 +15,18 @@ import java.time.Duration;
 public class SeleniumConfig {
 
     @Bean
-    public WebDriver chromeDriver() {
+    public WebDriver chromeDriver() throws MalformedURLException {
         ChromeOptions options = new ChromeOptions();
-        options.setCapability("browserName", "chrome");
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
 
-        RemoteWebDriver driver = null;
-        try {
-            driver = new RemoteWebDriver(
-                    new URL("http://selenium:4444/wd/hub"),
-                    options
-            );
-        } catch (MalformedURLException e) {
-            throw new RuntimeException("Invalid Selenium URL", e);
-        }
-
-        return driver;
+        // RemoteWebDriver 연결 (selenium 서비스와 연결)
+        return new RemoteWebDriver(
+                new URL("http://selenium:4444/wd/hub"),  // 도커 네트워크 내 서비스 이름 사용
+                options
+        );
     }
 
     @Bean
