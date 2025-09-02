@@ -74,7 +74,9 @@ public class SecurityConfig {
         // 허용할 프론트 도메인 설정
         configuration.setAllowedOriginPatterns(List.of(
                 "http://localhost:8081",
-                "https://localhost:8081"
+                "https://localhost:8081",
+                "http://fintory.xyz",
+                "https://fintory.xyz"
         ));
         // 허용할 HTTP 메서드
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
