@@ -1,5 +1,6 @@
 package com.fintory.infra.selenium;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -14,9 +15,10 @@ public class SeleniumConfig {
 
     @Bean
     public WebDriver chromeDriver() {
-
-        //ec2 내 크롬드라이버 위치 명시적으로 지정
-        System.setProperty("webdriver.chrome.driver", "/usr/local/bin/chromedriver");
+        // WebDriverManager를 사용하여 ChromeDriver 자동 설정
+        // 이 한 줄로 드라이버 다운로드 및 PATH 설정이 자동으로 처리됩니다.
+        WebDriverManager.chromedriver().setup();
+        System.setProperty("webdriver.chrome.driver", WebDriverManager.chromedriver().getDownloadedDriverPath());
 
         ChromeOptions options = new ChromeOptions();
         // 헤드리스 모드: GUI 없이 백그라운드에서 브라우저 실행

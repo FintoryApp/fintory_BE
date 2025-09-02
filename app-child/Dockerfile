@@ -1,4 +1,16 @@
 FROM eclipse-temurin:17-jdk-alpine
+
+RUN apk update && apk add --no-cache \
+    bash \
+    udev \
+    ttf-freefont \
+    chromium \
+    chromium-chromedriver \
+    && rm -rf /var/cache/apk/*
+
+ENV CHROME_BIN=/usr/lib/chromium/chrome
+ENV PATH="$PATH:/usr/lib/chromium/"
+
 WORKDIR /app
 
 COPY build/libs/*.jar app.jar
