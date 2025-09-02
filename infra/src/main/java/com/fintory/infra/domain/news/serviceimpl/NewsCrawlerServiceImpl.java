@@ -37,7 +37,7 @@ public class NewsCrawlerServiceImpl implements NewsCrawlerService {
     public void crawlAndSaveLatestNews() {
 
         log.info("[Crawler] 자정 뉴스 크롤링 및 저장 시작...");
-        String mainPageUrl = "https://www.chosun.com/kid/kid_economy/kid_honeybee/";
+        String mainPageUrl = "https://www.chosun.com/kid/kid_literacy/";
 
         // 최신 뉴스 3개 링크 추출
         List<String> latestNewsLinks = getLatestNewsLinks(mainPageUrl);
