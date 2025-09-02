@@ -22,7 +22,7 @@ public class SeleniumConfig {
         ChromeOptions options = new ChromeOptions();
         // 헤드리스 모드: GUI 없이 백그라운드에서 브라우저 실행
         // 실제 서버 환경에서는 필수적으로 사용하는 옵션입니다.
-        options.addArguments("--headless");
+        options.addArguments("--headless=new");
         // 샌드박스 비활성화: 일부 환경에서 필요한 옵션
         options.addArguments("--no-sandbox");
         // 공유 메모리 사용 비활성화: Docker 환경 등에서 발생할 수 있는 문제 해결

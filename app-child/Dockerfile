@@ -2,6 +2,11 @@ FROM eclipse-temurin:17-jdk
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libgtk-3-0 \
     gnupg \
     unzip \
     chromium \
