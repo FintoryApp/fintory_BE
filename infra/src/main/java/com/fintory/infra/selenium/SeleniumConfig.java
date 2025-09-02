@@ -31,7 +31,17 @@ public class SeleniumConfig {
         // GPU 사용 비활성화: 성능 향상 및 안정성 확보 (특히 서버 환경)
         options.addArguments("--disable-gpu");
 
-        options.addArguments("--user-data-dir=/tmp/chrome-user-data-" + UUID.randomUUID());
+        options.addArguments("--disable-software-rasterizer"); // 그래픽 처리 오류 방지
+        options.addArguments("--remote-allow-origins=*");
+
+        String userDataDir = "/tmp/chrome-user-data-" + UUID.randomUUID();
+        options.addArguments("--user-data-dir=" + userDataDir);
+
+        // 최초 실행 팝업 방지
+        options.addArguments("--no-first-run");
+        options.addArguments("--disable-extensions");
+
+        System.out.println("[ChromeDriver] user-data-dir: " + userDataDir);
 
         return new ChromeDriver(options);
     }
