@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.UUID;
 
 @Configuration
 public class SeleniumConfig {
@@ -34,14 +33,9 @@ public class SeleniumConfig {
         options.addArguments("--disable-software-rasterizer"); // 그래픽 처리 오류 방지
         options.addArguments("--remote-allow-origins=*");
 
-        String userDataDir = "/tmp/chrome-user-data-" + UUID.randomUUID();
-        options.addArguments("--user-data-dir=" + userDataDir);
-
         // 최초 실행 팝업 방지
         options.addArguments("--no-first-run");
         options.addArguments("--disable-extensions");
-
-        System.out.println("[ChromeDriver] user-data-dir: " + userDataDir);
 
         return new ChromeDriver(options);
     }
