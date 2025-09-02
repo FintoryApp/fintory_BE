@@ -18,7 +18,6 @@ public class SeleniumConfig {
         // WebDriverManager를 사용하여 ChromeDriver 자동 설정
         // 이 한 줄로 드라이버 다운로드 및 PATH 설정이 자동으로 처리됩니다.
         WebDriverManager.chromedriver().setup();
-        System.setProperty("webdriver.chrome.driver", WebDriverManager.chromedriver().getDownloadedDriverPath());
 
         ChromeOptions options = new ChromeOptions();
         // 헤드리스 모드: GUI 없이 백그라운드에서 브라우저 실행
