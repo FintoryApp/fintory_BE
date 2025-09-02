@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
+import java.util.UUID;
 
 @Configuration
 public class SeleniumConfig {
@@ -29,9 +30,8 @@ public class SeleniumConfig {
         options.addArguments("--disable-dev-shm-usage");
         // GPU 사용 비활성화: 성능 향상 및 안정성 확보 (특히 서버 환경)
         options.addArguments("--disable-gpu");
-        // 웹 페이지 렌더링 시 이미지 로딩 비활성화 (선택 사항): 크롤링 속도 향상에 도움이 될 수 있으나,
-        // 이미지가 중요한 크롤링이라면 제외해야 합니다.
-        // options.addArguments("--blink-settings=imagesEnabled=false");
+
+        options.addArguments("--user-data-dir=/tmp/chrome-user-data-" + UUID.randomUUID());
 
         return new ChromeDriver(options);
     }
