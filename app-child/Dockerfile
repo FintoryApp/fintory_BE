@@ -1,11 +1,15 @@
 FROM eclipse-temurin:17-jdk
-RUN apk update && apk add --no-cache \
-    bash \
-    udev \
-    ttf-freefont \
+RUN apt-get update && apt-get install -y \
+    wget \
+    curl \
+    gnupg \
+    unzip \
     chromium \
-    chromium-chromedriver \
-    && rm -rf /var/cache/apk/*
+    chromium-driver \
+    fonts-freefont-ttf \
+    --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV CHROME_BIN=/usr/lib/chromium/chrome
 ENV PATH="$PATH:/usr/lib/chromium/"
