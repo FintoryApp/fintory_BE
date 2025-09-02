@@ -1,5 +1,4 @@
-FROM eclipse-temurin:17-jdk-alpine
-
+FROM eclipse-temurin:17-jdk
 RUN apk update && apk add --no-cache \
     bash \
     udev \
