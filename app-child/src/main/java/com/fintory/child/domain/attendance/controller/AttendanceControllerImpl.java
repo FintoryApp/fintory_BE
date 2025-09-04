@@ -33,8 +33,10 @@ public class AttendanceControllerImpl implements AttendanceController{
     }
 
     @Override
-    @GetMapping("/attendance-log")
+    @GetMapping("/attendance-logs")
     public ResponseEntity<ApiResponse<List<AttendanceLogResponse>>> getAttendanceList(@AuthenticationPrincipal CustomUserDetails user) {
-        return null;
+        Child child = childService.getChild(user.getUsername());
+        List<AttendanceLogResponse> logs = attendanceService.getAttendanceLogs(child);
+        return ResponseEntity.ok(ApiResponse.ok(logs));
     }
 }
