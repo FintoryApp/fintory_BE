@@ -13,11 +13,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URL;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,8 +32,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class NewsCrawlerServiceImpl implements NewsCrawlerService {
 
-    private final WebDriver webDriver;
-    private final WebDriverWait webDriverWait;
     private final NewsRepository newsRepository;
 
     @Override
@@ -37,26 +39,47 @@ public class NewsCrawlerServiceImpl implements NewsCrawlerService {
     public void crawlAndSaveLatestNews() {
 
         log.info("[Crawler] 자정 뉴스 크롤링 및 저장 시작...");
-        String mainPageUrl = "https://www.chosun.com/kid/kid_economy/kid_honeybee/";
+        String mainPageUrl = "https://www.chosun.com/kid/kid_literacy/";
 
-        // 최신 뉴스 3개 링크 추출
-        List<String> latestNewsLinks = getLatestNewsLinks(mainPageUrl);
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--disable-gpu");
 
-        // 최신 뉴스 3개 크롤링
-        List<News> crawledArticles = latestNewsLinks.stream()
-                .map(link -> Optional.ofNullable(crawlArticleDetail(link))
-                        .orElseThrow(() -> new DomainException(DomainErrorCode.NEWS_CRAWLING_FAILED)))
-                .collect(Collectors.toList());
+        WebDriver driver = null;
 
-        newsRepository.deleteAllNewsArticles(); // 기존 뉴스 모두 삭제
-        newsRepository.saveAll(crawledArticles); // 크롤링된 모든 기사 저장 -> 항상 최신 3개 기사 덮어쓰기로 저장
+        try{
+            driver = new RemoteWebDriver(new URL("http://selenium:4444/wd/hub"), options);
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+            List<String> latestNewsLinks = getLatestNewsLinks(driver, wait, mainPageUrl);
+
+            List<News> crawledArticles = new ArrayList<>();
+            for (String link : latestNewsLinks) {
+                News article = Optional.ofNullable(crawlArticleDetail(driver, wait, link))
+                        .orElseThrow(() -> new DomainException(DomainErrorCode.NEWS_CRAWLING_FAILED));
+                crawledArticles.add(article);
+            }
+
+            newsRepository.deleteAllNewsArticles(); // 기존 뉴스 모두 삭제
+            newsRepository.saveAll(crawledArticles); // 크롤링된 모든 기사 저장 -> 항상 최신 3개 기사 덮어쓰기로 저장
+
+        } catch (Exception e) {
+            throw new DomainException(DomainErrorCode.NEWS_CRAWLING_FAILED);
+        } finally {
+            if (driver != null) {
+                driver.quit();
+                log.info("[Crawler] 뉴스 크롤링 후 세션 종료");
+            }
+        }
     }
 
     // 최신 3개 기사 url 반환
-    private List<String> getLatestNewsLinks(String url) {
-        webDriver.get(url);
-        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.story-feed")));
-        Document doc = Jsoup.parse(webDriver.getPageSource());
+    private List<String> getLatestNewsLinks(WebDriver driver, WebDriverWait wait, String url) {
+        driver.get(url);
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.story-feed")));
+        Document doc = Jsoup.parse(driver.getPageSource());
         Elements articleElements = doc.select("a.story-card__headline[href]\n");
         if (articleElements.isEmpty()) { throw new DomainException(DomainErrorCode.NEWS_LINK_GET_FAILED); }
 
@@ -70,11 +93,10 @@ public class NewsCrawlerServiceImpl implements NewsCrawlerService {
                 .collect(Collectors.toList());
     }
 
-    private News crawlArticleDetail(String articleUrl) {
-
-        webDriver.get(articleUrl);
-        webDriverWait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.layout-main")));
-        Document doc = Jsoup.parse(webDriver.getPageSource());
+    private News crawlArticleDetail(WebDriver driver, WebDriverWait wait, String articleUrl) {
+        driver.get(articleUrl);
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("div.layout-main")));
+        Document doc = Jsoup.parse(driver.getPageSource());
 
         String title = "";
         String publisher = "";

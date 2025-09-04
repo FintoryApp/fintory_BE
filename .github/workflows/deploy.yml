@@ -88,6 +88,7 @@ jobs:
             export KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }}
             export KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
             export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
+            export ECOS_API_KEY=${{ secrets.ECOS_API_KEY}}
             
             aws ecr get-login-password --region ap-northeast-2 | \
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
