@@ -2,7 +2,7 @@ package com.fintory.domain.child.model;
 
 import com.fintory.domain.account.model.Account;
 import com.fintory.domain.alarm.model.Alarm;
-import com.fintory.domain.attendence.model.VisitLog;
+import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
@@ -97,6 +97,6 @@ public class Child extends BaseEntity {
     private List<Alarm> alarms;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<VisitLog> visitLogs;
+    private List<AttendanceLog> visitLogs;
 
 }
