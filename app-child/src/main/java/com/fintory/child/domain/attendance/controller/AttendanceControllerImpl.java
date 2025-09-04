@@ -34,7 +34,7 @@ public class AttendanceControllerImpl implements AttendanceController{
 
     @Override
     @GetMapping("/attendance-log")
-    public ResponseEntity<ApiResponse<List<AttendanceLogResponse>>> getAttendanceList() {
+    public ResponseEntity<ApiResponse<List<AttendanceLogResponse>>> getAttendanceList(@AuthenticationPrincipal CustomUserDetails user) {
         return null;
     }
 }
