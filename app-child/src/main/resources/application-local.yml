@@ -67,3 +67,6 @@ management:
     health:
       show-details: always
 
+eos:
+  api-key: ${ECOS_API_KEY}
+

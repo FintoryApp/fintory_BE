@@ -12,7 +12,6 @@ import com.fintory.domain.portfolio.model.Status;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
 import com.fintory.domain.portfolio.service.PortfolioService;
-import com.fintory.domain.stock.model.Stock;
 import com.fintory.infra.domain.account.repository.AccountRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.portfolio.repository.StockTransactionRepository;
@@ -88,7 +87,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
             return new PortfolioSummary(
                     totalPurchasePrice,
-                    BigDecimal.valueOf(account.getTotalAssets()));
+                    account.getTotalAssets());
 
         }catch (Exception e){
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
