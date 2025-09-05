@@ -89,6 +89,10 @@ jobs:
             export KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }}
             export KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
             export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
+            export HANTU_APPKEY=${{ secrets.HANTU_APPKEY}}
+            export HANTU_APPSECRET=${{ secrets.HANTU_APPSECRET}}
+            export DB_APPKEY=${{ secrets.DB_APPKEY}}
+            export DB_APPSECRET=${{ secrets.DB_APPSECRET}}
             export ECOS_API_KEY=${{ secrets.ECOS_API_KEY}}
             
             aws ecr get-login-password --region ap-northeast-2 | \
