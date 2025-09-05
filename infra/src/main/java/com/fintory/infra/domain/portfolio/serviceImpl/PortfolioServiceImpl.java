@@ -41,7 +41,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             List<OwnedStock> ownedStocks = ownedStockRepository.findByAccount(account); //로그인 기능 이후 리팩토링 예정
             return ownedStocks.stream().map(ownedStock->{
                 //사용자의 거래 내역 db로부터 조회
-                List<StockTransaction> transactionList = stockTransactionRepository.findByStockAndStatusOrderByExecutedAt(ownedStock.getStock(), Status.COMPLETED);
+                List<StockTransaction> transactionList = stockTransactionRepository.findByStockOrderByExecutedAt(ownedStock.getStock());
 
                 // 필요한 필드로만 구성해서 dto 생성
                 List<StockTransactionInfo> stockTransactionInfos = transactionList.stream().map(transaction->
@@ -81,7 +81,7 @@ public class PortfolioServiceImpl implements PortfolioService {
             // 총 매수 금액
             BigDecimal totalPurchasePrice = ownedStocks.stream()
                     .map(ownedStock->{
-                        List<StockTransaction> transactionList = stockTransactionRepository.findByStockAndStatusOrderByExecutedAt(ownedStock.getStock(), Status.COMPLETED);
+                        List<StockTransaction> transactionList = stockTransactionRepository.findByStockOrderByExecutedAt(ownedStock.getStock());
                         return calculateCurrentMetrics(transactionList).totalInvestment();
                     }).reduce(BigDecimal.ZERO,BigDecimal::add);
 
