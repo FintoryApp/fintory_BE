@@ -75,6 +75,7 @@ jobs:
         with:
           host: ${{ secrets.FINTORY_CHILD_HOST }}
           username: ubuntu
+          timeout: 60s
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}

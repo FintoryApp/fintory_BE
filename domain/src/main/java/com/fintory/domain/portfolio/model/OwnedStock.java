@@ -4,21 +4,21 @@ import com.fintory.domain.account.model.Account;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.stock.model.Stock;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @Table(name="owned_stock")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OwnedStock extends BaseEntity {
 
-    @Column(precision=15, scale=3)
-    private BigDecimal quantity;
+    private Integer quantity;
 
     @Column(name="average_purchase_price")
     private BigDecimal averagePurchasePrice; // 한 주당 평균 매입 가격
@@ -45,4 +45,49 @@ public class OwnedStock extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
     private Account account;
+
+    public void updateOwnedStockPurchase(Integer quantity, BigDecimal purchaseAmount, BigDecimal livePrice){
+        this.quantity = this.quantity + quantity;
+        this.purchaseAmount = this.purchaseAmount.add(purchaseAmount);
+        this.valuationAmount = livePrice.multiply(BigDecimal.valueOf(this.quantity));
+        this.averagePurchasePrice = this.purchaseAmount
+                .divide(BigDecimal.valueOf(this.quantity), 4, RoundingMode.HALF_UP);
+        this.valuationProfitAndLoss = this.valuationAmount.subtract(this.purchaseAmount); // 평가손익 = 평가금액 - 매수금액
+
+        //0으로 나누기 방지
+        if (this.purchaseAmount.compareTo(BigDecimal.ZERO) > 0) {
+            this.returnRate = this.valuationProfitAndLoss
+                    .divide(this.purchaseAmount, 4, RoundingMode.HALF_UP)
+                    .multiply(new BigDecimal("100"));
+        } else {
+            this.returnRate = BigDecimal.ZERO;
+        }
+    }
+
+    public void updateOwnedStockSell(Integer quantity, BigDecimal livePrice,BigDecimal soldPurchaseAmount){
+        this.quantity = this.quantity - quantity;
+        this.purchaseAmount = this.purchaseAmount.subtract(soldPurchaseAmount);
+
+        if (this.quantity > 0) {
+            this.valuationAmount = livePrice.multiply(BigDecimal.valueOf(this.quantity));
+            this.averagePurchasePrice = this.purchaseAmount
+                    .divide(BigDecimal.valueOf(this.quantity), 4, RoundingMode.HALF_UP);
+            this.valuationProfitAndLoss = this.valuationAmount.subtract(this.purchaseAmount);
+
+            //0으로 나누기 방지
+            if (this.purchaseAmount.compareTo(BigDecimal.ZERO) > 0) {
+                this.returnRate = this.valuationProfitAndLoss
+                        .divide(this.purchaseAmount, 4, RoundingMode.HALF_UP)
+                        .multiply(new BigDecimal("100")); //수익률 = (평가손익 / 매입원가) × 100
+            } else {
+                this.returnRate = BigDecimal.ZERO;
+            }
+        } else {
+            // 모든 주식을 판매한 경우
+            this.valuationAmount = BigDecimal.ZERO;
+            this.averagePurchasePrice = BigDecimal.ZERO;
+            this.valuationProfitAndLoss = BigDecimal.ZERO;
+            this.returnRate = BigDecimal.ZERO;
+        }
+    }
 }

@@ -68,6 +68,8 @@ management:
     health:
       show-details: always
 
+eos:
+  api-key: ${ECOS_API_KEY}
 hantu-openapi:
   appkey: ${HANTU_APPKEY}
   appsecret: ${HANTU_APPSECRET}
@@ -78,4 +80,5 @@ db-openapi:
   db-appkey: ${DB_APPKEY}
   db-appsecret: ${DB_APPSECRET}
   base-url: https://openapi.dbsec.co.kr:8443
+
 
