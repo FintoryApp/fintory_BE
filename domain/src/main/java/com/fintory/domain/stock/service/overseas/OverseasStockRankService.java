@@ -18,5 +18,5 @@ public interface OverseasStockRankService {
      * </ul>
      *
      */
-    public void saveOverseasStockRank();
+    public void initiateOverseasStockRank();
 }
