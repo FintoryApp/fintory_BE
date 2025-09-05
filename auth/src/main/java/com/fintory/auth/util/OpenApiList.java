@@ -30,7 +30,9 @@ public class OpenApiList {
             "/v3/api-docs/**",
 
             // news
-            "/api/news/crawl-test"
+            "/api/news/crawl-test",
+
+            "/ws/**"
 
     };
 }

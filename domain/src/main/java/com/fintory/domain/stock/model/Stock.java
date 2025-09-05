@@ -16,8 +16,6 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Stock extends BaseEntity {
 
-    private String ticker;
-
     private String code;
 
     @Column(name="market_name")
@@ -44,7 +42,4 @@ public class Stock extends BaseEntity {
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="stock")
     private List<OwnedStock> ownedStocks;
-
-    @OneToOne(cascade=CascadeType.ALL, mappedBy="stock")
-    private OrderBook orderBook;
 }

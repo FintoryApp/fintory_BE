@@ -37,6 +37,12 @@ dependencies {
 
     /* Actuator */
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    /* Jackson */
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
+
+    /* webFlux */
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 }
 
 test {
