@@ -22,28 +22,22 @@ public class StockTransaction extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private int amount;
+    private BigDecimal amount;
 
     @Column(name = "price_per_share", precision = 15, scale = 2)
     private BigDecimal pricePerShare;
 
     private int quantity;
 
-    @Column(name = "request_date")
-    private LocalDateTime requestDate;
-
     @Column(name = "executed_at")
     private LocalDateTime executedAt;
 
     @Column(name = "exchange_rate", precision = 10, scale = 4)
-    private BigDecimal exchangeRate;
+    private BigDecimal exchangeRate; //NOTE 평가 금액 업데이트 시 현재 환율을 다시 적용해야함. 여긴 매수시 환율
 
     @Enumerated(EnumType.STRING)
     @Column(name = "transaction_type")
     private TransactionType transactionType;
-
-    @Enumerated(EnumType.STRING)
-    private Status status;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "market_type")

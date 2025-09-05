@@ -57,3 +57,6 @@ management:
   endpoint:
     health:
       show-details: always
+
+eos:
+  api-key: ${EOS_API_KEY}
