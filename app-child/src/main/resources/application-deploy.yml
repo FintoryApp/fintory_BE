@@ -58,5 +58,15 @@ management:
     health:
       show-details: always
 
+hantu-openapi:
+  appkey: ${HANTU_APPKEY}
+  appsecret: ${HANTU_APPSECRET}
+  base-url: https://openapi.koreainvestment.com:9443
+
+db-openapi:
+  db-appkey: ${DB_APPKEY}
+  db-appsecret: ${DB_APPSECRET}
+  base-url: https://openapi.dbsec.co.kr:8443
+
 eos:
   api-key: ${EOS_API_KEY}
