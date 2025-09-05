@@ -1,0 +1,156 @@
+package com.fintory.infra.domain.stock.service.overseas;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fintory.common.exception.DomainErrorCode;
+import com.fintory.common.exception.DomainException;
+import com.fintory.domain.stock.dto.overseas.core.OverseasLiveStockPrice;
+import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
+import com.fintory.domain.stock.dto.overseas.wrapper.OverseasLiveStockPriceWrapper;
+import com.fintory.domain.stock.model.LiveStockPrice;
+import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.service.overseas.OverseasLiveStockPriceService;
+import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.*;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.List;
+
+import static com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse.convertFromLiveStockPrice;
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPriceService {
+
+    @Value("${hantu-openapi.appkey}")
+    private String appkey;
+
+    @Value("${hantu-openapi.appsecret}")
+    private String appsecret;
+
+    @Value("${hantu-openapi.base-url}")
+    private String baseUrl;
+
+    private final RedisTemplate<Object, Object> redisTemplate;
+    private final StockRepository stockRepository;
+    private final LiveStockPriceRepository liveStockPriceRepository;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
+
+
+    @Override
+    @Transactional
+    public void initLiveStockPrice(){
+        List<Stock> stockList = stockRepository.findByCurrencyName("USD");
+        String token = (String) redisTemplate.opsForValue().get("kis-access-token");
+        int successCount = 0;
+
+        if (token == null || token.trim().isEmpty()) {
+            log.error("KIS 액세스 토큰을 찾을 수 없습니다.");
+            throw new DomainException(DomainErrorCode.TOKEN_EMPTY);
+        }
+
+        for(Stock stock : stockList) {
+            try {
+                getLiveStockPriceViaRestAPI(stock.getCode(), token);
+                successCount++;
+            } catch (Exception e) {
+                log.warn("주식 {} 처리 실패: {}", stock.getCode(), e.getMessage());
+            }
+        }
+
+        //단 하나도 성공하지 못할 경우 -> 시스템적인 에러이므로 재시작 필요
+        if(successCount==0){
+            log.error("현재가 데이터 초기화 작업 중 종목 처리 실패");
+            throw new DomainException(DomainErrorCode.COMPLETE_INITIALIZATION_FAILURE);
+
+        }
+    }
+
+    //REST API로 현재가 데이터 조회
+    @Override
+    @Transactional
+    public void getLiveStockPriceViaRestAPI(String code, String token){
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
+                    .path("/uapi/overseas-price/v1/quotations/price-detail")
+                    .queryParam("AUTH", "")
+                    .queryParam("EXCD", "NAS")
+                    .queryParam("SYMB", code)
+                    .build()
+                    .toUriString();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("authorization", "Bearer " + token);
+            headers.set("appkey", appkey);
+            headers.set("appsecret", appsecret);
+            headers.set("tr_id", "HHDFS76200200");
+            headers.set("custtype", "P");
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                OverseasLiveStockPriceWrapper wrapper = objectMapper.readValue(response.getBody(), OverseasLiveStockPriceWrapper.class);
+                saveLiveStockPrice(code, wrapper.output()); //성공하면 db에 저장
+            } else {
+                log.error("현재가 데이터 조회 실패: {} - 응답이 비어있음", code);
+                throw new DomainException(DomainErrorCode.API_RESPONSE_EMPTY);
+            }
+
+        } catch (DomainException e) {
+            throw e;
+        } catch (JsonProcessingException e) {
+            log.error("JSON 파싱 실패: {} - {}", code, e.getMessage());
+            throw new DomainException(DomainErrorCode.JSON_PARSING_ERROR);
+        } catch (ResourceAccessException e) {
+            log.error("API 연결 실패: {} - {}", code, e.getMessage());
+            throw new DomainException(DomainErrorCode.API_CONNECTION_ERROR);
+        } catch (Exception e) {
+            log.error("예상치 못한 오류: {} - {}", code, e.getMessage());
+            throw new DomainException(DomainErrorCode.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // 현재가 데이터 DB에 저장
+    private void saveLiveStockPrice(String code, OverseasLiveStockPrice priceDto){
+        Stock stock = stockRepository.findByCode(code).orElseThrow(()-> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
+        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
+                .orElseGet(() -> LiveStockPrice.builder()
+                        .stock(stock)
+                        .build());
+        BigDecimal currentPrice = priceDto.currentPrice();
+        BigDecimal basePrice = priceDto.base();
+        BigDecimal priceChange = currentPrice.subtract(basePrice);
+
+        BigDecimal priceChangeRate = basePrice.compareTo(BigDecimal.ZERO) != 0 ?
+                priceChange.divide(basePrice, 6, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100))
+                        .setScale(2, RoundingMode.HALF_UP) :
+                BigDecimal.ZERO;
+
+        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice(), priceChange, priceChangeRate);
+        liveStockPriceRepository.save(liveStockPrice);
+    }
+
+    @Override
+    public OverseasLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
+        //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
+        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock).orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
+        return convertFromLiveStockPrice(liveStockPrice);
+    }
+}

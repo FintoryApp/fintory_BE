@@ -20,7 +20,7 @@ public interface OverseasStockPriceHistoryService {
      *     </ul>
      * </ul>
      */
-     void saveStockPriceHistory();
+     void initiateStockPriceHistory();
 
 
     /**
