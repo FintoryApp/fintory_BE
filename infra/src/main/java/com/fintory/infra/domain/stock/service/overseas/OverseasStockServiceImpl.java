@@ -1,0 +1,174 @@
+package com.fintory.infra.domain.stock.service.overseas;
+
+import com.fintory.common.exception.DomainErrorCode;
+import com.fintory.common.exception.DomainException;
+import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
+import com.fintory.domain.stock.dto.overseas.response.OverseasRankResponse;
+import com.fintory.domain.stock.dto.overseas.response.OverseasStockPriceHistoryResponse;
+import com.fintory.domain.stock.model.LiveStockPrice;
+import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.model.StockRank;
+import com.fintory.domain.stock.service.overseas.*;
+import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockRankRepository;
+import com.fintory.infra.domain.stock.repository.StockRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+
+@Service
+@Slf4j
+@RequiredArgsConstructor
+public class OverseasStockServiceImpl implements OverseasStockService {
+
+    private final OverseasStockRankService overseasStockRankService;
+    private final OverseasLiveStockPriceService overseasLiveStockPriceService;
+    private final OverseasStockPriceHistoryService overseasStockPriceHistoryService;
+
+    private final StockRankRepository stockRankRepository;
+    private final LiveStockPriceRepository liveStockPriceRepository;
+    private final StockRepository stockRepository;
+
+
+    //@EventListener(ApplicationReadyEvent.class)
+    public void init(){
+        log.info("해외 주식 데이터 초기화 시작");
+        initializeAllStockData();
+        log.info("해외 주식 데이터 초기화 완료");
+    }
+
+    /**
+     * 나스닥 시장 마감 후 데이터를 갱신합니다.
+     * 서머타임 기간 (3월 둘째 일요일 ~ 11월 첫째 일요일): 04:05
+     */
+    @Scheduled(cron = "0 5 4 * 3-11 TUE-SAT", zone = "America/New_York")
+    // 서머타임: 04:05 (화-토요일)
+    public void refreshAfterNasdaqCloseSummerTime() {
+        log.info("나스닥 마감 후 해외 주식 데이터 갱신 시작 (서머타임)");
+        initializeAllStockData();
+        log.info("나스닥 마감 후 해외 주식 데이터 갱신 완료 (서머타임)");
+    }
+
+    /**
+     * 나스닥 시장 마감 후 데이터를 갱신합니다.
+     * 표준시간 기간 (11월 첫째 일요일 ~ 3월 둘째 일요일): 05:05
+     */
+    @Scheduled(cron = "0 5 5 * 12,1,2 TUE-SAT", zone = "America/New_York") // 표준시간: 05:05 (화-토요일)
+    public void refreshAfterNasdaqCloseStandardTime() {
+        log.info("나스닥 마감 후 해외 주식 데이터 갱신 시작 (표준)");
+        initializeAllStockData();
+        log.info("나스닥 마감 후 해외 주식 데이터 갱신 완료 (표준)");
+    }
+
+    private void initializeAllStockData() {
+            executeWithErrorHandling("주식 랭킹",this::initiateStockRankWithRetry);
+            sleepSafely(3000);
+
+            executeWithErrorHandling("현재가 데이터",this::initiateLiveStockPriceWithRetry);
+            sleepSafely(3000);
+
+            executeWithErrorHandling("기간별 시세",this::initiateStockPriceHistoryWithRetry);
+            sleepSafely(3000);
+    }
+
+
+    @Retryable(maxAttempts=3, backoff = @Backoff(delay = 1000))
+    private void initiateStockRankWithRetry() {
+        overseasStockRankService.initiateOverseasStockRank();
+    }
+
+    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
+    private void initiateLiveStockPriceWithRetry() {
+        overseasLiveStockPriceService.initLiveStockPrice();
+    }
+
+    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
+    private void initiateStockPriceHistoryWithRetry() {
+        overseasStockPriceHistoryService.initiateStockPriceHistory();
+    }
+
+
+    //시가 총액 순위 조회
+    @Override
+    public List<OverseasRankResponse> getOverseasMarketCapTop20(){
+        List<Object[]> results = stockRankRepository.findMarketCapTop20("USD");
+        return mapToOverseasRankResponse(results,StockRank::getMarketCapRank);
+    }
+
+    //등락률 순위 조회
+    @Override
+    public List<OverseasRankResponse> getOverseasROCTop20(){
+        List<Object[]> results = stockRankRepository.findROCTop20("USD");
+        return mapToOverseasRankResponse(results,StockRank::getRocRank);
+    }
+
+    //거래량 순위 조회
+    @Override
+    public List<OverseasRankResponse> getOverseasTradingVolumeTop20(){
+        List<Object[]> ranks = stockRankRepository.findTradingVolumeTop20("USD");
+        return mapToOverseasRankResponse(ranks,StockRank::getTradingVolumeRank);
+    }
+
+    //기간별 시세 데이터 조회
+    @Override
+    public OverseasStockPriceHistoryResponse getOverseasStockPriceHistory(String code){
+        return overseasStockPriceHistoryService.getOverseasStockPriceHistory(code);
+    }
+
+    //현재가 데이터 조회
+    @Override
+    public OverseasLiveStockPriceResponse getLiveStockPrice(String code) {
+        Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
+        return overseasLiveStockPriceService.getLiveStockPriceViaQuery(stock);
+    }
+
+    private List<OverseasRankResponse> mapToOverseasRankResponse(List<Object[]> results, Function<StockRank, Integer> rankExtractor){
+        return results.stream()
+                .map(result->{
+                    StockRank stockRank = (StockRank) result[0];
+                    LiveStockPrice liveStockPrice = (LiveStockPrice) result[1];
+
+                    return new OverseasRankResponse(
+                            stockRank.getStock().getName(),
+                            stockRank.getStock().getCode(),
+                            rankExtractor.apply(stockRank),
+                            liveStockPrice.getCurrentPrice(),
+                            liveStockPrice.getPriceChange(),
+                            liveStockPrice.getPriceChangeRate()
+                    );
+                }).collect(Collectors.toList());
+    }
+
+
+    // 모든 재시도 로직이 실패했을 때 다음 초기화 메서드를 실행시키기 위해서 만든 메소드
+    private boolean executeWithErrorHandling(String taskName, Runnable task){
+        try{
+            task.run();
+            log.info("{} 초기화 성공",taskName);
+            return true;
+        }catch(Exception e){
+            log.error("{} 초기화 실패 {}",taskName,e.getMessage());
+            return false;
+        }
+    }
+
+    private void sleepSafely(long milliseconds){
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("초기화 중 인터럽트 발생");
+        }
+    }
+
+}
