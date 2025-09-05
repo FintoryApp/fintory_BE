@@ -10,35 +10,7 @@ env:
   AWS_REGION: ap-northeast-2
 
 jobs:
-  changes:
-    runs-on: ubuntu-latest
-    outputs:
-      app-child: ${{ steps.filter.outputs.app-child }}
-      app-parent: ${{ steps.filter.outputs.app-parent }}
-      shared: ${{ steps.filter.outputs.shared }}
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            app-child:
-              - 'app-child/**'
-            app-parent:
-              - 'app-parent/**'
-            shared:
-              - 'auth/**'
-              - 'domain/**'
-              - 'common/**'
-              - 'infra/**'
-              - 'build.gradle'
-              - 'settings.gradle'
-              - 'gradle/**'
-
   build-and-deploy-child:
-    needs: changes
-    if: needs.changes.outputs.app-child == 'true' || needs.changes.outputs.shared == 'true'
     runs-on: ubuntu-latest
 
     steps:
