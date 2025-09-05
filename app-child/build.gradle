@@ -59,6 +59,14 @@ dependencies {
 
     /* Actuator */
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    /* Retry */
+    implementation 'org.springframework.retry:spring-retry'
+
+    /* WebSocket */
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework:spring-messaging'
+
 }
 
 test {
