@@ -41,19 +41,38 @@ public class Account extends BaseEntity {
 
     // 1:N
     @OneToMany(cascade= CascadeType.ALL, mappedBy="account")
-    private List<DepositTransaction> depositTransactions = new ArrayList<>();;
+    private List<DepositTransaction> depositTransactions = new ArrayList<>();
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="account")
-    private List<StockTransaction> stockTransactions = new ArrayList<>();;
+    private List<StockTransaction> stockTransactions = new ArrayList<>();
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="account")
-    private List<OwnedStock> ownedStocks = new ArrayList<>();;
-
-    // TODO: pointTransaction
+    private List<OwnedStock> ownedStocks = new ArrayList<>();
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
     private List<Report> reports;
 
+    // 생성 + 도메인 -> 생성자 대신 정적 팩토리 메소드
+    public static Account createWithInitialDeposit(Child child, BigDecimal initialAmount) {
+        Account account = new Account();
+        account.child = child;
+        account.status = true;
+        account.availableCash = initialAmount;
+        account.totalPurchase = BigDecimal.ZERO;
+        account.totalValuation = BigDecimal.ZERO;
+        account.totalAssets = initialAmount;
+
+        DepositTransaction deposit = DepositTransaction.create(initialAmount, "기본금 지급", DepositTransactionType.DEPOSIT);
+        account.addDepositTransaction(deposit);
+
+        return account;
+    }
+
+    // 연관관계 편의 메소드
+    public void addDepositTransaction(DepositTransaction tx) {
+        this.depositTransactions.add(tx);
+        tx.setAccount(this);
+    }
 
 
     public void updateSellStock(BigDecimal sellPrice, BigDecimal sellPurchaseAmount){
