@@ -37,8 +37,13 @@ public class DBTokenIssueServiceImpl implements DBTokenIssueService {
     @PostConstruct
     public void refreshDBToken() {
         try {
-            DBTokenResponse token = getNewDBToken();
-            log.info("DB 토큰 초기화 성공");
+            if(redisTemplate.opsForValue().get("db-access-token")== null || redisTemplate.getExpire("db-access-token")<=0) {
+                DBTokenResponse token = getNewDBToken();
+                log.info("DB 토큰 초기화 성공");
+            }else{
+                Long ttl = redisTemplate.getExpire("db-access-token");
+                log.info("기존 DB 토큰 사용 중, 남은 시간: {}초",ttl);
+            }
         } catch (Exception e) {
             log.error("DB 토큰 초기화 실패: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.DB_TOKEN_ISSUE_ERROR);
@@ -95,8 +100,8 @@ public class DBTokenIssueServiceImpl implements DBTokenIssueService {
     private void storeTokenWithExpiry(DBTokenResponse response) {
         String token = response.token();
 
-        // 24시간에서 5분 여유를 뺀 시간
-        Duration expiry = Duration.ofHours(24).minusMinutes(5);
+        // 23시간 -> 여유 있게 설정
+        Duration expiry = Duration.ofHours(23);
         redisTemplate.opsForValue().set("db-access-token", token, expiry);
     }
 }
