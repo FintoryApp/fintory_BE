@@ -55,7 +55,7 @@ public class TradingServiceImpl implements TradingService {
     }
 
     // 주식 구매 서비스
-    @Override
+    @Override // TODO override 안해도 될듯 어차피 private으로 쓰이니까
     public void processBuyTrade(TradeRequest tradeRequest,Account account,Stock stock,BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
@@ -68,15 +68,17 @@ public class TradingServiceImpl implements TradingService {
         }
 
         //ownedStock, stockTransaction 업데이트
+        // 메소드의 책임이 너무 큰 거 같아요 주식거래 내역과 보유주식을 분리해서 업데이트 하는 건 어떨까요?
         updateStockAndTransactionForPurchase(tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType);
 
+        // TODO: 현금내역 업데이트
         //account 업데이트
         updateAccountForPurchase(account,totalTradeAmount);
     }
 
 
     //주식 판매 서비스
-    @Override
+    @Override // TODO: 마찬가지
     public void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
@@ -98,6 +100,7 @@ public class TradingServiceImpl implements TradingService {
         //ownedStock, stockTransaction 업데이트
         updateStockAndTransactionForSell(ownedStock,tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType,soldPurchaseAmount);
 
+        // TODO: 현금 내역 업데이트
         //account 업데이트
         updateAccountForSell(account,totalTradeAmount,soldPurchaseAmount);
 
@@ -165,7 +168,6 @@ public class TradingServiceImpl implements TradingService {
                 .marketType(marketType)
                 .stock(stock)
                 .account(account)
-                .ownedStock(ownedStock)
                 .build();
 
         stockTransactionRepository.save(stockTransaction);
@@ -196,7 +198,6 @@ public class TradingServiceImpl implements TradingService {
                 .marketType(marketType)
                 .stock(stock)
                 .account(account)
-                .ownedStock(ownedStock)
                 .build();
 
         stockTransactionRepository.save(stockTransaction);
