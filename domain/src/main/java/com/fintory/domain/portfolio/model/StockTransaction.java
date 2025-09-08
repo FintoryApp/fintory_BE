@@ -18,10 +18,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StockTransaction extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
     private BigDecimal amount;
 
     @Column(name = "price_per_share", precision = 15, scale = 2)
@@ -50,9 +46,5 @@ public class StockTransaction extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
     private Account account;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="owned_stock_id")
-    private OwnedStock ownedStock;
 
 }

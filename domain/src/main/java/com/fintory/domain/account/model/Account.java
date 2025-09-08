@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,21 +34,26 @@ public class Account extends BaseEntity {
     @Column(name="total_valuation")
     private BigDecimal totalValuation;
 
-    @OneToMany(cascade= CascadeType.ALL,mappedBy="account")
-    private List<DepositTransaction> depositTransactions;
+    // 1:1
+    @OneToOne
+    @JoinColumn(name="child_id")
+    private Child child;
 
-    @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<OwnedStock> ownedStocks;
+    // 1:N
+    @OneToMany(cascade= CascadeType.ALL, mappedBy="account")
+    private List<DepositTransaction> depositTransactions = new ArrayList<>();;
 
-    @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
-    private List<StockTransaction> stockTransactions;
+    @OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+    private List<StockTransaction> stockTransactions = new ArrayList<>();;
+
+    @OneToMany(cascade=CascadeType.ALL, mappedBy="account")
+    private List<OwnedStock> ownedStocks = new ArrayList<>();;
+
+    // TODO: pointTransaction
 
     @OneToMany(cascade=CascadeType.ALL,mappedBy="account")
     private List<Report> reports;
 
-    @OneToOne(cascade=CascadeType.ALL)
-    @JoinColumn(name="child_id")
-    private Child child;
 
 
     public void updateSellStock(BigDecimal sellPrice, BigDecimal sellPurchaseAmount){
