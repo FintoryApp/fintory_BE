@@ -12,11 +12,14 @@ import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.korean.KoreanLiveStockPriceService;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import com.fintory.infra.domain.stock.service.korean.saver.KoreanLiveStockPriceSaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
@@ -45,6 +48,7 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
     private final RedisTemplate<Object, Object> redisTemplate;
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
+    private final KoreanLiveStockPriceSaverService  koreanLiveStockPriceSaverService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -52,7 +56,7 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
     //TODO 웹소켓에서도 주기적 저장. 장외시간일 때 첫 저장.
     //TODO 디비에서 값 조회 메서드
     @Override
-    @Transactional
+    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 1000))
     public void initLiveStockPrice(){
         List<Stock> stockList = stockRepository.findByCurrencyName("KRW");
         String token = (String) redisTemplate.opsForValue().get("kis-access-token");
@@ -106,7 +110,7 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 KoreanLiveStockPriceWrapper wrapper = objectMapper.readValue(response.getBody(), KoreanLiveStockPriceWrapper.class);
-                saveLiveStockPrice(code, wrapper.output()); //현재가 데이터 DB에 저장
+                koreanLiveStockPriceSaverService.saveLiveStockPrice(code, wrapper.output()); //현재가 데이터 DB에 저장
             } else {
                 log.error("현재가 데이터 조회 실패: {} - 응답이 비어있음", code);
                 throw new DomainException(DomainErrorCode.API_RESPONSE_EMPTY);
@@ -124,17 +128,6 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
             log.error("예상치 못한 오류: {} - {}", code, e.getMessage());
             throw new DomainException(DomainErrorCode.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    //현재가 데이터 저장 메소드
-    private void saveLiveStockPrice(String code, KoreanLiveStockPrice priceDto){
-        Stock stock = stockRepository.findByCode(code).orElseThrow(()-> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                .orElseGet(() -> LiveStockPrice.builder()
-                        .stock(stock)
-                        .build());
-        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice(),priceDto.priceChange(),priceDto.priceChangeRate());
-        liveStockPriceRepository.save(liveStockPrice);
     }
 
     @Override

@@ -11,11 +11,14 @@ import com.fintory.domain.stock.model.StockRank;
 import com.fintory.domain.stock.service.korean.KoreanStockRankService;
 import com.fintory.infra.domain.stock.repository.StockRankRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import com.fintory.infra.domain.stock.service.korean.saver.KoreanStockRankSaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
@@ -33,6 +36,7 @@ public class KoreanStockRankServiceImpl implements KoreanStockRankService {
 
     private final StockRepository stockRepository;
     private final StockRankRepository stockRankRepository;
+    private final KoreanStockRankSaverService koreanStockRankSaverService;
     private final RedisTemplate<Object, Object> redisTemplate;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -47,7 +51,7 @@ public class KoreanStockRankServiceImpl implements KoreanStockRankService {
     private String baseUrl;
 
     //REVIEW API호출 실패 문제는 대부분 시스템 레벨 문제 -> 개별 종목만 실패할 확률은 낮고 대부분 전체적으로 실패하므로 처음부터 다시 시작하도록 설정
-    @Transactional
+    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 1000))
     @Override
     public void initiateKoreanStockRank(){
 
@@ -114,7 +118,7 @@ public class KoreanStockRankServiceImpl implements KoreanStockRankService {
             if (response.getStatusCode().is2xxSuccessful()) {
                 KoreanStockRankDataWrapper wrapper = objectMapper.readValue(response.getBody(), KoreanStockRankDataWrapper.class);
 
-                saveStockRankData(code, wrapper);
+                koreanStockRankSaverService.saveStockRankData(code, wrapper);
             } else {
                 log.error("순위 관련 데이터 조회 실패: {} - 응답이 비어있음", code);
                 throw new DomainException(DomainErrorCode.API_RESPONSE_EMPTY);
@@ -132,38 +136,6 @@ public class KoreanStockRankServiceImpl implements KoreanStockRankService {
             log.error("예상치 못한 오류: {} - {}", code, e.getMessage());
             throw new DomainException(DomainErrorCode.INTERNAL_SERVER_ERROR);
         }
-    }
-
-    //순위를 얻는데 필요한 데이터 저장 메서드
-    private void saveStockRankData(String code, KoreanStockRankDataWrapper response) {
-
-        if (response == null || response.output() == null) {
-            log.warn("순위 관련 데이터 응답이 비어있음: {}", code);
-            throw new DomainException(DomainErrorCode.API_RESPONSE_EMPTY);
-        }
-
-        KoreanStockRankData item = response.output();
-
-        if (item == null) {
-            log.warn("순위 관련 응답에서 데이터를 찾을 수 없음");
-            throw new DomainException(DomainErrorCode.STOCK_DATA_NOT_FOUND);
-        }
-
-        StockRank stockRank = stockRankRepository.findByStockCode(code).orElse(null);
-        Stock stock = stockRepository.findByCode(code).orElseThrow(()->new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
-
-        if (stockRank == null) {
-            stockRank = StockRank.builder()
-                    .tradingVolume(item.tradingVolume())
-                    .rocRate(item.roc())
-                    .marketCap(item.marketCap())
-                    .stock(stock)
-                    .build();
-        } else {
-            stockRank.updateStockRankData(item.marketCap(), item.roc(), item.tradingVolume());
-        }
-
-        stockRankRepository.save(stockRank);
     }
 
     //순위 데이터 생성 및 저장
