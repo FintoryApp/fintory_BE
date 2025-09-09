@@ -44,10 +44,10 @@ import java.util.function.Consumer;
 @Slf4j
 public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsocketService {
 
-    private final RedisTemplate<Object, Object> redisTemplate;
     @Value("${db-openapi.base-url}")
     private String baseUrl;
 
+    private final RedisTemplate<Object, Object> redisTemplate;
     private final WebSocketConnectionManager koreanConnectionManager;
     private final WebSocketConnectionManager overseasConnectionManager;
     private final KoreanLiveStockPriceWebSocketHandler koreanHandler;
@@ -139,7 +139,13 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                                 Set<String> subscribedStocks, Runnable connectAction,
                                 Consumer<String> subscribeAction) {
         try {
-            cachedAccessToken = (String) redisTemplate.opsForValue().get("db-access-token");
+
+            //해외, 국내 주식 토큰 분리
+            if("해외".equals(marketName)){
+                cachedAccessToken = (String) redisTemplate.opsForValue().get("db-access-token");
+            }else{
+                cachedAccessToken = (String) redisTemplate.opsForValue().get("kis-websocket-access-token");
+            }
 
             boolean isMarketClosed = ("해외".equals(marketName) && !isOverseasMarketOpen()) ||
                     ("국내".equals(marketName) && !isKoreanMarketOpen());
@@ -147,7 +153,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             if (isMarketClosed) {
                 throw new DomainException(DomainErrorCode.MARKET_CLOSED);
             }
-
 
             if (!isConnected.get()) {
                 log.info("{} 주식 WebSocket이 연결되어 있지 않아 자동 연결을 시작합니다.", marketName);
@@ -351,6 +356,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         koreanSubscribedStocks.clear();
         previousKoreanData.clear();
         koreanConnectionManager.stop();
+        koreanPendingData.clear();
         isKoreanConnected.set(false);
 
         log.info("국내 WebSocket 연결 해제 완료");
@@ -371,9 +377,11 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         disconnectDBSession(); //db증권은 세션 정리를 하지 않을 경우 에러 발생함
 
+
         overseasSubscribedStocks.clear();
         previousOverseasData.clear();
         overseasConnectionManager.stop();
+        overseasPendingData.clear();
         isOverseasConnected.set(false);
 
         log.info("해외 WebSocket 연결 해제 완료");

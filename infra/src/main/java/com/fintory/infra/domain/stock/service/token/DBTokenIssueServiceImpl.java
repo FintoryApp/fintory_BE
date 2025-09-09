@@ -50,8 +50,8 @@ public class DBTokenIssueServiceImpl implements DBTokenIssueService {
         }
     }
 
-    // 24시간마다 토큰 갱신
-    @Scheduled(fixedRate = 86400000, initialDelay = 86400000)
+    // 23시간마다 토큰 갱신
+    @Scheduled(fixedRate = 82800000, initialDelay = 82800000)
     public void changeDBToken() {
         try {
             getNewDBToken();
