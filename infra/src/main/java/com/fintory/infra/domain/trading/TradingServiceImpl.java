@@ -55,8 +55,7 @@ public class TradingServiceImpl implements TradingService {
     }
 
     // 주식 구매 서비스
-    @Override
-    public void processBuyTrade(TradeRequest tradeRequest,Account account,Stock stock,BigDecimal exchangeRate){
+    private void processBuyTrade(TradeRequest tradeRequest,Account account,Stock stock,BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
         BigDecimal totalTradeAmount = tradeCalculation.amount();
@@ -76,8 +75,7 @@ public class TradingServiceImpl implements TradingService {
 
 
     //주식 판매 서비스
-    @Override
-    public void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
+    private void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
         BigDecimal totalTradeAmount = tradeCalculation.amount();

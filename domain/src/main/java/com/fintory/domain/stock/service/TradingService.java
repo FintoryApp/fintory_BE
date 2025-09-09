@@ -17,23 +17,4 @@ public interface TradingService {
      */
     void trade(TradeRequest tradeRequest, String email);
 
-
-    /**
-     *  주식 매수 처리 메서드
-     * @param tradeRequest 거래하고자 하는 주식 종목 코드, 수량, 현재가
-     * @param account 현재 로그인한 사용자의 계좌
-     * @param stock 거래하고자 하는 주식 종목
-     * @param exchangeRate 환율
-     */
-    void processBuyTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate);
-
-
-    /**
-     *  주식 매도 처리 메서드
-     * @param tradeRequest 거래하고자 하는 주식 종목 코드, 수량, 현재가
-     * @param account 현재 로그인한 사용자의 계좌
-     * @param stock 거래하고자 하는 주식 종목
-     * @param exchangeRate 환율
-     */
-    void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate);
 }
