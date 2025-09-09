@@ -36,11 +36,10 @@ public class OverseasStockServiceImpl implements OverseasStockService {
     private final OverseasStockPriceHistoryService overseasStockPriceHistoryService;
 
     private final StockRankRepository stockRankRepository;
-    private final LiveStockPriceRepository liveStockPriceRepository;
     private final StockRepository stockRepository;
 
 
-    //@EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void init(){
         log.info("해외 주식 데이터 초기화 시작");
         initializeAllStockData();
@@ -72,28 +71,24 @@ public class OverseasStockServiceImpl implements OverseasStockService {
 
     private void initializeAllStockData() {
             executeWithErrorHandling("주식 랭킹",this::initiateStockRankWithRetry);
-            sleepSafely(3000);
+            sleepSafely(1000);
 
             executeWithErrorHandling("현재가 데이터",this::initiateLiveStockPriceWithRetry);
-            sleepSafely(3000);
+            sleepSafely(1000);
 
             executeWithErrorHandling("기간별 시세",this::initiateStockPriceHistoryWithRetry);
-            sleepSafely(3000);
+            sleepSafely(1000);
     }
 
-
-    @Retryable(maxAttempts=3, backoff = @Backoff(delay = 1000))
-    private void initiateStockRankWithRetry() {
+    //@Retryable도 프록시 기반 AOP => 내부 자기 호출 + private은 @Retryable 적용x
+    public void initiateStockRankWithRetry() {
         overseasStockRankService.initiateOverseasStockRank();
     }
-
-    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
-    private void initiateLiveStockPriceWithRetry() {
+    public void initiateLiveStockPriceWithRetry() {
         overseasLiveStockPriceService.initLiveStockPrice();
     }
 
-    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
-    private void initiateStockPriceHistoryWithRetry() {
+    public void initiateStockPriceHistoryWithRetry() {
         overseasStockPriceHistoryService.initiateStockPriceHistory();
     }
 
