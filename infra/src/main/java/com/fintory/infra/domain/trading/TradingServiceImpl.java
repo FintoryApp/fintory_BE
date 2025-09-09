@@ -165,7 +165,6 @@ public class TradingServiceImpl implements TradingService {
                 .marketType(marketType)
                 .stock(stock)
                 .account(account)
-                .ownedStock(ownedStock)
                 .build();
 
         stockTransactionRepository.save(stockTransaction);
@@ -196,7 +195,6 @@ public class TradingServiceImpl implements TradingService {
                 .marketType(marketType)
                 .stock(stock)
                 .account(account)
-                .ownedStock(ownedStock)
                 .build();
 
         stockTransactionRepository.save(stockTransaction);

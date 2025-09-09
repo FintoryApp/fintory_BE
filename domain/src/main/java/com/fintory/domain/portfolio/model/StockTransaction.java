@@ -51,8 +51,4 @@ public class StockTransaction extends BaseEntity {
     @JoinColumn(name="account_id")
     private Account account;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="owned_stock_id")
-    private OwnedStock ownedStock;
-
 }
