@@ -7,7 +7,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -16,14 +17,20 @@ import java.time.LocalDateTime;
 public class Point extends BaseEntity {
     // 이렇게 되면 포인트 테이블이 아닌 포인트 history 테이블이 됨. -> amount를 계산하려면 SUM(amount)가 된다는 사실 기억
 
-    private int amount;
+    private Long totalAmount;
 
-    private String category;
-
-    @Column(name="earned_at")
-    private LocalDateTime earnedAt;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name="child_id")
     private Child child;
+
+    @OneToMany(mappedBy = "point", cascade = CascadeType.ALL)
+    private List<PointTransaction> transactions = new ArrayList<>();
+
+    public void earnPoint(Long amount) {
+        this.totalAmount += amount;
+    }
+
+    public void withdrawPoint(Long amount) {
+        this.totalAmount -= amount;
+    }
 }

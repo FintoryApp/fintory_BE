@@ -1,6 +1,5 @@
 package com.fintory.domain.parent.model;
 
-import com.fintory.domain.account.model.DepositTransaction;
 import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import jakarta.persistence.*;
@@ -32,10 +31,6 @@ public class Parent extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    //연관관계 설정
-    @OneToMany(mappedBy="parent") //cascade 설정 일부러 안함
-    private List<DepositTransaction> depositTransactions;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="parent")
     private List<Challenge> challenges;

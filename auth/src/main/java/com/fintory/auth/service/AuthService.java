@@ -6,6 +6,7 @@ import com.fintory.auth.jwt.JwtTokenProvider;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
@@ -44,6 +45,7 @@ public class AuthService {
     private final RedisTemplate<String, String> redisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final ChildRepository childRepository;
+    private final AccountService accountService;
 
     @Transactional
     public AuthToken signup(SignUpRequest request) {
@@ -66,6 +68,7 @@ public class AuthService {
                 .build();
 
         childRepository.save(child);
+        accountService.createInitialAccount(child);
 
         // 회원가입 완료 후 자동으로 로그인 처리
         return login(request.email(), request.password());

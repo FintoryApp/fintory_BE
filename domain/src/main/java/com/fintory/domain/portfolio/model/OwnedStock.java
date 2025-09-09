@@ -8,7 +8,6 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 
 @Entity
 @Getter
@@ -34,9 +33,6 @@ public class OwnedStock extends BaseEntity {
 
     @Column(name="purchase_amount")
     private BigDecimal purchaseAmount; //총 매수 금액
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy ="ownedStock")
-    private List<StockTransaction> stockTransactions;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="stock_id")

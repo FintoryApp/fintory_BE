@@ -11,6 +11,12 @@ public class DomainException extends RuntimeException {
       this.errorCode = errorCode;
     }
 
+    public DomainException(DomainErrorCode errorCode, Throwable throwable) {
+        super(errorCode.getMessage(), throwable);  // <-- cause를 super에 넘김
+        this.errorCode = errorCode;
+    }
+
+
     public DomainErrorCode getErrorCode() {
       return errorCode;
     }

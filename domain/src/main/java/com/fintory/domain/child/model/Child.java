@@ -6,10 +6,8 @@ import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
-import com.fintory.domain.mapping.MyQuiz;
 import com.fintory.domain.mapping.ParentChildMapping;
 import com.fintory.domain.point.model.Point;
-import com.fintory.domain.quiz.model.DailyQuizAttempt;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -76,20 +74,14 @@ public class Child extends BaseEntity {
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
     private ParentChildMapping parentChildMapping;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
-    private List<MyQuiz> myQuizs;
-
     // 1:1
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
     private Account account;
 
+    @OneToOne(cascade = CascadeType.ALL,mappedBy="child")
+    private Point point;
+
     // 1:n
-    @OneToMany(cascade = CascadeType.ALL,mappedBy="child")
-    private List<Point> point;
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
-    private List<DailyQuizAttempt> dailyQuizzAttempts;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
     private List<Challenge> challenges;
 
