@@ -21,6 +21,7 @@ public class DepositTransaction extends BaseEntity {
 
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private DepositTransactionType type;
 
     @Column(name="occurred_at")
