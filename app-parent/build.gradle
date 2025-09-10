@@ -24,6 +24,7 @@ dependencies {
     implementation project(':common')
     implementation project(':domain')
     implementation project(':infra')
+    implementation project(':auth')
 
     /* .env 자동 로딩 */
     implementation 'me.paulschwarz:spring-dotenv:4.0.0'
