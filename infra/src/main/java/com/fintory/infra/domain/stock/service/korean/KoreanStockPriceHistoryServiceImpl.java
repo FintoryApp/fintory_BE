@@ -14,11 +14,14 @@ import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.service.korean.KoreanStockPriceHistoryService;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import com.fintory.infra.domain.stock.service.korean.saver.KoreanStockPriceHistorySaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
@@ -38,6 +41,7 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
     private final RedisTemplate<Object, Object> redisTemplate;
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final StockRepository stockRepository;
+    private final KoreanStockPriceHistorySaverService  koreanStockPriceHistorySaverService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -51,9 +55,9 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
     private String appkey;
 
     @Override
-    @Transactional
     //No EntityManager with actual transaction available for current thread - cannot reliably process 'remove' call
     //활성 트랜잭션이 없는 상태에서는 EntityManager가 비활성화된 상태로 -> JPA는 delete와 같은 변경 작업 실행x
+    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 1000))
     public void initiateStockPriceHistory() {
         List<Stock> stocks = stockRepository.findByCurrencyName("KRW");
         String token = (String) redisTemplate.opsForValue().get("kis-access-token");
@@ -84,45 +88,11 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
         }
     }
 
-    //DB 저장 템플릿 메서드
-    @Transactional
-    public void saveKoreanStockPriceHistory(List<KoreanStockPriceHistory> koreanStockPriceHistoryList, Stock stock, IntervalType intervalType) {
-        //update가 아닌 기존 데이터 삭제 -> 아니면 덮어씌워짐
-        List<StockPriceHistory> existing = stockPriceHistoryRepository.findByStockAndIntervalType(stock, intervalType);
-        if (!existing.isEmpty()) {
-            stockPriceHistoryRepository.deleteByStockAndIntervalType(stock, intervalType);
-        }
-        List<StockPriceHistory> koreanStockPriceHistories = new ArrayList<>();
-
-
-        for (KoreanStockPriceHistory koreanStockPriceHistory : koreanStockPriceHistoryList) {
-            LocalDate date = LocalDate.parse(
-                    koreanStockPriceHistory.time(),
-                    DateTimeFormatter.ofPattern("yyyyMMdd")
-            );
-
-            StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
-                    .stock(stock)
-                    .intervalType(intervalType) // 모든 레코드에 같은 값
-                    .openPrice(koreanStockPriceHistory.openPrice())
-                    .highPrice(koreanStockPriceHistory.highPrice())
-                    .lowPrice(koreanStockPriceHistory.lowPrice())
-                    .closePrice(koreanStockPriceHistory.closePrice())
-                    .date(date)
-                    .build();
-
-            koreanStockPriceHistories.add(stockPriceHistory);
-
-        }
-        stockPriceHistoryRepository.saveAll(koreanStockPriceHistories);
-    }
-
-
     private void getKoreanStockItemChatPrice3Month(Stock stock) {
         LocalDate before3Month = LocalDate.now().minusMonths(3);
         LocalDate today = LocalDate.now();
         List<KoreanStockPriceHistory> koreanStockPriceHistories = getKoreanStockItemChatPrice("D", stock.getCode(), before3Month, today, "0");
-        saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.QUARTERLY);
+        koreanStockPriceHistorySaverService.saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.QUARTERLY);
     }
 
 
@@ -130,7 +100,7 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
         LocalDate beforeYear = LocalDate.now().minusYears(1);
         LocalDate today = LocalDate.now();
         List<KoreanStockPriceHistory> koreanStockPriceHistories = getKoreanStockItemChatPrice("W", stock.getCode(), beforeYear, today, "1");
-        saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.YEARLY);
+        koreanStockPriceHistorySaverService.saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.YEARLY);
     }
 
 
@@ -138,7 +108,7 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
         LocalDate before5Year = LocalDate.now().minusYears(5);
         LocalDate today = LocalDate.now();
         List<KoreanStockPriceHistory> koreanStockPriceHistories = getKoreanStockItemChatPrice("M", stock.getCode(), before5Year, today, "1");
-        saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.FIVE_YEARLY);
+        koreanStockPriceHistorySaverService.saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.FIVE_YEARLY);
     }
 
 
@@ -146,7 +116,7 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
         LocalDate beforeYear = LocalDate.now().minusYears(20);
         LocalDate today = LocalDate.now();
         List<KoreanStockPriceHistory> koreanStockPriceHistories = getKoreanStockItemChatPrice("Y", stock.getCode(), beforeYear, today, "1");
-        saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.TOTAL);
+        koreanStockPriceHistorySaverService.saveKoreanStockPriceHistory(koreanStockPriceHistories, stock, IntervalType.TOTAL);
     }
 
     @Override

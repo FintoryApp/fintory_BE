@@ -54,9 +54,9 @@ public class TradingServiceImpl implements TradingService {
         }
     }
 
-    // 주식 구매 서비스
-    @Override // TODO override 안해도 될듯 어차피 private으로 쓰이니까
+    //주식 구매 기능
     public void processBuyTrade(TradeRequest tradeRequest,Account account,Stock stock,BigDecimal exchangeRate){
+
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
         BigDecimal totalTradeAmount = tradeCalculation.amount();
@@ -77,9 +77,8 @@ public class TradingServiceImpl implements TradingService {
     }
 
 
-    //주식 판매 서비스
-    @Override // TODO: 마찬가지
-    public void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
+    //주식 판매 기능
+    private void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
         BigDecimal totalTradeAmount = tradeCalculation.amount();

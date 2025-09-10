@@ -40,7 +40,7 @@ public class KoreanStockServiceImpl implements KoreanStockService {
     private final StockRepository stockRepository;
 
     // 어플리케이션이 완전히 준비된 후 한번만 실행됨
-    //@EventListener(ApplicationReadyEvent.class)
+    @EventListener(ApplicationReadyEvent.class)
     public void init(){
        log.info("국내 주식 데이터 초기화 시작");
        initializeAllStockData();
@@ -65,17 +65,14 @@ public class KoreanStockServiceImpl implements KoreanStockService {
     }
 
 
-    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 1000))
     private void initiateStockRankWithRetry() {
         koreanStockRankService.initiateKoreanStockRank();
     }
 
-    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
     private void initiateLiveStockPriceWithRetry() {
         koreanLiveStockPriceService.initLiveStockPrice();
     }
 
-    @Retryable(maxAttempts=5, backoff = @Backoff(delay = 2000))
     private void initiateStockPriceHistoryWithRetry() {
         koreanStockPriceHistoryService.initiateStockPriceHistory();
     }

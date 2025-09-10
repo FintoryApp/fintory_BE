@@ -186,24 +186,33 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
         String payload = message.getPayload();
         log.info("수신된 payload: {}", payload);
 
-        try {
-            parseAndProcessMessage(payload);
-        } catch (Exception e) {
-            log.error("메시지 처리 중 에러 발생 - payload: {}, 에러: {}", payload, e.getMessage());
-            // 메시지 파싱 실패는 전체 연결을 끊지 않음
+
+        synchronized (sendLock) {
+            try {
+                JsonNode root = objectMapper.readTree(payload);
+                JsonNode header =  root.get("header");
+                JsonNode body = root.get("body");
+
+                //+ 구독 확인 요청도 자연스럽게 해결
+                if (body != null && body.has("symbol")) {
+                    parseAndProcessMessage(payload);
+                } else if (header != null && header.has("tr_type") && "2".equals(header.get("tr_type").asText())) {
+                    log.info("구독 해제 요청 완료");
+                }
+
+            } catch (Exception e) {
+                log.error("메시지 처리 중 에러 발생 - payload: {}, 에러: {}", payload, e.getMessage());
+                // 메시지 파싱 실패는 전체 연결을 끊지 않음
+            }
         }
     }
 
     private void parseAndProcessMessage(String payload) {
+
         try {
             JsonNode root = objectMapper.readTree(payload);
             JsonNode header = root.get("header");
 
-            // 구독 확인 응답 처리
-            if (header != null && header.has("tr_type") && "1".equals(header.get("tr_type").asText())) {
-                log.info("구독 확인: {}", root.get("body"));
-                return; // 실시간 데이터가 아니므로 리턴
-            }
 
             JsonNode body = root.get("body");
 

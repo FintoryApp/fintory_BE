@@ -12,11 +12,13 @@ import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.service.overseas.OverseasStockPriceHistoryService;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import com.fintory.infra.domain.stock.service.overseas.saver.OverseasStockPriceHistorySaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -33,11 +35,12 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
 
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final StockRepository stockRepository;
+    private final OverseasStockPriceHistorySaverService overseasStockPriceHistorySaverService;
     private final ObjectMapper objectMapper;
     private final RestTemplate restTemplate;
 
     @Override
-    @Transactional
+    @Retryable(maxAttempts=3, backoff = @Backoff(delay = 1000))
     public void initiateStockPriceHistory(){
         List<Stock> stocks = stockRepository.findByCurrencyName("USD");
         int successCount = 0;
@@ -69,53 +72,28 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
         }
     }
 
-    //No EntityManager with actual transaction available for current thread - cannot reliably process 'remove' call
-    @Transactional
-    public void saveOverseasStockPriceHistory(List<OverseasStockPriceHistory> overseasStockPriceHistoryList, Stock stock, IntervalType intervalType) {
-        // 기존 데이터 삭제
-        stockPriceHistoryRepository.deleteByStockAndIntervalType(stock, intervalType);
 
-        List<StockPriceHistory> stockPriceHistories = new ArrayList<>();
-
-        for (OverseasStockPriceHistory overseasStockPriceHistory : overseasStockPriceHistoryList) {
-
-            StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
-                    .stock(stock)
-                    .intervalType(intervalType)
-                    .openPrice(overseasStockPriceHistory.openPrice())
-                    .highPrice(overseasStockPriceHistory.highPrice())
-                    .lowPrice(overseasStockPriceHistory.lowPrice())
-                    .closePrice(overseasStockPriceHistory.closePrice())
-                    .date(LocalDate.parse(overseasStockPriceHistory.time()))
-                    .build();
-
-            stockPriceHistories.add(stockPriceHistory);
-        }
-        stockPriceHistoryRepository.saveAll(stockPriceHistories);
-    }
-
-    @Transactional
     public void getOverseasStockItemChatPrice3Month(Stock stock) {
         List<OverseasStockPriceHistory> overseasStockPriceHistories = getOverseasStockItemChatPrice(stock.getCode(), "1d", "3mo");
-        saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.QUARTERLY);
+        overseasStockPriceHistorySaverService.saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.QUARTERLY);
     }
 
-    @Transactional
+
     public void getOverseasStockItemChatPriceYear(Stock stock) {
         List<OverseasStockPriceHistory> overseasStockPriceHistories = getOverseasStockItemChatPrice(stock.getCode(), "1wk", "1y");
-        saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.YEARLY);
+        overseasStockPriceHistorySaverService.saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.YEARLY);
     }
 
-    @Transactional
+
     public void getOverseasStockItemChatPrice5Year(Stock stock) {
         List<OverseasStockPriceHistory> overseasStockPriceHistories = getOverseasStockItemChatPrice(stock.getCode(), "1mo", "5y");
-        saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.FIVE_YEARLY);
+        overseasStockPriceHistorySaverService.saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.FIVE_YEARLY);
     }
 
-    @Transactional
+
     public void getOverseasStockItemChatPriceTotal(Stock stock) {
         List<OverseasStockPriceHistory> overseasStockPriceHistories = getOverseasStockItemChatPrice(stock.getCode(), "3mo", "max");
-        saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.TOTAL);
+        overseasStockPriceHistorySaverService.saveOverseasStockPriceHistory(overseasStockPriceHistories, stock, IntervalType.TOTAL);
     }
 
     // DB에서 기간별 시세 통합 조회
@@ -169,7 +147,6 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
     // Yahoo API로부터 해외 주식 기간별 시세 데이터 조회
     //예외 발생 시 initiateStockPriceHistory로 전파
     @Override
-    @Transactional
     public List<OverseasStockPriceHistory> getOverseasStockItemChatPrice(String code, String interval, String range) {
         try {
             String url = "https://query1.finance.yahoo.com/v8/finance/chart/" + code + "?interval=" + interval + "&range=" + range;

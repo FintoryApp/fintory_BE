@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.overseas.core.OverseasLiveStockPrice;
 import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
 import com.fintory.domain.stock.dto.overseas.wrapper.OverseasLiveStockPriceWrapper;
 import com.fintory.domain.stock.model.LiveStockPrice;
@@ -12,19 +11,20 @@ import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.overseas.OverseasLiveStockPriceService;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import com.fintory.infra.domain.stock.service.overseas.saver.OverseasLiveStockPriceSaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 
 import static com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse.convertFromLiveStockPrice;
@@ -46,12 +46,12 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
     private final RedisTemplate<Object, Object> redisTemplate;
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
+    private final OverseasLiveStockPriceSaverService liveStockPriceSaverService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
-
     @Override
-    @Transactional
+    @Retryable(maxAttempts=3, backoff = @Backoff(delay = 1000))
     public void initLiveStockPrice(){
         List<Stock> stockList = stockRepository.findByCurrencyName("USD");
         String token = (String) redisTemplate.opsForValue().get("kis-access-token");
@@ -81,7 +81,6 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
 
     //REST API로 현재가 데이터 조회
     @Override
-    @Transactional
     public void getLiveStockPriceViaRestAPI(String code, String token){
         try {
             String url = UriComponentsBuilder.fromHttpUrl(baseUrl)
@@ -106,7 +105,7 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 OverseasLiveStockPriceWrapper wrapper = objectMapper.readValue(response.getBody(), OverseasLiveStockPriceWrapper.class);
-                saveLiveStockPrice(code, wrapper.output()); //성공하면 db에 저장
+                liveStockPriceSaverService.saveLiveStockPrice(code, wrapper.output()); //성공하면 db에 저장
             } else {
                 log.error("현재가 데이터 조회 실패: {} - 응답이 비어있음", code);
                 throw new DomainException(DomainErrorCode.API_RESPONSE_EMPTY);
@@ -126,28 +125,9 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
         }
     }
 
-    // 현재가 데이터 DB에 저장
-    private void saveLiveStockPrice(String code, OverseasLiveStockPrice priceDto){
-        Stock stock = stockRepository.findByCode(code).orElseThrow(()-> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                .orElseGet(() -> LiveStockPrice.builder()
-                        .stock(stock)
-                        .build());
-        BigDecimal currentPrice = priceDto.currentPrice();
-        BigDecimal basePrice = priceDto.base();
-        BigDecimal priceChange = currentPrice.subtract(basePrice);
-
-        BigDecimal priceChangeRate = basePrice.compareTo(BigDecimal.ZERO) != 0 ?
-                priceChange.divide(basePrice, 6, RoundingMode.HALF_UP)
-                        .multiply(BigDecimal.valueOf(100))
-                        .setScale(2, RoundingMode.HALF_UP) :
-                BigDecimal.ZERO;
-
-        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice(), priceChange, priceChangeRate);
-        liveStockPriceRepository.save(liveStockPrice);
-    }
 
     @Override
+    @Transactional(readOnly = true)
     public OverseasLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
         //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
         LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock).orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));

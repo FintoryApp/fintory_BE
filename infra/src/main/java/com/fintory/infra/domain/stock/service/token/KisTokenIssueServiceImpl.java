@@ -39,13 +39,21 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
     @PostConstruct
     public void refreshKisToken() {
         try {
-            // REST API 토큰 발급
-            KisTokenResponse restToken = getNewKisToken();
-            log.info("REST API 토큰 발급 성공");
+            if(redisTemplate.opsForValue().get("kis-access-token")== null || redisTemplate.opsForValue().get("kis-websocket-access-token") == null
+                    || redisTemplate.getExpire("kis-access-token")<=0 || redisTemplate.getExpire("kis-websocket-access-token")<=0) {
+                // REST API 토큰 발급
+                KisTokenResponse restToken = getNewKisToken();
+                log.info("REST API 토큰 발급 성공");
 
-            // WebSocket 토큰 발급
-            KisWebSocketTokenResponse wsToken = getNewWebSocketKisToken();
-            log.info("WebSocket 토큰 발급 성공");
+                // WebSocket 토큰 발급
+                KisWebSocketTokenResponse wsToken = getNewWebSocketKisToken();
+                log.info("WebSocket 토큰 발급 성공");
+            }else{
+                Long websocket_ttl =  redisTemplate.getExpire("kis-websocket-access-token");
+                Long rest_ttl = redisTemplate.getExpire("kis-access-token");
+
+                log.info("기존 KIS 토큰 사용중, 남은 시간: {}초(웹소켓 토큰), 남은 시간 : {}초(접근 토큰)", websocket_ttl, rest_ttl);
+            }
 
         } catch (Exception e) {
             log.error("토큰 초기화 실패: {}", e.getMessage());
@@ -53,8 +61,8 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
         }
     }
 
-    // 24시간마다 토큰 갱신
-    @Scheduled(fixedRate = 86400000, initialDelay = 86400000)
+    // 23시간마다 토큰 갱신
+    @Scheduled(fixedRate = 82800000, initialDelay = 82800000)
     public void changeRefreshToken() {
         try {
             // REST API 토큰 갱신
@@ -131,8 +139,8 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
         String token = response.accessToken();
         int expiresIn = response.expiresIn();
 
-        // Redis 만료 설정 (5분 여유)
-        Duration expiry = Duration.ofSeconds(expiresIn - 300);
+        // Redis 만료 설정 (1시간 여유)
+        Duration expiry = Duration.ofSeconds(expiresIn - 3600);
         redisTemplate.opsForValue().set("kis-access-token", token, expiry);
     }
 
@@ -140,9 +148,9 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
     private void storeWebSocketTokenWithExpiry(KisWebSocketTokenResponse response) {
         String token = response.approvalKey();
 
-        //Redis 만료 설정 (5분 여유)
-        Duration expiry = Duration.ofSeconds(86100);
-        redisTemplate.opsForValue().set("kis-websocket-access-token", token);
+        //Redis 만료 설정 (1시간 여유) -> 일반 접근 토큰과 달리 접근토큰 유효기간이 따로 없어서 설정
+        Duration expiry = Duration.ofSeconds(82800);
+        redisTemplate.opsForValue().set("kis-websocket-access-token", token, expiry);
     }
 
     // 일반 접근 토큰 요청 객체 생성
