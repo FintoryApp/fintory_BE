@@ -1,7 +1,6 @@
 package com.fintory.domain.financialword.model;
 
 import com.fintory.domain.common.BaseEntity;
-import com.fintory.domain.quiz.model.Quiz;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +18,4 @@ public class FinancialWord extends BaseEntity {
 
     private String moreInfo;
 
-    @OneToOne(mappedBy = "word")
-    private Quiz quiz;
 }

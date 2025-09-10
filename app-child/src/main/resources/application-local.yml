@@ -69,7 +69,7 @@ management:
       show-details: always
 
 eos:
-  api-key: ${ECOS_API_KEY}
+  api-key: ${EOS_API_KEY}
 hantu-openapi:
   appkey: ${HANTU_APPKEY}
   appsecret: ${HANTU_APPSECRET}
