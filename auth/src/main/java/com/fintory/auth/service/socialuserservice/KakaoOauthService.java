@@ -67,7 +67,7 @@ public class KakaoOauthService {
                 });
 
         CustomUserDetails userDetails = new CustomUserDetails(
-                child.getSocialId(),
+                child.getEmail(),
                 null,
                 child.getNickname(),
                 child.getRole().getKey(),

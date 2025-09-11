@@ -63,7 +63,7 @@ public class GoogleOauthService {
                 });
         // 인증 객체 생성 (비밀번호 없이)
         CustomUserDetails userDetails = new CustomUserDetails(
-                child.getSocialId(),  // username
+                child.getEmail(),  // username
                 null,                 // password: 소셜 로그인은 비밀번호 불필요
                 child.getNickname(),
                 child.getRole().getKey(),

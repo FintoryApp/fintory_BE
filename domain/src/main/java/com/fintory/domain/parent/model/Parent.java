@@ -4,6 +4,7 @@ import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
+import com.fintory.domain.common.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name="parents")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Parent extends BaseEntity {
+public class Parent extends BaseEntity implements User {
 
     @Column(length = 20)
     private String nickname;
