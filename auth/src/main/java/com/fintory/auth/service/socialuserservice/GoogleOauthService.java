@@ -1,4 +1,4 @@
-package com.fintory.auth.service;
+package com.fintory.auth.service.socialuserservice;
 
 
 import com.fintory.auth.dto.AuthToken;
