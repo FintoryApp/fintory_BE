@@ -7,6 +7,7 @@ import com.fintory.auth.jwt.JwtTokenProvider;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
@@ -40,6 +41,7 @@ public class ChildKakaoOauthService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ChildRepository childRepository;
+    private final AccountService accountService;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
     private final HttpHeaders headers = new HttpHeaders();
@@ -63,6 +65,9 @@ public class ChildKakaoOauthService {
         Child child = childRepository.findBySocialId(kakaoId)
                 .orElseGet(() -> {
                     Child newChild = new Child(nickname, kakaoEmail, kakaoId, LoginType.KAKAO, Role.CHILD, Status.ACTIVE);
+                    Child savedChild = childRepository.save(newChild);
+                    accountService.createInitialAccount(savedChild);
+
                     return childRepository.save(newChild);
                 });
 

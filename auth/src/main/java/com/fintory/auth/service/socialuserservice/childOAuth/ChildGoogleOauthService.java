@@ -6,6 +6,7 @@ import com.fintory.auth.jwt.JwtTokenProvider;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
@@ -39,6 +40,7 @@ public class ChildGoogleOauthService {
     private String googleClientId;
     private final JwtTokenProvider jwtTokenProvider;
     private final ChildRepository childRepository;
+    private final AccountService accountService;
     private final RedisTemplate<String, String> redisTemplate;
 
 
@@ -59,7 +61,10 @@ public class ChildGoogleOauthService {
         Child child = childRepository.findBySocialId(socialId) // 소셜로만 가입되있는 경우 -> 로그인
                 .orElseGet(() -> { // 소셜로그인 가입 안되어있는 경우 -> 등록 후 로그인
                     Child newChild = new Child(nickname, googleEmail, socialId, LoginType.GOOGLE, Role.CHILD, Status.ACTIVE);
-                    return childRepository.save(newChild);
+                    Child savedChild = childRepository.save(newChild);
+                    accountService.createInitialAccount(savedChild);
+
+                    return savedChild;
                 });
         // 인증 객체 생성 (비밀번호 없이)
         CustomUserDetails userDetails = new CustomUserDetails(
