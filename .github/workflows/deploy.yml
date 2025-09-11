@@ -68,7 +68,7 @@ jobs:
       - name: Deploy fintory-child to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.FINTORY_PARENT_HOST }}
+          host: ${{ secrets.FINTORY_CHILD_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
