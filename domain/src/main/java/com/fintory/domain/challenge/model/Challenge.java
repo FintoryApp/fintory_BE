@@ -2,7 +2,6 @@ package com.fintory.domain.challenge.model;
 
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.common.BaseEntity;
-import com.fintory.domain.parent.model.Parent;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -32,7 +31,7 @@ public class Challenge extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private Parent parent;
+    private com.fintory.domain.parent.model.Parent parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")

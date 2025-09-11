@@ -3,8 +3,8 @@ package com.fintory.auth.controller;
 import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.*;
 import com.fintory.auth.service.authservice.ChildAuthServiceImpl;
-import com.fintory.auth.service.socialuserservice.GoogleOauthService;
-import com.fintory.auth.service.socialuserservice.KakaoOauthService;
+import com.fintory.auth.service.socialuserservice.childOAuth.ChildGoogleOauthService;
+import com.fintory.auth.service.socialuserservice.childOAuth.ChildKakaoOauthService;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
@@ -27,9 +27,8 @@ import java.util.Map;
 public class ChildAuthControllerImpl implements AuthController{
 
     private final ChildAuthServiceImpl authService;
-    private final GoogleOauthService googleOauthService;
-    private final KakaoOauthService kakaoOauthService;
-
+    private final ChildGoogleOauthService childGoogleOauthService;
+    private final ChildKakaoOauthService childKakaoOauthService;
     @Override
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthToken>> signup(@RequestBody @Valid SignUpRequest request) {
@@ -50,7 +49,7 @@ public class ChildAuthControllerImpl implements AuthController{
     @Override
     @PostMapping("/social-login/google")
     public ResponseEntity<ApiResponse<AuthToken>> googleLogin(@RequestBody GoogleLoginRequest request) {
-        AuthToken token = googleOauthService.handleGoogleLoginOrRegister(request.idToken());
+        AuthToken token = childGoogleOauthService.handleGoogleLoginOrRegister(request.idToken());
         log.info("googleLogin token: {}", token);
         return ResponseEntity.ok(ApiResponse.ok(token));
     }
@@ -58,7 +57,7 @@ public class ChildAuthControllerImpl implements AuthController{
     @Override
     @PostMapping("/social-login/kakao")
     public ResponseEntity<ApiResponse<AuthToken>> kakaoLogin(@RequestBody KakaoLoginRequest request) {
-        AuthToken token = kakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
+        AuthToken token = childKakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
         log.info("kakaoLogin token: {}", token);
         return ResponseEntity.ok(ApiResponse.ok(token));
     }

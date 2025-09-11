@@ -1,4 +1,4 @@
-package com.fintory.auth.service.socialuserservice;
+package com.fintory.auth.service.socialuserservice.childOAuth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fintory.auth.dto.AuthToken;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class KakaoOauthService {
+public class ChildKakaoOauthService {
 
     @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
     private String userinfoUri;
