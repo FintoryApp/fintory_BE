@@ -1,6 +1,7 @@
 package com.fintory.domain.point.service;
 
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.point.dto.PointWalletResponse;
 
 public interface PointService {
 
@@ -8,5 +9,5 @@ public interface PointService {
 
     void createInitialPointWallet(Child child);
 
-    // TODO:List<PointTransaction> getAllPointTransactions(Child child);
+    PointWalletResponse getPointWalletWithTransactions(Child child);
 }

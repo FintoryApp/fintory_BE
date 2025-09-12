@@ -3,6 +3,7 @@ package com.fintory.infra.domain.point.serviceimpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.point.dto.PointWalletResponse;
 import com.fintory.domain.point.model.PointTransaction;
 import com.fintory.domain.point.model.PointTransactionSource;
 import com.fintory.domain.point.model.PointWallet;
@@ -43,16 +44,15 @@ public class PointServiceImpl implements PointService {
         }
     }
 
-    // TODO: getAllPointTransactions
-    // @Override
-//    public List<PointTransaction> getAllPointTransactions(Child child) {
-//
-//        PointWallet pointWallet = pointRepository.findByChildId(child.getId())
-//                .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
-//
-//        // pointWallet으로 모든 pointTransactions 리스트 반환
-//        return
-//    }
+    @Override
+    @Transactional(readOnly = true)
+    public PointWalletResponse getPointWalletWithTransactions(Child child) {
+
+        PointWallet pointWallet = pointRepository.findByChildId(child.getId())
+                .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
+
+        return PointWalletResponse.from(pointWallet);
+    }
 
     // 포인트 지갑 업데이트
     // 부모 메소드에 transactional이 적용됐기에 해당 메소드로 적용이 됨
