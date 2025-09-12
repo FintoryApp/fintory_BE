@@ -11,6 +11,7 @@ import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.Role;
+import com.fintory.domain.point.service.PointService;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final ChildRepository childRepository;
     private final AccountService accountService;
+    private final PointService pointService;
 
     @Transactional
     public AuthToken signup(SignUpRequest request) {
@@ -69,6 +71,7 @@ public class AuthService {
 
         childRepository.save(child);
         accountService.createInitialAccount(child);
+        pointService.createInitialPointWallet(child);
 
         // 회원가입 완료 후 자동으로 로그인 처리
         return login(request.email(), request.password());

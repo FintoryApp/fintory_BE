@@ -14,23 +14,37 @@ import java.util.List;
 @Getter
 @Table(name="point")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Point extends BaseEntity {
+public class PointWallet extends BaseEntity {
     // 이렇게 되면 포인트 테이블이 아닌 포인트 history 테이블이 됨. -> amount를 계산하려면 SUM(amount)가 된다는 사실 기억
 
-    private Long totalAmount;
+    private int totalAmount;
 
     @OneToOne
     @JoinColumn(name="child_id")
     private Child child;
 
-    @OneToMany(mappedBy = "point", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "pointWallet", cascade = CascadeType.ALL)
     private List<PointTransaction> transactions = new ArrayList<>();
 
-    public void earnPoint(Long amount) {
+    public static PointWallet createWithInitialPointWallet(Child child) {
+
+        PointWallet pointWallet = new PointWallet();
+        pointWallet.child = child;
+        pointWallet.totalAmount = 0;
+
+        return pointWallet;
+    }
+
+    public void earnPoint(int amount) {
         this.totalAmount += amount;
     }
 
-    public void withdrawPoint(Long amount) {
+    public void withdrawPoint(int amount) {
         this.totalAmount -= amount;
     }
+//  TODO:
+//    public void addTransaction(PointTransaction pt) {
+//        this.transactions.add(pt);
+//        pt.setPointWallet(this);
+//    }
 }

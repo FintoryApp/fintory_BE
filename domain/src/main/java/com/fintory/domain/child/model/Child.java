@@ -7,7 +7,7 @@ import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
 import com.fintory.domain.mapping.ParentChildMapping;
-import com.fintory.domain.point.model.Point;
+import com.fintory.domain.point.model.PointWallet;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -79,7 +79,7 @@ public class Child extends BaseEntity {
     private Account account;
 
     @OneToOne(cascade = CascadeType.ALL,mappedBy="child")
-    private Point point;
+    private PointWallet pointWallet;
 
     // 1:n
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
