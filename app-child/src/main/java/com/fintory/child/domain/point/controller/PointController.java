@@ -13,4 +13,6 @@ public interface PointController {
 
      //포인트 내역 전체 반환
      ResponseEntity<ApiResponse<PointWalletResponse>> getPointTransactions(@AuthenticationPrincipal CustomUserDetails user);
+
+     ResponseEntity<ApiResponse<Integer>> getTotalAmountPoint(@AuthenticationPrincipal CustomUserDetails user);
 }

@@ -49,9 +49,17 @@ public class PointServiceImpl implements PointService {
     public PointWalletResponse getPointWalletWithTransactions(Child child) {
 
         PointWallet pointWallet = pointRepository.findByChildId(child.getId())
-                .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
+                .orElseThrow(() -> new DomainException(DomainErrorCode.INITIALIZE_POINT_WALLET_FAILED));
 
         return PointWalletResponse.from(pointWallet);
+    }
+
+    @Override
+    public int getTotalAmount(Child child) {
+
+        PointWallet wallet = pointRepository.findByChildId(child.getId())
+                .orElseThrow(() -> new DomainException(DomainErrorCode.INITIALIZE_POINT_WALLET_FAILED));
+        return wallet.getTotalAmount();
     }
 
     // 포인트 지갑 업데이트
