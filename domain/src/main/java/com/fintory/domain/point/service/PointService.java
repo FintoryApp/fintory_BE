@@ -4,7 +4,7 @@ import com.fintory.domain.child.model.Child;
 
 public interface PointService {
 
-    // TODO: void givePointsByContinuousDays(int continuousDays, Child child);
+    void givePointsByContinuousDays(int continuousDays, Child child);
 
     void createInitialPointWallet(Child child);
 
