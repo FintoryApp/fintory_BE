@@ -22,7 +22,11 @@ public enum DomainErrorCode {
     WRONG_EMAIL_OR_PASSWORD(HttpStatus.BAD_REQUEST, "WRONG_EMAIL_OR_PASSWORD", "아이디 또는 비밀번호가 일치하지 않습니다."),
     ALREADY_REGISTERED_EMAIL(HttpStatus.BAD_REQUEST, "ALREADY_REGISTERED_EMAILALREADY_REGISTERED_EMAIL", "해당 이메일로 가입된 계정이 있습니다. 다른 이메일을 사용하거나 다른 방식으로 로그인 해주세요"),
 
+    //account
     INITIALIZE_ACCOUNT_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "INITIALIZE_ACCOUNT_FAILED", "계좌 생성 및 초기화 실패"),
+
+    //point
+    INITIALIZE_POINT_WALLET_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "INITIALIZE_POINT_WALLET_FAILED", "포인트 지갑 생성 및 초기화 실패"),
 
     //jwt
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
