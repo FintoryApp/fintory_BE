@@ -10,4 +10,6 @@ public interface PointService {
     void createInitialPointWallet(Child child);
 
     PointWalletResponse getPointWalletWithTransactions(Child child);
+
+    int getTotalAmount(Child child);
 }

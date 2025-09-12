@@ -33,4 +33,11 @@ public class PointControllerImpl implements PointController{
         PointWalletResponse response = pointService.getPointWalletWithTransactions(child);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
+
+    @Override
+    public ResponseEntity<ApiResponse<Integer>> getTotalAmountPoint(CustomUserDetails user) {
+        Child child = childService.getChild(user.getUsername());
+        int response = pointService.getTotalAmount(child);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 }
