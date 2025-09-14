@@ -6,6 +6,7 @@ import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
+import com.fintory.domain.common.User;
 import com.fintory.domain.mapping.ParentChildMapping;
 import com.fintory.domain.point.model.Point;
 import jakarta.persistence.*;
@@ -17,7 +18,7 @@ import java.util.List;
 @Getter
 @Table(name="child")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Child extends BaseEntity {
+public class Child extends BaseEntity implements User {
 
     @Column(length = 20)
     private String nickname;

@@ -57,11 +57,7 @@ public interface AuthController{
             KakaoLoginRequest request
     );
 
-    @Operation(summary = "로그아웃", description = "at 토큰을 헤더에 포함해서 요청해야 함, axios.get(\"/api/user\", {\n" +
-            "  headers: {\n" +
-            "    Authorization: `Bearer ${token}`\n" +
-            "  }\n" +
-            "});")
+    @Operation(summary = "로그아웃", description = "at 토큰을 헤더에 포함해서 요청해야 함")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "로그아웃 성공"),
             @ApiResponse(responseCode = "400", description = "사용자가 로그인되어 있지 않습니다"),

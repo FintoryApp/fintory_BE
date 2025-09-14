@@ -1,39 +1,66 @@
 package com.fintory.domain.parent.model;
 
-import com.fintory.domain.challenge.model.Challenge;
+import com.fintory.domain.child.model.LoginType;
+import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.BaseEntity;
+import com.fintory.domain.common.Role;
+import com.fintory.domain.common.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Table(name="parents")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Parent extends BaseEntity {
+public class Parent extends BaseEntity implements User {
 
+    @Column(length = 20)
     private String nickname;
 
-    @Column(name="login_id")
-    private String loginId;
-
-    private String password;
-
+    @Column(unique = true)
     private String email;
 
-    @Column(name="phone_number")
-    private String phoneNumber;
-
-    private String status; //혹시 여기도 boolean 타입이어야 하나요?
+    @Column
+    private String password;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="parent")
-    private List<Challenge> challenges;
+    @Column(name="social_id", unique = true)
+    private String socialId;
+
+    @Column(name="social_type")
+    @Enumerated(EnumType.STRING)
+    private LoginType loginType;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    public static Parent createWithIdPw(String nickname, String email, String password, Role role, Status status) {
+        Parent parent = new Parent();
+        parent.nickname = nickname;
+        parent.email = email;
+        parent.password = password;
+        parent.role = role;
+        parent.loginType = LoginType.EMAIL;
+        parent.status = status;
+        return parent;
+    }
+
+    public static Parent createWithSocial(String nickname, String email, String socialId, LoginType loginType, Role role, Status status) {
+        Parent parent = new Parent();
+        parent.nickname = nickname;
+        parent.email = email;
+        parent.socialId = socialId;
+        parent.loginType = loginType;
+        parent.role = role;
+        parent.status = status;
+        return parent;
+    }
+
 }
 
 

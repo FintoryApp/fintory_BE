@@ -2,9 +2,9 @@ package com.fintory.auth.controller;
 
 import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.*;
-import com.fintory.auth.service.AuthService;
-import com.fintory.auth.service.GoogleOauthService;
-import com.fintory.auth.service.KakaoOauthService;
+import com.fintory.auth.service.authservice.ParentAuthServiceImpl;
+import com.fintory.auth.service.socialuserservice.parentOAuth.ParentGoogleOauthService;
+import com.fintory.auth.service.socialuserservice.parentOAuth.ParentKakaoOauthService;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
@@ -23,12 +23,12 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
-public class AuthControllerImpl implements AuthController{
+@RequestMapping("/api/parent/auth")
+public class ParentAuthControllerImpl implements AuthController{
 
-    private final AuthService authService;
-    private final GoogleOauthService googleOauthService;
-    private final KakaoOauthService kakaoOauthService;
+    private final ParentAuthServiceImpl authService;
+    private final ParentGoogleOauthService parentGoogleOauthService;
+    private final ParentKakaoOauthService parentKakaoOauthService;
 
     @Override
     @PostMapping("/signup")
@@ -50,14 +50,14 @@ public class AuthControllerImpl implements AuthController{
     @Override
     @PostMapping("/social-login/google")
     public ResponseEntity<ApiResponse<AuthToken>> googleLogin(@RequestBody GoogleLoginRequest request) {
-        AuthToken token = googleOauthService.handleGoogleLoginOrRegister(request.idToken());
+        AuthToken token = parentGoogleOauthService.handleGoogleLoginOrRegister(request.idToken());
         return ResponseEntity.ok(ApiResponse.ok(token));
     }
 
     @Override
     @PostMapping("/social-login/kakao")
     public ResponseEntity<ApiResponse<AuthToken>> kakaoLogin(@RequestBody KakaoLoginRequest request) {
-        AuthToken token = kakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
+        AuthToken token = parentKakaoOauthService.handleKakaoLoginOrRegister(request.accessToken());
         return ResponseEntity.ok(ApiResponse.ok(token));
     }
 

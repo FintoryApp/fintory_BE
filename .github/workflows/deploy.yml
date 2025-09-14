@@ -4,17 +4,25 @@ on:
   push:
     branches: [ "dev" ]
   pull_request:
-      branches: [ "dev" ]
+    branches: [ "dev" ]
 
 env:
   AWS_REGION: ap-northeast-2
 
 jobs:
-  build-and-deploy-child:
+  build-and-push:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - module: app-child
+            ecr_repo: fintory-child
+          - module: app-parent
+            ecr_repo: fintory-parent
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
       - name: Set up JDK 17
         uses: actions/setup-java@v3
@@ -22,7 +30,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - run: chmod +x ./gradlew
+      - name: Grant permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -35,19 +54,33 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push app-child
+      - name: Build and push ${{ matrix.module }}
         run: |
-          ./gradlew :app-child:clean :app-child:build
-          docker build -t app-child:latest ./app-child
-          docker tag app-child:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
+          ./gradlew :${{ matrix.module }}:clean build
+          docker build -t ${{ matrix.module }}:latest ./${{ matrix.module }}
+          docker tag ${{ matrix.module }}:latest ${{ steps.login-ecr.outputs.registry }}/${{ matrix.ecr_repo }}:latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ matrix.ecr_repo }}:latest
 
-      - name: Deploy to EC2
+  deploy-child:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy fintory-child to EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.FINTORY_CHILD_HOST }}
           username: ubuntu
-          timeout: 60s
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
@@ -76,4 +109,52 @@ jobs:
             docker compose up -d
 
             docker image prune -f
+
+  deploy-parent:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy fintory-parent to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FINTORY_PARENT_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+            export RDS_URL=${{ secrets.RDS_URL }}
+            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}
+            export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
+            export ACCESS_TOKEN_EXPIRATION_MINUTES=${{ secrets.ACCESS_TOKEN_EXPIRATION_MINUTES }}
+            export REFRESH_TOKEN_EXPIRATION_DAYS=${{ secrets.REFRESH_TOKEN_EXPIRATION_DAYS }}
+            export GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            export KAKAO_REST_CLIENT_ID=${{ secrets.KAKAO_REST_CLIENT_ID }}
+            export KAKAO_REDIRECT_URI=${{ secrets.KAKAO_REDIRECT_URI }}
+            export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
+            export HANTU_APPKEY=${{ secrets.HANTU_APPKEY}}
+            export HANTU_APPSECRET=${{ secrets.HANTU_APPSECRET}}
+            export DB_APPKEY=${{ secrets.DB_APPKEY}}
+            export DB_APPSECRET=${{ secrets.DB_APPSECRET}}
+            export EOS_API_KEY=${{ secrets.EOS_API_KEY}}
             
+            aws ecr get-login-password --region ap-northeast-2 | \
+              docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            docker pull ${{ steps.login-ecr.outputs.registry }}/fintory-parent:latest
+
+            docker compose down
+            docker compose up -d
+
+            docker image prune -f

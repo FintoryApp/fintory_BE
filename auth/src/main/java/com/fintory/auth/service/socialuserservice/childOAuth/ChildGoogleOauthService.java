@@ -1,4 +1,4 @@
-package com.fintory.auth.service;
+package com.fintory.auth.service.socialuserservice.childOAuth;
 
 
 import com.fintory.auth.dto.AuthToken;
@@ -6,6 +6,7 @@ import com.fintory.auth.jwt.JwtTokenProvider;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
@@ -33,12 +34,13 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class GoogleOauthService {
+public class ChildGoogleOauthService {
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
     private final JwtTokenProvider jwtTokenProvider;
     private final ChildRepository childRepository;
+    private final AccountService accountService;
     private final RedisTemplate<String, String> redisTemplate;
 
 
@@ -59,11 +61,14 @@ public class GoogleOauthService {
         Child child = childRepository.findBySocialId(socialId) // 소셜로만 가입되있는 경우 -> 로그인
                 .orElseGet(() -> { // 소셜로그인 가입 안되어있는 경우 -> 등록 후 로그인
                     Child newChild = new Child(nickname, googleEmail, socialId, LoginType.GOOGLE, Role.CHILD, Status.ACTIVE);
-                    return childRepository.save(newChild);
+                    Child savedChild = childRepository.save(newChild);
+                    accountService.createInitialAccount(savedChild);
+
+                    return savedChild;
                 });
         // 인증 객체 생성 (비밀번호 없이)
         CustomUserDetails userDetails = new CustomUserDetails(
-                child.getSocialId(),  // username
+                child.getEmail(),  // username
                 null,                 // password: 소셜 로그인은 비밀번호 불필요
                 child.getNickname(),
                 child.getRole().getKey(),

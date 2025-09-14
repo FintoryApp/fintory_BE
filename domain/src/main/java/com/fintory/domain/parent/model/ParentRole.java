@@ -1,6 +1,6 @@
 package com.fintory.domain.parent.model;
 
-public enum Role {
+public enum ParentRole {
     mother,
     father
 }

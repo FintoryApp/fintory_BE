@@ -11,14 +11,25 @@ public class OpenApiList {
             "/h2-console/**",
 
             // user
-            "/api/auth/login",
-            "/api/auth/signup",
-            "/api/auth/check-email",
-            "/api/auth/social-login/google",
-            "/api/auth/social-login/kakao",
+            "/api/child/auth/login",
+            "/api/parent/auth/login",
+
+            "/api/child/auth/signup",
+            "/api/parent/auth/signup",
+
+            "/api/child/auth/check-email",
+            "/api/parent/auth/check-email",
+
+            "/api/child/auth/social-login/google",
+            "/api/parent/auth/social-login/google",
+
+            "/api/child/auth/social-login/kakao",
+            "/api/parent/auth/social-login/kakao",
 
             // refresh
-            "/api/auth/reissue",
+            "/api/child/auth/reissue",
+            "/api/parent/auth/reissue",
+
 
             // swagger
             "/swagger-ui/**",
