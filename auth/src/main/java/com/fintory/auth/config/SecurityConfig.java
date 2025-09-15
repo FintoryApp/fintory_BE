@@ -44,7 +44,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(OpenApiList.PUBLIC_URLS).permitAll()
                         .requestMatchers("/api/child/**").hasRole("CHILD")
-                        .requestMatchers("/api/parent/**").hasRole("PARENT")
                         // TODO:관리자 추후 추가.requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );

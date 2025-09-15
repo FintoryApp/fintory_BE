@@ -30,10 +30,6 @@ public class Challenge extends BaseEntity {
     private ChallengeCategory challengeCategory;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id")
-    private com.fintory.domain.parent.model.Parent parent;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_id")
     private Child child;
 

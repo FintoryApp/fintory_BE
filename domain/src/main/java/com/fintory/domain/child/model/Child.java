@@ -7,7 +7,6 @@ import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
 import com.fintory.domain.common.User;
-import com.fintory.domain.mapping.ParentChildMapping;
 import com.fintory.domain.point.model.PointWallet;
 import jakarta.persistence.*;
 import lombok.*;
@@ -69,11 +68,6 @@ public class Child extends BaseEntity implements User {
     public void updateStatus(Status status) {
         this.status = status;
     }
-
-
-    // n:m
-    @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
-    private ParentChildMapping parentChildMapping;
 
     // 1:1
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
