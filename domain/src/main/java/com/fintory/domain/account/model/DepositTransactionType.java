@@ -6,7 +6,9 @@ import lombok.Getter;
 public enum DepositTransactionType {
 
     WITHDRAW("출금"),
-    DEPOSIT("입금");
+    DEPOSIT("입금"),
+    EXCHANGE("포인트 환전")
+    ;
 
     private final String type;
 

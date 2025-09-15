@@ -33,12 +33,12 @@ public class PointTransaction extends BaseEntity {
         this.pointWallet = pointWallet;
     }
 
-    public static PointTransaction earn(int amount, PointTransactionSource source, PointWallet pointWallet) {
+    public static PointTransaction createEarningTransaction(int amount, PointTransactionSource source, PointWallet pointWallet) {
         return new PointTransaction(amount, PointTransactionType.EARN, source, pointWallet);
     }
 
-    public static PointTransaction use(int amount, PointTransactionSource source, PointWallet pointWallet) {
-        return new PointTransaction(amount, PointTransactionType.WITHDRAW, source, pointWallet);
+    public static PointTransaction createExchangeTransaction(int amount, PointWallet pointWallet) {
+        return new PointTransaction(amount, PointTransactionType.EXCHANGED, null,  pointWallet);
     }
 
 }

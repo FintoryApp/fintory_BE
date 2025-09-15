@@ -5,12 +5,15 @@ import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.service.ChildService;
+import com.fintory.domain.point.dto.ExchangePointRequest;
+import com.fintory.domain.point.dto.ExchangedCashResponse;
 import com.fintory.domain.point.dto.PointWalletResponse;
 import com.fintory.domain.point.service.PointService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/child/point")
@@ -21,13 +24,21 @@ public class PointControllerImpl implements PointController{
     private final AccountService accountService;
     private final ChildService childService;
 
-//   TODO:
-//    @Override
-//    public ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(CustomUserDetails user, Integer point) {
-//        return null;
-//    }
 
     @Override
+    @PostMapping("/exchange")
+    public ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody ExchangePointRequest request
+    ) {
+        Child child = childService.getChild(user.getUsername());
+        ExchangedCashResponse response = pointService.exchangePoint(child, request.point());
+
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
+
+    @Override
+    @GetMapping("/get-point-transactions")
     public ResponseEntity<ApiResponse<PointWalletResponse>> getPointTransactions(CustomUserDetails user) {
         Child child = childService.getChild(user.getUsername());
         PointWalletResponse response = pointService.getPointWalletWithTransactions(child);
@@ -35,6 +46,7 @@ public class PointControllerImpl implements PointController{
     }
 
     @Override
+    @GetMapping("/get-total-amount-point")
     public ResponseEntity<ApiResponse<Integer>> getTotalAmountPoint(CustomUserDetails user) {
         Child child = childService.getChild(user.getUsername());
         int response = pointService.getTotalAmount(child);

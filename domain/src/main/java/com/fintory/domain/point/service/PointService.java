@@ -1,6 +1,7 @@
 package com.fintory.domain.point.service;
 
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.point.dto.ExchangedCashResponse;
 import com.fintory.domain.point.dto.PointWalletResponse;
 
 public interface PointService {
@@ -12,4 +13,6 @@ public interface PointService {
     PointWalletResponse getPointWalletWithTransactions(Child child);
 
     int getTotalAmount(Child child);
+
+    ExchangedCashResponse exchangePoint(Child child, int pointAmount);
 }

@@ -27,6 +27,8 @@ public enum DomainErrorCode {
 
     //point
     INITIALIZE_POINT_WALLET_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "INITIALIZE_POINT_WALLET_FAILED", "포인트 지갑 생성 및 초기화 실패"),
+    POINT_WALLET_NOT_FOUND(HttpStatus.BAD_REQUEST, "POINT_WALLET_NOT_FOUND", "포인트 지갑을 찾을 수 없습니다"),
+    POINT_INSUFFICIENT(HttpStatus.BAD_REQUEST, "POINT_INSUFFICIENT", "보유 포인트가 부족합니다"),
 
     //jwt
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_TOKEN", "유효하지 않은 토큰입니다."),
