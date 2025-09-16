@@ -23,6 +23,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.stream.Collectors;
 
 /**
  * 모든 HTTP 요청에 대해 JWT 토큰을 검증하고, 유효한 경우, SecurityContext에 인증 정보를 설정하는 커스텀 필터
@@ -44,6 +46,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        // 요청 로깅 추가
+        log.info("Incoming Request - Method: {}, URI: {}, IP: {}, Headers: {}",
+                request.getMethod(),
+                request.getRequestURI(),
+                request.getRemoteAddr(),
+                Collections.list(request.getHeaderNames()).stream()
+                        .collect(Collectors.toMap(
+                                headerName -> headerName,
+                                request::getHeader
+                        )));
 
         try {
             String token = resolveToken(request);
