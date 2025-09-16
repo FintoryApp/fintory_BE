@@ -43,6 +43,9 @@ public class OpenApiList {
             // news
             "/api/news/crawl-test",
 
+            //report
+            "/api/child/consulting/test/consulting-report",
+
             "/ws/**"
 
     };
