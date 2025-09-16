@@ -2,9 +2,7 @@ package com.fintory.child.domain.stock.controller.korean;
 
 import com.fintory.common.api.ApiResponse;
 
-import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanRankResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.korean.response.*;
 import com.fintory.domain.stock.service.korean.KoreanStockService;
 import com.fintory.infra.domain.stock.service.korean.KoreanLiveStockPriceServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +23,9 @@ public class KoreanStockControllerImpl implements KoreanStockController {
 
     //국내 주식 랭킹 - 시가 총액
     @Override
-    @GetMapping("korean/rankings/marketCap")
-    public ResponseEntity<ApiResponse<List<KoreanRankResponse>>> getKoreanStockMarketCapTop20(){
-        List<KoreanRankResponse> koreanStockMarketCapTop20s = stockService.getKoreanMarketCapTop20();
+    @GetMapping("korean/rankings/market-cap")
+    public ResponseEntity<ApiResponse<List<KoreanMarketCapResponse>>> getKoreanStockMarketCapTop20(){
+        List<KoreanMarketCapResponse> koreanStockMarketCapTop20s = stockService.getKoreanMarketCapTop20();
         log.info("koreanStockMarket"+koreanStockMarketCapTop20s.toString());
         return ResponseEntity.ok(ApiResponse.ok(koreanStockMarketCapTop20s));
     }
@@ -35,8 +33,8 @@ public class KoreanStockControllerImpl implements KoreanStockController {
     //국내 주식 랭킹 - 등락률
     @Override
     @GetMapping("korean/rankings/roc")
-    public ResponseEntity<ApiResponse<List<KoreanRankResponse>>> getKoreanStockROCTop20(){
-        List<KoreanRankResponse> koreanStockROCTop20s = stockService.getKoreanROCTop20();
+    public ResponseEntity<ApiResponse<List<KoreanROCResponse>>> getKoreanStockROCTop20(){
+        List<KoreanROCResponse> koreanStockROCTop20s = stockService.getKoreanROCTop20();
         return ResponseEntity.ok(ApiResponse.ok(koreanStockROCTop20s));
     }
 

@@ -1,8 +1,6 @@
 package com.fintory.domain.stock.service.korean;
 
-import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanRankResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.korean.response.*;
 
 import java.util.List;
 
@@ -15,13 +13,13 @@ public interface KoreanStockService {
          * 국내 주식 시가총액 Top20 조회
          * @return 시가총액 순위 리스트
          */
-        List<KoreanRankResponse> getKoreanMarketCapTop20();
+         List<KoreanMarketCapResponse> getKoreanMarketCapTop20();
 
         /**
          * 국내 주식 등락률 Top20 조회
          * @return 등락률 순위 리스트
          */
-        List<KoreanRankResponse> getKoreanROCTop20();
+        public List<KoreanROCResponse> getKoreanROCTop20();
 
         /**
          * 국내 주식 거래량 Top20 조회
