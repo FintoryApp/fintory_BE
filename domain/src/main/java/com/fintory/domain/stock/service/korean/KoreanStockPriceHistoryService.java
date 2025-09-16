@@ -21,9 +21,19 @@ public interface KoreanStockPriceHistoryService {
      void initiateStockPriceHistory();
 
 
+    /**
+     *
+     *  KIS Developer에서 지정된 종목의 기간별 시세(일/주/월/년)를 조회하는 공통 메서드 (외부 API 의존)
+     *
+     * @param unit 조회 단위 ("D": 일봉, "W": 주봉, "M": 월봉, "Y": 년봉)
+     * @param code 주식 종목 코드
+     * @param localDate1 조회 시작일
+     * @param localDate2 조회 종료일
+     * @param orgAdjPrc 수정주가 반영 여부
+     * @return 기간별 시세 이력 데이터 리스트
+     */
+     List<KoreanStockPriceHistory> getKoreanStockItemChatPrice(String unit, String code, LocalDate localDate1, LocalDate localDate2, String orgAdjPrc);
 
-     //List<KoreanStockPriceHistory> getKoreanStockItemChatPrice(String unit, String code, LocalDate localDate1, LocalDate localDate2, String orgAdjPrc);
-    public List<KoreanStockPriceHistory> getKoreanStockItemChatPrice(String code, String interval, String range);
 
     /**
      *
