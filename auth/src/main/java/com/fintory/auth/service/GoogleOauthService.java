@@ -1,4 +1,4 @@
-package com.fintory.auth.service.socialuserservice.childOAuth;
+package com.fintory.auth.service;
 
 
 import com.fintory.auth.dto.AuthToken;
@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ChildGoogleOauthService {
+public class GoogleOauthService {
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;

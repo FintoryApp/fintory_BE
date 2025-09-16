@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/news")
+@RequestMapping("api/child/news")
 @RequiredArgsConstructor
 public class NewsControllerImpl implements NewsController{
 

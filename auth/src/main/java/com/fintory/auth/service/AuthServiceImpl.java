@@ -1,4 +1,4 @@
-package com.fintory.auth.service.authservice;
+package com.fintory.auth.service;
 
 import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.SignUpRequest;
@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class ChildAuthServiceImpl implements AuthService{
+public class AuthServiceImpl implements AuthService{
 
     // 남은 시간 2일 이하라면 RT 갱신
     private static final long REFRESH_THRESHOLD_MS = 2L * 24 * 60 * 60 * 1000;
