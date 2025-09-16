@@ -289,6 +289,7 @@ public class ConsultingServiceImpl implements ConsultingService {
     }
 
 
+
     //투자 분야별 퍼센트 (IT, 에너지, 기타 등 구체적인 카테고리 분류 및 비율)
     private List<InvestmentArea> getInvestmentArea(List<OwnedStock> ownedStocks){
        List<InvestmentArea> investmentAreas = new ArrayList<>();
