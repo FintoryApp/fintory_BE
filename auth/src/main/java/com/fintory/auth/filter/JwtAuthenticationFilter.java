@@ -66,9 +66,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.warn("JWT 인증 실패: Access Token이 만료되었습니다.");
 
             // 401 UNAUTHORIZED 응답 객체 생성
-            ExceptionResponse exceptionResponse = new ExceptionResponse(DomainErrorCode.EXPIRED_TOKEN);
+            ExceptionResponse exceptionResponse = new ExceptionResponse(DomainErrorCode.EXPIRED_ACCESS_TOKEN);
 
-            response.setStatus(DomainErrorCode.EXPIRED_TOKEN.getHttpStatus().value());
+            response.setStatus(DomainErrorCode.EXPIRED_ACCESS_TOKEN.getHttpStatus().value());
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
         }  catch (DomainException e) {

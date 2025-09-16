@@ -134,17 +134,14 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public AuthToken reissue(String refreshToken) {
 
-        boolean isExpired = false;
-        Claims claims;
-
         // Refresh Token 유효성 검증 + 만료시간 검사
         try {
             jwtTokenProvider.validateToken(refreshToken);
-            claims = jwtTokenProvider.parseClaims(refreshToken);
         } catch (ExpiredJwtException e) {
-            claims = e.getClaims();
-            isExpired = true;
+            throw new DomainException(DomainErrorCode.EXPIRED_REFRESH_TOKEN);
         }
+
+        Claims claims = jwtTokenProvider.parseClaims(refreshToken);
 
         // redis에서 삭제 위해 rt에서 이메일값 추출
         String username = claims.getSubject();
@@ -170,13 +167,13 @@ public class AuthServiceImpl implements AuthService{
         long expire = redisTemplate.getExpire(userIdentifier, TimeUnit.MILLISECONDS);
 
         // case1: rt가 살아있고 threshold 이상인 경우 -> rt + newAt 리턴
-        if (!isExpired && expire > REFRESH_THRESHOLD_MS) {
+        if (expire > REFRESH_THRESHOLD_MS) {
             Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(refreshToken);
             String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
             return new AuthToken(newAccessToken, refreshToken);
         }
         // case2: rt가 살아있고 threshold 이하 0 이상인 경우 -> newRt + newAt 리턴 + redis에서 기존 rt 삭제
-        if (!isExpired && expire > 0 && expire <= REFRESH_THRESHOLD_MS) {
+        if (expire > 0 && expire <= REFRESH_THRESHOLD_MS) {
             // 기존 RT 삭제
             redisTemplate.delete(username);
 
@@ -194,28 +191,6 @@ public class AuthServiceImpl implements AuthService{
             );
 
             // 새로운 AT 발급
-            Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(newRefreshToken);
-            String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
-
-            return new AuthToken(newAccessToken, newRefreshToken);
-        }
-        // case3: rt가 만료된 경우 -> newRt + newAt 리턴
-        if (isExpired) {
-
-            // 새로운 RT 발급
-            String newRefreshToken = jwtTokenProvider.generateRefreshToken(userIdentifier);
-            long newRefreshTokenExpirationMillis =
-                    jwtTokenProvider.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000L;
-
-            // Redis에 새 RT 저장
-            redisTemplate.opsForValue().set(
-                    userIdentifier,
-                    newRefreshToken,
-                    newRefreshTokenExpirationMillis,
-                    TimeUnit.MILLISECONDS
-            );
-
-            // 새로운 at 발급
             Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(newRefreshToken);
             String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
 
