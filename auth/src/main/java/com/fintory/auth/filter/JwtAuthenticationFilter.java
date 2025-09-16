@@ -6,6 +6,7 @@ import com.fintory.auth.util.OpenApiList;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.common.exception.ExceptionResponse;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,7 +60,19 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             // 필터이기 때문에 에러가 터져도 ExceptionHandler가 잡지를 못함 -> 메서드 내에서 json 응답 객체로 변환
             // (ResponseEntity는 Spring DispatcherServlet 영역이기에 사용 불가)
-        } catch (DomainException e) {
+        } catch (ExpiredJwtException e) {
+            // AT 만료 예외는 여기서 직접 처리 (401 UNAUTHORIZED)
+            SecurityContextHolder.clearContext();
+            log.warn("JWT 인증 실패: Access Token이 만료되었습니다.");
+
+            // 401 UNAUTHORIZED 응답 객체 생성
+            ExceptionResponse exceptionResponse = new ExceptionResponse(DomainErrorCode.EXPIRED_ACCESS_TOKEN);
+
+            response.setStatus(DomainErrorCode.EXPIRED_ACCESS_TOKEN.getHttpStatus().value());
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(exceptionResponse));
+        }  catch (DomainException e) {
+
             SecurityContextHolder.clearContext();
             log.warn("JWT 인증 실패: {}", e.getErrorCode().getMessage());
             // 예외 응답 객체 생성

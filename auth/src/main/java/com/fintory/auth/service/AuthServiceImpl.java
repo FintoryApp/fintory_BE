@@ -14,6 +14,7 @@ import com.fintory.domain.common.Role;
 import com.fintory.domain.point.service.PointService;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -128,16 +129,24 @@ public class AuthServiceImpl implements AuthService{
     }
 
     /**
-     * 토큰 재발급 로직
+     * 토큰 재발급 로직 = at가 만료됐다는 응답을 받았을때 프론트에서 요청하는 api
      */
     @Override
     public AuthToken reissue(String refreshToken) {
 
-        // Refresh Token 유효성 검증
-        jwtTokenProvider.validateToken(refreshToken);
+        // Refresh Token 유효성 검증 + 만료시간 검사
+        try {
+            jwtTokenProvider.validateToken(refreshToken);
+        } catch (ExpiredJwtException e) {
+            throw new DomainException(DomainErrorCode.EXPIRED_REFRESH_TOKEN);
+        }
+
+        Claims claims = jwtTokenProvider.parseClaims(refreshToken);
+
+        // redis에서 삭제 위해 rt에서 이메일값 추출
+        String username = claims.getSubject();
 
         // Refresh Token 에서 사용자 정보(subject) 추출
-        Claims claims = jwtTokenProvider.parseClaims(refreshToken);
         String userIdentifier = claims.getSubject();
         log.info("userIdentifier: {}", userIdentifier);
 
@@ -154,19 +163,24 @@ public class AuthServiceImpl implements AuthService{
             throw new DomainException(DomainErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        // 새로운 Access Token 발급
-        Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(refreshToken);
-        String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
-
-        /* ===================== rt 남은 시간 < threshold 인 경우만 해당하는 로직 ====================== */
-
         // Sliding Refresh: RT의 남은 시간 확인
-        Long expire = redisTemplate.getExpire(userIdentifier, TimeUnit.MILLISECONDS);
+        long expire = redisTemplate.getExpire(userIdentifier, TimeUnit.MILLISECONDS);
 
-        // threshold 기준 이하라면 새 RT 발급 + Redis 갱신
-        if (expire != null && expire < REFRESH_THRESHOLD_MS) {
+        // case1: rt가 살아있고 threshold 이상인 경우 -> rt + newAt 리턴
+        if (expire > REFRESH_THRESHOLD_MS) {
+            Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(refreshToken);
+            String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
+            return new AuthToken(newAccessToken, refreshToken);
+        }
+        // case2: rt가 살아있고 threshold 이하 0 이상인 경우 -> newRt + newAt 리턴 + redis에서 기존 rt 삭제
+        if (expire > 0 && expire <= REFRESH_THRESHOLD_MS) {
+            // 기존 RT 삭제
+            redisTemplate.delete(username);
+
+            // 새로운 RT 발급
             String newRefreshToken = jwtTokenProvider.generateRefreshToken(userIdentifier);
-            long newRefreshTokenExpirationMillis = jwtTokenProvider.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000L;
+            long newRefreshTokenExpirationMillis =
+                    jwtTokenProvider.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000L;
 
             // Redis에 새 RT 저장
             redisTemplate.opsForValue().set(
@@ -176,13 +190,14 @@ public class AuthServiceImpl implements AuthService{
                     TimeUnit.MILLISECONDS
             );
 
+            // 새로운 AT 발급
+            Authentication authentication = jwtTokenProvider.getAuthenticationFromRefreshToken(newRefreshToken);
+            String newAccessToken = jwtTokenProvider.generateAccessToken(authentication);
+
             return new AuthToken(newAccessToken, newRefreshToken);
         }
 
-        /* ===================== rt 남은 시간 < threshold 인 경우만 해당하는 로직 ====================== */
-
-        // 5. Access Token과 기존 Refresh Token 반환
-        return new AuthToken(newAccessToken, refreshToken);
+        throw new DomainException(DomainErrorCode.REFRESH_TOKEN_REISSUE_FAILED);
     }
 
     /**
