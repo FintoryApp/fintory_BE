@@ -4,6 +4,5 @@ import java.math.BigDecimal;
 
 
 public record PortfolioSummary (
-     BigDecimal totalPurchasePrice,
-     BigDecimal totalMoney
+     BigDecimal totalPurchasePrice
 ){}

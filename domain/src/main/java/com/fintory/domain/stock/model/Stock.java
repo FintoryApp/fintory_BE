@@ -4,16 +4,17 @@ import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.portfolio.model.OwnedStock;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
 @Getter
 @Table(name="stock")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class Stock extends BaseEntity {
 
     private String code;
@@ -26,9 +27,12 @@ public class Stock extends BaseEntity {
 
     private String name;
 
-    private String eng_name;
+    private String engName;
 
     private String category;
+
+    @Column(name="market_cap")
+    private BigDecimal marketCap;
 
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")

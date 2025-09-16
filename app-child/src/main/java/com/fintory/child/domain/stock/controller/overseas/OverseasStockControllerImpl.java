@@ -1,9 +1,7 @@
 package com.fintory.child.domain.stock.controller.overseas;
 
 import com.fintory.common.api.ApiResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasRankResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.overseas.response.*;
 import com.fintory.domain.stock.service.overseas.OverseasStockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +22,8 @@ public class OverseasStockControllerImpl implements OverseasStockController{
     //해외 주식 랭킹 - 시가 총액
     @Override
     @GetMapping("overseas/rankings/market-cap")
-    public ResponseEntity<ApiResponse<List<OverseasRankResponse>>> getOverseasStockMarketCapTop20(){
-        List<OverseasRankResponse> overseasStockMarketCapTop20s = overseasStockService.getOverseasMarketCapTop20();
+    public ResponseEntity<ApiResponse<List<OverseasMarketCapResponse>>> getOverseasStockMarketCapTop20(){
+        List<OverseasMarketCapResponse> overseasStockMarketCapTop20s = overseasStockService.getOverseasMarketCapTop20();
         return ResponseEntity.ok(ApiResponse.ok(overseasStockMarketCapTop20s));
     }
 
@@ -33,8 +31,8 @@ public class OverseasStockControllerImpl implements OverseasStockController{
     //해외 주식 랭킹 - 등락률
     @Override
     @GetMapping("overseas/rankings/roc")
-    public ResponseEntity<ApiResponse<List<OverseasRankResponse>>> getOverseasStockROCTop20(){
-        List<OverseasRankResponse> overseasStockROCTop20s = overseasStockService.getOverseasROCTop20();
+    public ResponseEntity<ApiResponse<List<OverseasROCResponse>>> getOverseasStockROCTop20(){
+        List<OverseasROCResponse> overseasStockROCTop20s = overseasStockService.getOverseasROCTop20();
         return ResponseEntity.ok(ApiResponse.ok(overseasStockROCTop20s));
     }
 

@@ -1,5 +1,6 @@
 package com.fintory.child;
 
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
@@ -19,6 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConfigurationPropertiesScan(basePackages = {
         "com.fintory.auth"
 })
+@EnableBatchProcessing
 @EntityScan(basePackages = "com.fintory.domain")
 @EnableRetry
 @EnableJpaRepositories(basePackages = "com.fintory.infra")

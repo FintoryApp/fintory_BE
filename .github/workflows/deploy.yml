@@ -91,6 +91,10 @@ jobs:
             export DB_APPKEY=${{ secrets.DB_APPKEY}}
             export DB_APPSECRET=${{ secrets.DB_APPSECRET}}
             export EOS_API_KEY=${{ secrets.EOS_API_KEY}}
+            export OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}}
+            export OPENAI_MODEL=${{ secrets.OPENAI_MODEL}}
+            export OPENAI_TEMPERATURE=${{secrets.OPENAI_TEMPERATURE}}
+            export OPENAI_MAX_TOKENS=${{secrets.OPENAI_MAX_TOKENS}}
             
             aws ecr get-login-password --region ap-northeast-2 | \
               docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
@@ -101,3 +105,4 @@ jobs:
             docker compose up -d
 
             docker image prune -f
+

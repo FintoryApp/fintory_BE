@@ -1,8 +1,6 @@
 package com.fintory.child.domain.stock.controller.korean;
 
-import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanRankResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.korean.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
@@ -19,11 +17,11 @@ public interface KoreanStockController {
 
     @Operation(summary="국내 주식 시가 총액 순위 조회", description = "국내 주식 시가 총액 순위 조회")
     @ApiResponse(responseCode="200", description="국내 주식 시가 총액 순위 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanRankResponse>>> getKoreanStockMarketCapTop20();
+    public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanMarketCapResponse>>> getKoreanStockMarketCapTop20();
 
     @Operation(summary="국내 주식 상승률 순위 조회", description = "국내 주식 상승률 순위 조회")
     @ApiResponse(responseCode="200", description="국내 주식 상승률 순위 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanRankResponse>>> getKoreanStockROCTop20();
+    public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanROCResponse>>> getKoreanStockROCTop20();
 
     @Operation(summary="국내 주식 거래량 순위 조회", description = "국내 주식 거래량 순위 조회")
     @ApiResponse(responseCode="200", description="국내 주식 거래량 순위 조회 성공")

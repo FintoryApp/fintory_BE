@@ -15,7 +15,7 @@ public interface StockRepository extends JpaRepository<Stock,Long> {
   
     List<Stock> findByCurrencyName(String krw);
 
-    @Query("SELECT s FROM Stock s Where s.name LIKE CONCAT('%',:keyword,'%') OR s.code LIKE CONCAT('%',:keyword,'%') OR s.eng_name LIKE CONCAT('%',:keyword,'%')")
+    @Query("SELECT s FROM Stock s Where s.name LIKE CONCAT('%',:keyword,'%') OR s.code LIKE CONCAT('%',:keyword,'%') OR s.engName LIKE CONCAT('%',:keyword,'%')")
     List<Stock> findByNameContainingOrCodeContaining(@Param("keyword") String keyword);
 
 }

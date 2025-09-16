@@ -1,4 +1,4 @@
-package com.fintory.child.domain.trading;
+package com.fintory.child.domain.trading.controller;
 
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/child/trading")
-public class TradingControllerImpl {
+public class TradingControllerImpl implements  TradingController {
     private final TradingService tradingService;
 
     @PostMapping

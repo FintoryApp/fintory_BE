@@ -144,14 +144,11 @@ public class TradingServiceImpl implements TradingService {
                     .stock(stock)
                     .purchaseAmount(totalTradeAmount)
                     .quantity(tradeRequest.quantity())
-                    .valuationProfitAndLoss(BigDecimal.ZERO)
-                    .valuationAmount(totalTradeAmount)
-                    .returnRate(BigDecimal.ZERO)
                     .averagePurchasePrice(averagePurchasePrice)
                     .build();
         }else{
             // 기존에 구매한 주식이 있을 경우
-            ownedStock.updateOwnedStockPurchase(tradeRequest.quantity(), totalTradeAmount,averagePurchasePrice);
+            ownedStock.updateOwnedStockPurchase(tradeRequest.quantity(),totalTradeAmount);
         }
 
         ownedStockRepository.save(ownedStock);
@@ -178,7 +175,7 @@ public class TradingServiceImpl implements TradingService {
 
         BigDecimal livePrice = calculatePriceWithExchange(tradeRequest.price(),marketType,exchangeRate);
 
-        ownedStock.updateOwnedStockSell(tradeRequest.quantity(),livePrice,soldPurchaseAmount);
+        ownedStock.updateOwnedStockSell(tradeRequest.quantity(),soldPurchaseAmount);
 
         if (ownedStock.getQuantity() == 0) {
             ownedStockRepository.delete(ownedStock);

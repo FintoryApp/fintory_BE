@@ -3,7 +3,6 @@ package com.fintory.child.domain.account.controller;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.account.dto.response.DepositTransactionResponse;
-import com.fintory.domain.account.dto.response.TotalAssetsResponse;
 import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.service.ChildService;
@@ -34,13 +33,4 @@ public class AccountControllerImpl implements AccountController{
         return ResponseEntity.ok(ApiResponse.ok(list));
     }
 
-    @Override
-    @GetMapping("/total-assets")
-    public ResponseEntity<ApiResponse<TotalAssetsResponse>> getTotalAssets(CustomUserDetails user) {
-
-        Child child = childService.getChild(user.getUsername());
-        TotalAssetsResponse response = accountService.getTotalAssets(child);
-
-        return ResponseEntity.ok(ApiResponse.ok(response));
-    }
 }

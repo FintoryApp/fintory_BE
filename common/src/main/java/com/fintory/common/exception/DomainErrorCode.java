@@ -1,6 +1,7 @@
 package com.fintory.common.exception;
 
 import lombok.Getter;
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.http.HttpStatus;
 
 @Getter
@@ -70,8 +71,8 @@ public enum DomainErrorCode {
     //live stock price
     LIVE_STOCK_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND,"LIVE_STOCK_PRICE_NOT_FOUND","현재가 데이터를 찾을 수 없습니다."),
 
-    //order book
-    ORDER_BOOK_NOT_FOUND(HttpStatus.NOT_FOUND,"ORDER_BOOK_NOT_FOUND","호가 데이터를 찾을 수 없습니다."),
+    //report
+    REPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"REPORT_NOT_FOUND","리포트를 찾을 수 없습니다."),
 
     //stock token
     KIS_TOKEN_ISSUE_ERROR(HttpStatus.BAD_GATEWAY,"KIS_TOKEN_ISSUE_ERROR","KIS 토큰 발급 실패"),

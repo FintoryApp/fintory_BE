@@ -2,25 +2,23 @@ package com.fintory.infra.domain.stock.service.overseas;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasRankResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.overseas.response.*;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.model.StockRank;
 import com.fintory.domain.stock.service.overseas.*;
-import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRankRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,6 +35,7 @@ public class OverseasStockServiceImpl implements OverseasStockService {
 
     private final StockRankRepository stockRankRepository;
     private final StockRepository stockRepository;
+    private final StockPriceHistoryRepository stockPriceHistoryRepository;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -95,16 +94,26 @@ public class OverseasStockServiceImpl implements OverseasStockService {
 
     //시가 총액 순위 조회
     @Override
-    public List<OverseasRankResponse> getOverseasMarketCapTop20(){
-        List<Object[]> results = stockRankRepository.findMarketCapTop20("USD");
-        return mapToOverseasRankResponse(results,StockRank::getMarketCapRank);
+    public List<OverseasMarketCapResponse> getOverseasMarketCapTop20(){
+        List<Stock> results = stockRepository.findByCurrencyName("USD");
+        return results.stream()
+                .map(result->{
+                    return new OverseasMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap());
+                })
+                .sorted(Comparator.comparing(OverseasMarketCapResponse::marketCap).reversed())
+                .collect(Collectors.toList());
     }
 
     //등락률 순위 조회
     @Override
-    public List<OverseasRankResponse> getOverseasROCTop20(){
-        List<Object[]> results = stockRankRepository.findROCTop20("USD");
-        return mapToOverseasRankResponse(results,StockRank::getRocRank);
+    public List<OverseasROCResponse> getOverseasROCTop20(){
+        List<Stock> results = stockRepository.findByCurrencyName("USD");
+        return results.stream()
+                .map(stock->{
+                    BigDecimal closePrice = stockPriceHistoryRepository.findByStockAndDate(stock);
+                    return new OverseasROCResponse(stock.getCode(),stock.getName(),closePrice);
+                })
+                .collect(Collectors.toUnmodifiableList());
     }
 
     //거래량 순위 조회

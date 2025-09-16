@@ -14,4 +14,6 @@ public record KoreanRankResponse(
     public KoreanRankResponse(String stockCode, String stockName, int rank,BigDecimal currentPrice, BigDecimal priceChange, BigDecimal priceChangeRate) {
         this(stockCode, stockName, rank,null,currentPrice,priceChange,priceChangeRate);
     }
+
+
 }

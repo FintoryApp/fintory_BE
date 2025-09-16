@@ -3,25 +3,25 @@ package com.fintory.infra.domain.stock.service.korean;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanRankResponse;
-import com.fintory.domain.stock.dto.korean.response.KoreanStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.korean.response.*;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.model.StockRank;
 import com.fintory.domain.stock.service.korean.*;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRankRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -34,9 +34,10 @@ public class KoreanStockServiceImpl implements KoreanStockService {
     private final KoreanStockRankService koreanStockRankService;
     private final KoreanLiveStockPriceService koreanLiveStockPriceService;
     private final KoreanStockPriceHistoryService koreanStockPriceHistoryService;
+    private final LiveStockPriceRepository liveStockPriceRepository;
+    private final StockPriceHistoryRepository  stockPriceHistoryRepository;
 
     private final StockRankRepository stockRankRepository;
-    private final LiveStockPriceRepository liveStockPriceRepository;
     private final StockRepository stockRepository;
 
     // 어플리케이션이 완전히 준비된 후 한번만 실행됨
@@ -80,16 +81,26 @@ public class KoreanStockServiceImpl implements KoreanStockService {
 
     //시가 총액 순위 조회
     @Override
-    public List<KoreanRankResponse> getKoreanMarketCapTop20() {
-        List<Object[]> results = stockRankRepository.findMarketCapTop20("KRW");
-        return mapToKoreanRankResponse(results,StockRank::getMarketCapRank);
+    public List<KoreanMarketCapResponse> getKoreanMarketCapTop20() {
+        List<Stock> results = stockRepository.findByCurrencyName("KRW");
+        return results.stream()
+                .map(result->{
+                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap());
+                })
+                .sorted(Comparator.comparing(KoreanMarketCapResponse::marketCap).reversed())
+                .collect(Collectors.toList());
     }
 
     //등락률 순위 조회
     @Override
-    public List<KoreanRankResponse> getKoreanROCTop20() {
-        List<Object[]> results = stockRankRepository.findROCTop20("KRW");
-        return mapToKoreanRankResponse(results,StockRank::getRocRank);
+    public List<KoreanROCResponse> getKoreanROCTop20() {
+        List<Stock> results = stockRepository.findByCurrencyName("KRW");
+        return results.stream()
+                .map(stock->{
+                    BigDecimal closePrice = stockPriceHistoryRepository.findByStockAndDate(stock);
+                    return new KoreanROCResponse(stock.getCode(),stock.getName(),closePrice);
+                })
+                .collect(Collectors.toUnmodifiableList());
     }
 
     //거래량 순위 조회

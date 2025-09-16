@@ -43,7 +43,13 @@ public class OpenApiList {
             // news
             "/api/news/crawl-test",
 
-            "/ws/**"
+            //report
+            "/api/child/consulting/test/consulting-report",
+
+            //stock //REVIEW stock과 관련한 데이터는 로그인 없이도 조회 가능하도록
+            "/api/child/stock/**",
+            "/stock/**",
+            "/ws/**",
 
     };
 }

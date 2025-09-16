@@ -1,8 +1,6 @@
 package com.fintory.child.domain.stock.controller.overseas;
 
-import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasRankResponse;
-import com.fintory.domain.stock.dto.overseas.response.OverseasStockPriceHistoryResponse;
+import com.fintory.domain.stock.dto.overseas.response.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,11 +16,11 @@ public interface OverseasStockController {
 
     @Operation(summary="해외 주식 시가 총액 순위 조회", description = "해외 주식 시가 총액 순위 조회")
     @ApiResponse(responseCode="200", description="해외 주식 시가 총액 순위 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OverseasRankResponse>>> getOverseasStockMarketCapTop20();
+    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OverseasMarketCapResponse>>> getOverseasStockMarketCapTop20();
 
     @Operation(summary="해외 주식 상승률 순위 조회", description = "해외 주식 상승률 순위 조회")
     @ApiResponse(responseCode="200", description="해외 주식 상승률 순위 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OverseasRankResponse>>> getOverseasStockROCTop20();
+    public ResponseEntity<com.fintory.common.api.ApiResponse<List<OverseasROCResponse>>> getOverseasStockROCTop20();
 
     @Operation(summary="해외 주식 거래량 순위 조회", description = "해외 주식 거래량 순위 조회")
     @ApiResponse(responseCode="200", description="해외 주식 거래량 순위 조회 성공")

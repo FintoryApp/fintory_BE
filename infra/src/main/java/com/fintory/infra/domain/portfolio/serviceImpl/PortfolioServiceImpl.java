@@ -86,9 +86,8 @@ public class PortfolioServiceImpl implements PortfolioService {
                     }).reduce(BigDecimal.ZERO,BigDecimal::add);
 
             return new PortfolioSummary(
-                    totalPurchasePrice,
-                    account.getTotalAssets());
-
+                    totalPurchasePrice
+                    );
         }catch (Exception e){
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.PORTFOLIO_CALCULATION_ERROR);

@@ -3,7 +3,6 @@ package com.fintory.infra.domain.account.serviceImpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.dto.response.DepositTransactionResponse;
-import com.fintory.domain.account.dto.response.TotalAssetsResponse;
 import com.fintory.domain.account.model.Account;
 import com.fintory.domain.account.model.DepositTransaction;
 import com.fintory.domain.account.service.AccountService;
@@ -38,13 +37,6 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    @Override
-    public TotalAssetsResponse getTotalAssets(Child child) {
-        Account account = accountRepository.findByChild(child)
-                .orElseThrow(() -> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
-
-        return TotalAssetsResponse.from(account);
-    }
 
     @Transactional(readOnly = true)
     public List<DepositTransactionResponse> getDepositTransactionsByChild(Child child) {
