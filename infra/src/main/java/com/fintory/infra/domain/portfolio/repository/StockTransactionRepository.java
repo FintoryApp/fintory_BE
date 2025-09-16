@@ -1,5 +1,6 @@
 package com.fintory.infra.domain.portfolio.repository;
 
+import com.fintory.domain.child.model.Child;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.stock.model.Stock;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +21,7 @@ public interface StockTransactionRepository extends JpaRepository<StockTransacti
     List<StockTransaction> findByExecutedAtBetweenAndAccount_ChildWithFetch(
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime,
-            @Param("child") Object child
+            @Param("child") Child child
     );
 
 }

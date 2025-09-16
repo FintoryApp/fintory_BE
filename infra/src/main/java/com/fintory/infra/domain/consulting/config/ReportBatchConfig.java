@@ -1,11 +1,10 @@
 package com.fintory.infra.domain.consulting.config;
 
 import com.fintory.domain.child.model.Child;
+import com.fintory.domain.consulting.service.ConsultingService;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import com.fintory.infra.domain.consulting.repository.ReportRepository;
-import com.fintory.infra.domain.consulting.serviceImpl.ConsultingServiceImpl;
-import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.portfolio.repository.StockTransactionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,9 +32,8 @@ import java.util.List;
 public class ReportBatchConfig {
 
     private final JobRepository jobRepository;
-    private final OwnedStockRepository ownedStockRepository;
     private final PlatformTransactionManager transactionManager;
-    private final ConsultingServiceImpl consultingService;
+    private final ConsultingService consultingService;
     private final StockTransactionRepository stockTransactionRepository;
     private final ChildRepository childRepository;
     private final ReportRepository reportRepository;

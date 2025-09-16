@@ -7,6 +7,7 @@ import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
 import com.fintory.domain.common.User;
+import com.fintory.domain.consulting.model.Report;
 import com.fintory.domain.mapping.ParentChildMapping;
 import com.fintory.domain.point.model.PointWallet;
 import jakarta.persistence.*;
@@ -91,5 +92,10 @@ public class Child extends BaseEntity implements User {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
     private List<AttendanceLog> visitLogs;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
+    private List<Report> reports;
+
+
 
 }
