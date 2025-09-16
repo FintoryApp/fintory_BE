@@ -132,13 +132,11 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            throw new DomainException(DomainErrorCode.INVALID_TOKEN);
-        } catch (ExpiredJwtException e) {
-            throw e;
+            throw new DomainException(DomainErrorCode.INVALID_TOKEN); //필터 검증의 경우 핸들러 동작 안함 -> 직접 catch해서 응답객체 생성해야함
         } catch (UnsupportedJwtException e) {
-            throw new DomainException(DomainErrorCode.UNSUPPORTED_TOKEN);
+            throw new DomainException(DomainErrorCode.UNSUPPORTED_TOKEN); //22
         } catch (IllegalArgumentException e) {
-            throw new DomainException(DomainErrorCode.EMPTY_TOKEN);
+            throw new DomainException(DomainErrorCode.EMPTY_TOKEN); //33
         }
     }
 
