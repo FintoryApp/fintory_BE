@@ -1,4 +1,4 @@
-package com.fintory.child.domain.trading;
+package com.fintory.child.domain.trading.controller;
 
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.domain.portfolio.dto.TradeRequest;
