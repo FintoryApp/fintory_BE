@@ -134,7 +134,7 @@ public class JwtTokenProvider {
         } catch (SecurityException | MalformedJwtException e) {
             throw new DomainException(DomainErrorCode.INVALID_TOKEN);
         } catch (ExpiredJwtException e) {
-            throw new DomainException(DomainErrorCode.EXPIRED_TOKEN);
+            throw e;
         } catch (UnsupportedJwtException e) {
             throw new DomainException(DomainErrorCode.UNSUPPORTED_TOKEN);
         } catch (IllegalArgumentException e) {

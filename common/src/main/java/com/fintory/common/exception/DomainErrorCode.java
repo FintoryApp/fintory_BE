@@ -35,6 +35,7 @@ public enum DomainErrorCode {
     UNSUPPORTED_TOKEN(HttpStatus.UNAUTHORIZED, "UNSUPPORTED_TOKEN", "지원하지 않는 토큰입니다."),
     EMPTY_TOKEN(HttpStatus.UNAUTHORIZED, "EMPTY_TOKEN", "토큰이 존재하지 않습니다."),
     INVALID_REFRESH_TOKEN(HttpStatus.UNAUTHORIZED, "INVALID_REFRESH_TOKEN", "유효하지 않은 리프레쉬 토큰입니다."),
+    REFRESH_TOKEN_REISSUE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "REFRESH_TOKEN_REISSUE_FAILED", "리프레쉬 토큰 발급 실패"),
     INVALID_TOKEN_TYPE(HttpStatus.BAD_REQUEST, "INVALID_TOKEN_TYPE", "토큰 카테고리가 일치하지 않습니다"),
 
     //news
