@@ -5,7 +5,11 @@ import java.math.BigDecimal;
 public record OverseasROCResponse (
         String stockCode,
         String stockName,
-        BigDecimal closePrice
+        BigDecimal closePrice,
+        String profileImageUrl
 
 ){
+    public OverseasROCResponse(String stockCode, String stockName, BigDecimal closePrice){
+        this(stockCode,stockName,closePrice,null);
+    }
 }
