@@ -1,9 +1,6 @@
-package com.fintory.child.consulting.dto;
+package com.fintory.domain.consulting.dto;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fintory.common.exception.BaseException;
-import com.fintory.common.exception.ErrorCode;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,19 +21,15 @@ public class TradingReport {
     private BottomStock bottomStock;
     private String advice;
 
-    public static String fromReportDetail(ReportDetail reportDetail)  {
-        try {
-            TradingReport tradingReport = TradingReport.builder()
+    public static TradingReport fromReportDetail(ReportDetail reportDetail)  {
+            return TradingReport.builder()
+                    .reportMonth(reportDetail.getReportMonth())
                     .investmentStyle(reportDetail.getInvestmentStyle())
                     .investmentArea(reportDetail.getInvestmentArea())
                     .investmentSummary(reportDetail.getInvestmentSummary())
                     .topStock(reportDetail.getTopStock())
                     .bottomStock(reportDetail.getBottomStock())
                     .build();
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(tradingReport);
-        }catch(JsonProcessingException e){
-            throw new BaseException(ErrorCode.JSON_PROCESSING_FAILED);
-        }
+
     }
 }

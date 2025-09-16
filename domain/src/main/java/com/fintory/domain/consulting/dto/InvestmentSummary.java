@@ -1,4 +1,4 @@
-package com.fintory.child.consulting.dto;
+package com.fintory.domain.consulting.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.fintory.child.consulting.dto;
+package com.fintory.domain.consulting.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -9,8 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvestmentStyle {
-    private String childId;
-    private String childName;
+public class AiResponse {
     private String investmentStyle;
+    private String advice;
 }

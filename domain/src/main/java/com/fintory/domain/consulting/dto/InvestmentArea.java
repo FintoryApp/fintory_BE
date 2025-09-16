@@ -1,4 +1,4 @@
-package com.fintory.child.consulting.dto;
+package com.fintory.domain.consulting.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BottomStock {
-    private String stockName;
-    private BigDecimal returnRate;
+public class InvestmentArea {
+    private String category;
+    private BigDecimal percentage;
 }
