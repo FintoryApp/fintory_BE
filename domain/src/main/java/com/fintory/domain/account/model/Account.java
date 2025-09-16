@@ -92,9 +92,13 @@ public class Account extends BaseEntity {
     }
 
     private void updateTotalValuation(){
+        // totalValuation을 지우기에는 내 코드가 아닌 부분을 많이 수정해야 해서 일단 임시 방편으로 다음과 같이 설정
         BigDecimal totalValuation = BigDecimal.ZERO;
         for(OwnedStock ownedStock : ownedStocks){
-            totalValuation = totalValuation.add(ownedStock.getValuationAmount());
+            BigDecimal stockValue = ownedStock.getStock().getLiveStockPrice().getCurrentPrice()
+                    .multiply(new BigDecimal(ownedStock.getQuantity()));
+
+            totalValuation = totalValuation.add(stockValue);
         }
 
         this.totalValuation = totalValuation;
