@@ -25,14 +25,8 @@ public class Account extends BaseEntity {
     @Column(name="available_cash")
     private BigDecimal availableCash;
 
-    @Column(name="total_assets")
-    private BigDecimal totalAssets;
-
     @Column(name="total_purchase")
     private BigDecimal totalPurchase;
-
-    @Column(name="total_valuation")
-    private BigDecimal totalValuation;
 
     // 1:1
     @OneToOne
@@ -59,8 +53,7 @@ public class Account extends BaseEntity {
         account.status = true;
         account.availableCash = initialAmount;
         account.totalPurchase = BigDecimal.ZERO;
-        account.totalValuation = BigDecimal.ZERO;
-        account.totalAssets = initialAmount;
+
 
         DepositTransaction deposit = DepositTransaction.create(initialAmount, "기본금 지급", DepositTransactionType.DEPOSIT);
         account.addDepositTransaction(deposit);
@@ -79,35 +72,14 @@ public class Account extends BaseEntity {
         this.availableCash = this.availableCash.add(sellPrice);
         this.totalPurchase = this.totalPurchase.subtract(sellPurchaseAmount);
 
-        updateTotalValuation();
-        updateTotalAssets();
     }
 
     public void updatePurchaseStock(BigDecimal purchasePrice){
         this.availableCash = this.availableCash.subtract(purchasePrice);
         this.totalPurchase = this.totalPurchase.add(purchasePrice);
 
-        updateTotalValuation();
-        updateTotalAssets();
     }
 
-    private void updateTotalValuation(){
-        // totalValuation을 지우기에는 내 코드가 아닌 부분을 많이 수정해야 해서 일단 임시 방편으로 다음과 같이 설정
-        BigDecimal totalValuation = BigDecimal.ZERO;
-        for(OwnedStock ownedStock : ownedStocks){
-            BigDecimal stockValue = ownedStock.getStock().getLiveStockPrice().getCurrentPrice()
-                    .multiply(new BigDecimal(ownedStock.getQuantity()));
-
-            totalValuation = totalValuation.add(stockValue);
-        }
-
-        this.totalValuation = totalValuation;
-    }
-
-    private void updateTotalAssets(){
-        BigDecimal totalAssets = this.totalValuation.add(this.availableCash);
-        this.totalAssets = totalAssets;
-    }
 }
 
 
