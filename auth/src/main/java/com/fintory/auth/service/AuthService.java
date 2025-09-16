@@ -1,4 +1,4 @@
-package com.fintory.auth.service.authservice;
+package com.fintory.auth.service;
 
 import com.fintory.auth.dto.AuthToken;
 import com.fintory.auth.dto.request.SignUpRequest;

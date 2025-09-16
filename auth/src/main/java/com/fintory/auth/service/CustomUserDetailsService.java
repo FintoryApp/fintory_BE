@@ -1,9 +1,8 @@
-package com.fintory.auth.service.customuserservice;
+package com.fintory.auth.service;
 
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.domain.common.User;
 import com.fintory.infra.domain.child.repository.ChildRepository;
-import com.fintory.infra.domain.parent.repository.ParentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,14 +16,12 @@ import java.util.Optional;
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final ChildRepository childRepository;
-    private final ParentRepository parentRepository;
 
     @Override                            //email(공통)
     public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
 
         Optional<User> userOptional = childRepository.findByEmail(id)
-                .<User>map(child -> child)
-                .or(() -> parentRepository.findByEmail(id).map(parent -> parent));
+                .<User>map(child -> child);
 
         return userOptional.map(user -> new CustomUserDetails(
                         user.getEmail(),

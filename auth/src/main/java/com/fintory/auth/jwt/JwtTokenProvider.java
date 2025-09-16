@@ -1,6 +1,6 @@
 package com.fintory.auth.jwt;
 
-import com.fintory.auth.service.customuserservice.CustomUserDetailsService;
+import com.fintory.auth.service.CustomUserDetailsService;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import io.jsonwebtoken.*;
