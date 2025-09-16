@@ -3,12 +3,15 @@ package com.fintory.infra.domain.stock.service.websocket;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
+import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
 import com.fintory.infra.domain.stock.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +57,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     private final OverseasLiveStockPriceWebSocketHandler overseasHandler;
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
+    private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final SimpMessagingTemplate messageTemplate;
 
     // 공통 데이터 구조들
@@ -82,7 +86,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
             LiveStockPriceRepository liveStockPriceRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, StockPriceHistoryRepository stockPriceHistoryRepository) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -93,6 +97,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         this.messageTemplate = messageTemplate;
         this.restTemplate = restTemplate;
         this.redisTemplate = redisTemplate;
+        this.stockPriceHistoryRepository = stockPriceHistoryRepository;
     }
 
     /* 구독 관리 메서드 */
@@ -257,7 +262,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     }
 
     /* 스케줄링 - 배치 저장 */
-    @Scheduled(cron = "0 */1 9-15 * * MON-FRI", zone = "Asia/Seoul")
+    //REVIEW 지금은 1시간 간격 -> 1분은 너무 많음.
+    @Scheduled(cron = "0 0  9-15 * * MON-FRI", zone = "Asia/Seoul")
     public void saveKoreanStockDataBatch() {
         if (!isKoreanMarketOpen()) {
             log.debug("국내 장 마감으로 인한 배치 저장 중단");
@@ -266,7 +272,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         saveBatchData("국내", koreanPendingData);
     }
 
-    @Scheduled(cron = "0 */1 9-15 * * MON-FRI", zone = "America/New_York")
+    @Scheduled(cron = "0 0 9-15 * * MON-FRI", zone = "America/New_York")
     public void saveOverseasStockDataBatch() {
         if (!isOverseasMarketOpen()) {
             log.debug("해외 장 마감으로 인한 배치 저장 중단");
@@ -297,11 +303,21 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         Stock stock = stockRepository.findByCode(dto.code())
                 .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
+        //NOTE 웹소켓 통신 중에 디비에 저장하지 않아도 된다는 확신이 들때 지우기
         LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
                 .orElseGet(() -> LiveStockPrice.builder().stock(stock).build());
 
         liveStockPrice.updateLiveStockPrice(dto.currentPrice(), dto.priceChange(), dto.priceChangeRate());
         liveStockPriceRepository.save(liveStockPrice);
+
+        StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
+                .closePrice(dto.currentPrice())
+                .stock(stock)
+                .intervalType(IntervalType.DAILY)
+                .build();
+
+        stockPriceHistoryRepository.save(stockPriceHistory);
+
     }
 
     /* 스케줄링 - 장 마감 정리 */

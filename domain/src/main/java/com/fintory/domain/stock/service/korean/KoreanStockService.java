@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface KoreanStockService {
 
+
+
         /**
          * 국내 주식 시가총액 Top20 조회
          * @return 시가총액 순위 리스트
