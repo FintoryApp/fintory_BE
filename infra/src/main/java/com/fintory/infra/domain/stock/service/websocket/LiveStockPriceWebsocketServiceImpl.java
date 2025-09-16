@@ -29,10 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 
 import java.math.BigDecimal;
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -250,9 +247,22 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         LiveStockPriceStream previous = previousData.get(dto.code());
 
         //이전 데이터와 비교하여 중복 체크
+
         if (previous != null && previous.equals(dto)) {
             log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
             return;
+        }
+
+        //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값 저장
+        if(previous == null) {
+            try {
+                saveStockData(dto);
+                log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
+            } catch (Exception e) {
+                // 실패 시 배치 저장을 위해 pendingData에 보관
+                pendingData.put(dto.code(), dto);
+                log.error("{} 종목 {} 실시간 저장 실패, 배치 저장 대기: {}", marketName, dto.code(), e.getMessage());
+            }
         }
 
         //새로운 데이텨면 다음 중복 체크용으로 저장
@@ -314,6 +324,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 .closePrice(dto.currentPrice())
                 .stock(stock)
                 .intervalType(IntervalType.DAILY)
+                .date(LocalDate.now())
                 .build();
 
         stockPriceHistoryRepository.save(stockPriceHistory);
