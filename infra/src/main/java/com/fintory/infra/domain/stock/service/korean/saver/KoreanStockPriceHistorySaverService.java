@@ -38,7 +38,7 @@ public class KoreanStockPriceHistorySaverService {
         for (KoreanStockPriceHistory koreanStockPriceHistory : koreanStockPriceHistoryList) {
             LocalDate date = LocalDate.parse(
                     koreanStockPriceHistory.time(),
-                    DateTimeFormatter.ofPattern("yyyyMMdd")
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")
             );
 
             StockPriceHistory stockPriceHistory = StockPriceHistory.builder()

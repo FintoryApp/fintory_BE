@@ -6,6 +6,7 @@ import com.fintory.domain.portfolio.model.StockTransaction;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
@@ -29,6 +30,9 @@ public class Stock extends BaseEntity {
     private String engName;
 
     private String category;
+
+    @Column(name="market_cap")
+    private BigDecimal marketCap;
 
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")

@@ -101,7 +101,7 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
         Map<String, List<OverseasStockPriceHistory>> chartData = new HashMap<>();
         Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
-        chartData.put("1D", getFilteredData(stock, IntervalType.QUARTERLY ,LocalDate.now()));
+        chartData.put("1D", getOverseasStockPriceHistoryByInterval(stock, IntervalType.DAILY ));
         chartData.put("1W", getFilteredData(stock, IntervalType.QUARTERLY,LocalDate.now().minusWeeks(1)));
         chartData.put("3M", getFilteredData(stock, IntervalType.QUARTERLY, LocalDate.now().minusMonths(3)));
         chartData.put("1Y", getOverseasStockPriceHistoryByInterval(stock, IntervalType.YEARLY));
@@ -126,6 +126,13 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
     //DB에서 기간별 시세 조회
     private List<OverseasStockPriceHistory> getOverseasStockPriceHistoryByInterval(Stock stock, IntervalType intervalType) {
         List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock, intervalType);
+
+        if(intervalType == IntervalType.DAILY) {
+            return stockPriceHistories.stream()
+                    .sorted(Comparator.comparing(StockPriceHistory::getUpdatedAt))
+                    .map(this::convertToOverseasStockPriceHistory)
+                    .toList();
+        }
 
         return stockPriceHistories.stream()
                 .sorted(Comparator.comparing(StockPriceHistory::getDate)) // 날짜순 정렬
