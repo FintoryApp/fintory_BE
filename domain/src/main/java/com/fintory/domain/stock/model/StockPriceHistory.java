@@ -38,12 +38,8 @@ public class StockPriceHistory extends BaseEntity {
     @JoinColumn(name="stock_id")
     private Stock stock;
 
-    public StockPriceHistory updateStockPriceHistory(BigDecimal openPrice, BigDecimal closePrice, BigDecimal highPrice, BigDecimal lowPrice) {
-        this.openPrice = openPrice;
+    public StockPriceHistory updateStockPriceHistory(BigDecimal closePrice) {
         this.closePrice = closePrice;
-        this.highPrice = highPrice;
-        this.lowPrice = lowPrice;
-
         return this;
     }
 

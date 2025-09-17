@@ -50,6 +50,7 @@ public class OpenApiList {
             "/api/child/stock/**",
             "/stock/**",
             "/ws/**",
+            "/ws-sockjs/**"
 
     };
 }

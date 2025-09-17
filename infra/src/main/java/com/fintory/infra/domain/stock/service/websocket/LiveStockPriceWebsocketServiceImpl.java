@@ -75,6 +75,9 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     private volatile AtomicBoolean  isOverseasConnected = new AtomicBoolean(false);
     private String cachedAccessToken;
 
+    private static LocalDate lastCleanupDate = null;
+
+
 
     public LiveStockPriceWebsocketServiceImpl(
             @Qualifier("koreanLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager koreanConnectionManager,
@@ -273,7 +276,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
     /* 스케줄링 - 배치 저장 */
     //REVIEW 지금은 1시간 간격 -> 1분은 너무 많음.
-    @Scheduled(cron = "0 0  9-15 * * MON-FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 * 9-15 * * MON-FRI", zone = "Asia/Seoul")
     public void saveKoreanStockDataBatch() {
         if (!isKoreanMarketOpen()) {
             log.debug("국내 장 마감으로 인한 배치 저장 중단");
@@ -282,7 +285,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         saveBatchData("국내", koreanPendingData);
     }
 
-    @Scheduled(cron = "0 0 9-15 * * MON-FRI", zone = "America/New_York")
+    @Scheduled(cron = "0 * 9-15 * * MON-FRI", zone = "America/New_York")
     public void saveOverseasStockDataBatch() {
         if (!isOverseasMarketOpen()) {
             log.debug("해외 장 마감으로 인한 배치 저장 중단");
@@ -320,12 +323,27 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         liveStockPrice.updateLiveStockPrice(dto.currentPrice(), dto.priceChange(), dto.priceChangeRate());
         liveStockPriceRepository.save(liveStockPrice);
 
-        StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
-                .closePrice(dto.currentPrice())
-                .stock(stock)
-                .intervalType(IntervalType.DAILY)
-                .date(LocalDate.now())
-                .build();
+
+        //오늘 날짜
+        LocalDate now = LocalDate.now();
+
+        // 오늘이 아닌 이전 날짜의 HOURLY 데이터 모두 삭제
+        // 매번 웹소켓 데이터 저장 시 삭제 쿼리 실행 방지
+        if(!now.equals(lastCleanupDate)) {
+            stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now);
+            lastCleanupDate = now;
+        }
+
+        //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
+        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now)
+                .orElseGet(()->StockPriceHistory.builder()
+                        .closePrice(dto.currentPrice())
+                        .stock(stock)
+                        .intervalType(IntervalType.HOURLY)
+                        .date(now)
+                        .build());
+
+        stockPriceHistory =stockPriceHistory.updateStockPriceHistory(dto.currentPrice());
 
         stockPriceHistoryRepository.save(stockPriceHistory);
 
