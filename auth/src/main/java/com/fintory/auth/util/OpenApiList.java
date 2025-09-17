@@ -42,6 +42,7 @@ public class OpenApiList {
 
             //stock //REVIEW stock과 관련한 데이터는 로그인 없이도 조회 가능하도록
             "/api/child/stock/**",
+            "/api/child/trading",
             "/stock/**",
             "/ws/**",
             "/ws-sockjs/**"
