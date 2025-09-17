@@ -17,7 +17,7 @@ import java.math.RoundingMode;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OwnedStock extends BaseEntity {
 
-    @Column(precision = 10, scale = 3)
+    @Column(precision = 13, scale = 3)
     private BigDecimal quantity;
 
     @Column(name="average_purchase_price")

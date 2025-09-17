@@ -23,7 +23,7 @@ public class StockTransaction extends BaseEntity {
     @Column(name = "price_per_share", precision = 15, scale = 2)
     private BigDecimal pricePerShare;
 
-    @Column(precision = 10, scale = 3)
+    @Column(precision = 13, scale = 3)
     private BigDecimal quantity;
 
     @Column(name = "executed_at")
