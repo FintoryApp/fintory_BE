@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 
 public record StockTransactionInfo(
         BigDecimal pricePerShare,
-        int quantity,
+        BigDecimal quantity,
         BigDecimal exchangeRate,
         TransactionType transactionType,
         LocalDateTime executedAt

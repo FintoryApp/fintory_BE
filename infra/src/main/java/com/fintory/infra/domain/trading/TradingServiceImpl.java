@@ -95,7 +95,7 @@ public class TradingServiceImpl implements TradingService {
 
         // 매도신청할 수량 X 매수평균가
         BigDecimal soldPurchaseAmount = ownedStock.getAveragePurchasePrice()
-                .multiply(BigDecimal.valueOf(tradeRequest.quantity()));
+                .multiply(tradeRequest.quantity());
 
         //ownedStock, stockTransaction 업데이트
         updateStockAndTransactionForSell(ownedStock,tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType,soldPurchaseAmount);
@@ -115,7 +115,7 @@ public class TradingServiceImpl implements TradingService {
     }
 
     private boolean isAvailableSell(TradeRequest tradeRequest, OwnedStock ownedStock){
-        return ownedStock.getQuantity()>=tradeRequest.quantity();
+        return ownedStock.getQuantity().compareTo(tradeRequest.quantity()) >= 0;
     }
 
     private void updateAccountForPurchase(Account account, BigDecimal purchasePrice){
@@ -178,7 +178,7 @@ public class TradingServiceImpl implements TradingService {
 
         ownedStock.updateOwnedStockSell(tradeRequest.quantity(),soldPurchaseAmount);
 
-        if (ownedStock.getQuantity() == 0) {
+        if (ownedStock.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
             ownedStockRepository.delete(ownedStock);
         } else {
             ownedStockRepository.save(ownedStock);
@@ -206,10 +206,10 @@ public class TradingServiceImpl implements TradingService {
         BigDecimal amount;
         MarketType marketType;
         if(stock.getCurrencyName().equals("USD")) {
-            amount = tradeRequest.price().multiply(BigDecimal.valueOf(tradeRequest.quantity())).multiply(exchangeRate);
+            amount = tradeRequest.price().multiply(tradeRequest.quantity()).multiply(exchangeRate);
             marketType= MarketType.OVERSEAS;
         } else {
-            amount = tradeRequest.price().multiply(BigDecimal.valueOf(tradeRequest.quantity()));
+            amount = tradeRequest.price().multiply(tradeRequest.quantity());
             marketType = MarketType.DOMESTIC;
         }
         return new TradeCalculation(amount,marketType);
