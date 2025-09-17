@@ -1,16 +1,11 @@
 package com.fintory.infra.domain.stock.service.korean;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
 import com.fintory.domain.stock.dto.korean.response.KoreanStockPriceHistoryResponse;
 import com.fintory.domain.stock.dto.korean.core.KoreanStockPriceHistory;
-import com.fintory.domain.stock.dto.korean.wrapper.KoreanStockPriceHistoryWrapper;
-import com.fintory.domain.stock.dto.overseas.core.OverseasStockPriceHistory;
-import com.fintory.domain.stock.dto.overseas.response.OverseasStockPriceHistoryResponse;
 import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.model.StockPriceHistory;
@@ -20,25 +15,17 @@ import com.fintory.infra.domain.stock.repository.StockRepository;
 import com.fintory.infra.domain.stock.service.korean.saver.KoreanStockPriceHistorySaverService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.*;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -140,6 +127,14 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
     //DB에서 기간별 시세 조회
     private List<KoreanStockPriceHistory> getKoreanStockPriceHistoryByInterval(Stock stock, IntervalType intervalType) {
         List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock, intervalType);
+
+        //오늘날짜가 아닌 DAILY 기간별 시세가 저장되어 있는 경우 ->
+
+        List<StockPriceHistory> toDelete = stockPriceHistories.stream()
+                .filter(history->history.getDate().equals(LocalDate.now()))
+                .toList();
+
+        stockPriceHistoryRepository.deleteAll(toDelete);
 
         if(intervalType == IntervalType.DAILY) {
             return stockPriceHistories.stream()
