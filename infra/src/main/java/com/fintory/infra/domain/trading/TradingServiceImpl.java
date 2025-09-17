@@ -4,6 +4,8 @@ package com.fintory.infra.domain.trading;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.model.Account;
+import com.fintory.domain.account.model.DepositTransaction;
+import com.fintory.domain.account.model.DepositTransactionType;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.portfolio.dto.TradeCalculation;
 import com.fintory.domain.portfolio.dto.TradeRequest;
@@ -41,7 +43,6 @@ public class TradingServiceImpl implements TradingService {
     @Override
     public void trade(TradeRequest tradeRequest, String email){
         Child child = childRepository.findByEmail(email).orElseThrow(()-> new DomainException(DomainErrorCode.USER_NOT_FOUND));
-        //REVIEW 현재 로그인을 하면 자동으로 Account가 생성되는지 확인
         Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
         Stock stock = stockRepository.findByCode(tradeRequest.stockCode()).orElseThrow(()-> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
@@ -63,15 +64,15 @@ public class TradingServiceImpl implements TradingService {
         MarketType marketType =  tradeCalculation.marketType();
 
         //현재 account 금액을 넘지 않는지 확인
-        if(!isAvailablePurchase(tradeRequest,account,totalTradeAmount)){
+        if(!isAvailablePurchase(account,totalTradeAmount)){
             throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
         }
 
         //ownedStock, stockTransaction 업데이트
-        // 메소드의 책임이 너무 큰 거 같아요 주식거래 내역과 보유주식을 분리해서 업데이트 하는 건 어떨까요?
         updateStockAndTransactionForPurchase(tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType);
 
-        // TODO: 현금내역 업데이트
+        // 현금내역 생성, account.getDepositTransactions() 쓸일 없으면 양방향 제거 고려
+        DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW);
         //account 업데이트
         updateAccountForPurchase(account,totalTradeAmount);
     }
@@ -81,7 +82,7 @@ public class TradingServiceImpl implements TradingService {
     private void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
-        BigDecimal totalTradeAmount = tradeCalculation.amount();
+        BigDecimal totalTradeAmount = tradeCalculation.amount(); // 환율 적용
         MarketType marketType =  tradeCalculation.marketType();
 
         OwnedStock ownedStock = ownedStockRepository.findByAccountAndStock(account, stock).orElseThrow(()-> new DomainException(DomainErrorCode.OWNED_STOCK_NOT_FOUND));
@@ -92,21 +93,23 @@ public class TradingServiceImpl implements TradingService {
             throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
         }
 
-        // 매도한 물량의 매입 원가
+        // 매도신청할 수량 X 매수평균가
         BigDecimal soldPurchaseAmount = ownedStock.getAveragePurchasePrice()
                 .multiply(tradeRequest.quantity());
 
         //ownedStock, stockTransaction 업데이트
         updateStockAndTransactionForSell(ownedStock,tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType,soldPurchaseAmount);
 
-        // TODO: 현금 내역 업데이트
+        // 현금 내역 생성
+        DepositTransaction.create(totalTradeAmount, stock.getName() + "매도", DepositTransactionType.DEPOSIT);
+
         //account 업데이트
         updateAccountForSell(account,totalTradeAmount,soldPurchaseAmount);
 
 
     }
 
-    private boolean isAvailablePurchase(TradeRequest tradeRequest,Account account, BigDecimal purchasePrice){
+    private boolean isAvailablePurchase(Account account, BigDecimal purchasePrice){
         //구매할 수 없다면
         return account.getAvailableCash().compareTo(purchasePrice) >= 0;
     }
@@ -172,8 +175,6 @@ public class TradingServiceImpl implements TradingService {
 
     private void updateStockAndTransactionForSell(OwnedStock ownedStock,TradeRequest tradeRequest, Account account,Stock stock, BigDecimal totalTradeAmount,
                                                  BigDecimal exchangeRate,MarketType marketType,BigDecimal soldPurchaseAmount){
-
-        BigDecimal livePrice = calculatePriceWithExchange(tradeRequest.price(),marketType,exchangeRate);
 
         ownedStock.updateOwnedStockSell(tradeRequest.quantity(),soldPurchaseAmount);
 

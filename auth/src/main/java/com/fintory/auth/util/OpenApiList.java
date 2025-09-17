@@ -12,23 +12,17 @@ public class OpenApiList {
 
             // user
             "/api/child/auth/login",
-            "/api/parent/auth/login",
 
             "/api/child/auth/signup",
-            "/api/parent/auth/signup",
 
             "/api/child/auth/check-email",
-            "/api/parent/auth/check-email",
 
             "/api/child/auth/social-login/google",
-            "/api/parent/auth/social-login/google",
 
             "/api/child/auth/social-login/kakao",
-            "/api/parent/auth/social-login/kakao",
 
             // refresh
             "/api/child/auth/reissue",
-            "/api/parent/auth/reissue",
 
 
             // swagger
@@ -48,6 +42,7 @@ public class OpenApiList {
 
             //stock //REVIEW stock과 관련한 데이터는 로그인 없이도 조회 가능하도록
             "/api/child/stock/**",
+            "/api/child/trading",
             "/stock/**",
             "/ws/**",
             "/ws-sockjs/**"
