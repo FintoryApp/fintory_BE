@@ -102,7 +102,7 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
         Map<String, List<KoreanStockPriceHistory>> chartData = new HashMap<>();
         Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
-        chartData.put("1D", getKoreanStockPriceHistoryByInterval(stock, IntervalType.DAILY));
+        chartData.put("1D", getKoreanStockPriceHistoryByInterval(stock, IntervalType.HOURLY));
         chartData.put("1W", getFilteredData(stock, IntervalType.QUARTERLY,LocalDate.now().minusWeeks(1)));
         chartData.put("3M", getFilteredData(stock, IntervalType.QUARTERLY, LocalDate.now().minusMonths(3)));
         chartData.put("1Y", getKoreanStockPriceHistoryByInterval(stock, IntervalType.YEARLY));
@@ -126,25 +126,16 @@ public class KoreanStockPriceHistoryServiceImpl implements KoreanStockPriceHisto
 
     //DB에서 기간별 시세 조회
     private List<KoreanStockPriceHistory> getKoreanStockPriceHistoryByInterval(Stock stock, IntervalType intervalType) {
-        List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock, intervalType);
+        List<StockPriceHistory> stockPriceHistories;
 
-        //오늘날짜가 아닌 DAILY 기간별 시세가 저장되어 있는 경우 ->
-
-        List<StockPriceHistory> toDelete = stockPriceHistories.stream()
-                .filter(history->history.getDate().equals(LocalDate.now()))
-                .toList();
-
-        stockPriceHistoryRepository.deleteAll(toDelete);
-
-        if(intervalType == IntervalType.DAILY) {
-            return stockPriceHistories.stream()
-                    .sorted(Comparator.comparing(StockPriceHistory::getUpdatedAt))
-                    .map(this::convertToKoreanStockPriceHistory)
-                    .toList();
+        if(intervalType == IntervalType.HOURLY) {
+            //기간별 시세 데이터를 updateAt 기준으로 정렬해서 조회
+            stockPriceHistories =  stockPriceHistoryRepository.findByStockAndIntervalTypeOrderByUpdatedAtAsc(stock, intervalType);
+        }else{
+            stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalTypeOrderByDateAsc(stock, intervalType);
         }
 
         return stockPriceHistories.stream()
-                .sorted(Comparator.comparing(StockPriceHistory::getDate)) // 날짜순 정렬
                 .map(this::convertToKoreanStockPriceHistory)
                 .toList();
     }

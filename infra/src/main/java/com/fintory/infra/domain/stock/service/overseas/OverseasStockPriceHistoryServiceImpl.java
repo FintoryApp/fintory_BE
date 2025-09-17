@@ -101,7 +101,7 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
         Map<String, List<OverseasStockPriceHistory>> chartData = new HashMap<>();
         Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
-        chartData.put("1D", getOverseasStockPriceHistoryByInterval(stock, IntervalType.DAILY ));
+        chartData.put("1D", getOverseasStockPriceHistoryByInterval(stock, IntervalType.HOURLY));
         chartData.put("1W", getFilteredData(stock, IntervalType.QUARTERLY,LocalDate.now().minusWeeks(1)));
         chartData.put("3M", getFilteredData(stock, IntervalType.QUARTERLY, LocalDate.now().minusMonths(3)));
         chartData.put("1Y", getOverseasStockPriceHistoryByInterval(stock, IntervalType.YEARLY));
@@ -125,19 +125,20 @@ public class OverseasStockPriceHistoryServiceImpl implements OverseasStockPriceH
 
     //DB에서 기간별 시세 조회
     private List<OverseasStockPriceHistory> getOverseasStockPriceHistoryByInterval(Stock stock, IntervalType intervalType) {
-        List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock, intervalType);
+        List<StockPriceHistory> stockPriceHistories; //DB에서 정렬해서 가져오기
 
-        if(intervalType == IntervalType.DAILY) {
-            return stockPriceHistories.stream()
-                    .sorted(Comparator.comparing(StockPriceHistory::getUpdatedAt))
-                    .map(this::convertToOverseasStockPriceHistory)
-                    .toList();
+        if(intervalType == IntervalType.HOURLY) {
+            //가장 최신의 date의 (공휴일, 주말 고려) 기간별 시세 데이터를 updateAt 기준으로 정렬해서 조회
+            stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalTypeOrderByUpdatedAtAsc(stock,intervalType);
+
+        }else {
+            stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalTypeOrderByDateAsc(stock, intervalType);
         }
 
         return stockPriceHistories.stream()
-                .sorted(Comparator.comparing(StockPriceHistory::getDate)) // 날짜순 정렬
                 .map(this::convertToOverseasStockPriceHistory)
                 .toList();
+
     }
 
     private OverseasStockPriceHistory convertToOverseasStockPriceHistory(StockPriceHistory priceHistory) {
