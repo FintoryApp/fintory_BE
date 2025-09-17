@@ -273,7 +273,7 @@ public class ConsultingServiceImpl implements ConsultingService {
                     currentPrice = currentPrice.multiply(exchangeRate);
                 }
 
-                BigDecimal currentValue = currentPrice.multiply(BigDecimal.valueOf(ownedStock.getQuantity()));
+                BigDecimal currentValue = currentPrice.multiply(ownedStock.getQuantity());
                 totalCurrentValue = totalCurrentValue.add(currentValue);
             }
             totalPurchaseAmount = totalPurchaseAmount.add(ownedStock.getPurchaseAmount());
@@ -341,7 +341,7 @@ public class ConsultingServiceImpl implements ConsultingService {
                     currentPrice = currentPrice.multiply(exchangeRate);
                 }
 
-                BigDecimal currentValue = currentPrice.multiply(BigDecimal.valueOf(ownedStock.getQuantity()));
+                BigDecimal currentValue = currentPrice.multiply(ownedStock.getQuantity());
                 BigDecimal profitLoss = currentValue.subtract(ownedStock.getPurchaseAmount());
                 BigDecimal returnRate = profitLoss.divide(ownedStock.getPurchaseAmount(), 2, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100));
@@ -383,7 +383,7 @@ public class ConsultingServiceImpl implements ConsultingService {
                     currentPrice = currentPrice.multiply(exchangeRate);
                 }
 
-                BigDecimal currentValue = currentPrice.multiply(BigDecimal.valueOf(ownedStock.getQuantity()));
+                BigDecimal currentValue = currentPrice.multiply(ownedStock.getQuantity());
                 BigDecimal profitLoss = currentValue.subtract(ownedStock.getPurchaseAmount());
                 BigDecimal returnRate = profitLoss.divide(ownedStock.getPurchaseAmount(), 2, RoundingMode.HALF_UP)
                         .multiply(BigDecimal.valueOf(100));

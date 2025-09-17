@@ -1,10 +1,7 @@
 package com.fintory.domain.portfolio.dto;
 
 import com.fintory.domain.portfolio.model.TransactionType;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
 
@@ -13,8 +10,9 @@ public record TradeRequest(
         String stockCode,
 
         @NotNull(message="수량은 필수입니다")
-        @Min(value=1,message="수량은 1이상이어야 합니다")
-        Integer quantity,
+        @DecimalMin(value="0.001",message="수량은 0.001 이상이어야 합니다")
+        @Digits(integer=10, fraction = 3, message = "수량은 소수점 셋째 자리까지만 허용됩니다.")
+        BigDecimal quantity,
 
         @NotNull(message="현재가는 필수입니다")
         @DecimalMin(value = "0.01", message = "가격은 0.01 이상이어야 합니다")

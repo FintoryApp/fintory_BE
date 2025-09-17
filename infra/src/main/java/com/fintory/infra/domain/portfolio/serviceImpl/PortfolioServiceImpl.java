@@ -102,21 +102,21 @@ public class PortfolioServiceImpl implements PortfolioService {
         for(StockTransaction transaction:stockTransactionList){
             //거래 금액 = 주당가격 * 보유수량 *환율 반영
             BigDecimal amount = transaction.getPricePerShare()
-                    .multiply(BigDecimal.valueOf(transaction.getQuantity()))
+                    .multiply(transaction.getQuantity())
                     .multiply(transaction.getExchangeRate()); //USD=1300, KRW는 1.0이라는 가정
 
             if(transaction.getTransactionType().equals(TransactionType.BUY)){
                 //매수 시 투자금액과 보유수량 증가
                 totalInvestment = totalInvestment.add(amount);
-                totalQuantity =  totalQuantity.add(BigDecimal.valueOf(transaction.getQuantity()));
+                totalQuantity =  totalQuantity.add(transaction.getQuantity());
             }else{
                 if(totalQuantity.compareTo(BigDecimal.ZERO) > 0){
                     //매도 시 평균 매수가 기준으로 처리
                     BigDecimal avgPrice =totalInvestment.divide(totalQuantity,0, RoundingMode.HALF_UP);
-                    BigDecimal sellAmount = avgPrice.multiply(BigDecimal.valueOf(transaction.getQuantity()));
+                    BigDecimal sellAmount = avgPrice.multiply(transaction.getQuantity());
 
                     totalInvestment = totalInvestment.subtract(sellAmount);
-                    totalQuantity = totalQuantity.subtract(BigDecimal.valueOf(transaction.getQuantity()));
+                    totalQuantity = totalQuantity.subtract(transaction.getQuantity());
                 }
             }
         }
