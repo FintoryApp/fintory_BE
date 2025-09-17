@@ -17,7 +17,8 @@ import java.math.RoundingMode;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OwnedStock extends BaseEntity {
 
-    private Integer quantity;
+    @Column(precision = 10, scale = 3)
+    private BigDecimal quantity;
 
     @Column(name="average_purchase_price")
     private BigDecimal averagePurchasePrice; // 한 주당 평균 매입 가격
@@ -33,20 +34,20 @@ public class OwnedStock extends BaseEntity {
     @JoinColumn(name="account_id")
     private Account account;
 
-    public void updateOwnedStockPurchase(Integer quantity, BigDecimal purchaseAmount){
-        this.quantity = this.quantity + quantity;
+    public void updateOwnedStockPurchase(BigDecimal quantity, BigDecimal purchaseAmount){
+        this.quantity = this.quantity.add(quantity);
         this.purchaseAmount = this.purchaseAmount.add(purchaseAmount);
         this.averagePurchasePrice = this.purchaseAmount
-                .divide(BigDecimal.valueOf(this.quantity), 4, RoundingMode.HALF_UP);
+                .divide(this.quantity, 4, RoundingMode.HALF_UP);
     }
 
-    public void updateOwnedStockSell(Integer quantity,BigDecimal soldPurchaseAmount){
-        this.quantity = this.quantity - quantity;
+    public void updateOwnedStockSell(BigDecimal quantity,BigDecimal soldPurchaseAmount){
+        this.quantity = this.quantity.subtract(quantity);
         this.purchaseAmount = this.purchaseAmount.subtract(soldPurchaseAmount);
 
-        if (this.quantity > 0) {
+        if (this.quantity.compareTo(BigDecimal.ZERO)>0) {
             this.averagePurchasePrice = this.purchaseAmount
-                    .divide(BigDecimal.valueOf(this.quantity), 4, RoundingMode.HALF_UP);
+                    .divide(this.quantity, 4, RoundingMode.HALF_UP);
         } else {
             // 모든 주식을 판매한 경우
             this.averagePurchasePrice = BigDecimal.ZERO;
