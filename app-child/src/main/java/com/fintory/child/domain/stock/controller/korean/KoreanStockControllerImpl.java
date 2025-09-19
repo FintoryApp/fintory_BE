@@ -26,7 +26,7 @@ public class KoreanStockControllerImpl implements KoreanStockController {
     @GetMapping("korean/rankings/market-cap")
     public ResponseEntity<ApiResponse<List<KoreanMarketCapResponse>>> getKoreanStockMarketCapTop20(){
         List<KoreanMarketCapResponse> koreanStockMarketCapTop20s = stockService.getKoreanMarketCapTop20();
-        log.info("koreanStockMarket"+koreanStockMarketCapTop20s.toString());
+//        log.info("koreanStockMarket"+koreanStockMarketCapTop20s.toString());
         return ResponseEntity.ok(ApiResponse.ok(koreanStockMarketCapTop20s));
     }
 
