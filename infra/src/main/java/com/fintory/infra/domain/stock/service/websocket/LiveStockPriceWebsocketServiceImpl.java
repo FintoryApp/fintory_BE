@@ -30,10 +30,7 @@ import org.springframework.web.socket.client.WebSocketConnectionManager;
 
 import java.math.BigDecimal;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -334,19 +331,33 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             lastCleanupDate = now;
         }
 
-        //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
-        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now)
-                .orElseGet(()->StockPriceHistory.builder()
+            //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
+            List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock,IntervalType.HOURLY);
+
+            //60개의 데이터만 저장함
+            if(stockPriceHistories.size()<=60) {
+                StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
                         .closePrice(dto.currentPrice())
                         .stock(stock)
                         .intervalType(IntervalType.HOURLY)
                         .date(now)
-                        .build());
+                        .build();
 
-        stockPriceHistory =stockPriceHistory.updateStockPriceHistory(dto.currentPrice());
+                stockPriceHistoryRepository.save(stockPriceHistory);
+            }else{
+                //이미 60개의 데이터가 저장된 경우(저장 시작한지 1시간이 넘은 경우) - 업데이트 방식
+                StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now)
+                        .orElseGet(()->StockPriceHistory.builder()
+                                .closePrice(dto.currentPrice())
+                                .stock(stock)
+                                .intervalType(IntervalType.HOURLY)
+                                .date(now)
+                                .build());
 
-        stockPriceHistoryRepository.save(stockPriceHistory);
+                stockPriceHistory =stockPriceHistory.updateStockPriceHistory(dto.currentPrice());
 
+                stockPriceHistoryRepository.save(stockPriceHistory);
+            }
     }
 
     /* 스케줄링 - 장 마감 정리 */
