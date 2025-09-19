@@ -58,11 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 request::getHeader
                         )));
 
-        if (shouldNotFilter(request)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         try {
             String token = resolveToken(request);
             if (token == null || token.isBlank()) {
