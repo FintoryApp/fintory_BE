@@ -20,10 +20,6 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-sockjs") // 초기 웹소켓 연결을 위한 경로
-                .setAllowedOriginPatterns("*") //cors 설정
-                .withSockJS(); //구형 브라우저를 위한 폴백
-
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*");
     }
