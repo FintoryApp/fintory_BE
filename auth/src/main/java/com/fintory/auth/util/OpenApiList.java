@@ -45,6 +45,7 @@ public class OpenApiList {
             "/api/child/trading",
             "/stock/**",
             "/ws/**",
+            "/ws",
             "/ws-sockjs/**"
 
     };
