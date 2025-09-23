@@ -14,7 +14,9 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic"); // 서버 -> 클라이언트
+        config.enableSimpleBroker("/topic") // 서버 -> 클라이언트
+              .setHeartbeatValue(new long[]{10000, 10000});
+
         config.setApplicationDestinationPrefixes("/app"); //클라이언트 -> 서버
     }
 
