@@ -17,7 +17,10 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     @Bean(name = "webSocketTaskScheduler")
     public TaskScheduler messageBrokerTaskScheduler() {
-        return new ThreadPoolTaskScheduler();
+        ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+        scheduler.setPoolSize(1);
+        scheduler.setThreadNamePrefix("webSocket-heartbeat-thread-");
+        return scheduler;
     }
 
     @Override
