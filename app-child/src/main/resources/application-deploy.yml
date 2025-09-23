@@ -55,9 +55,6 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
-  main:
-    allow-bean-definition-overriding: true
-
   data:
     redis:
       host: ${AWS_REDIS_HOST}
