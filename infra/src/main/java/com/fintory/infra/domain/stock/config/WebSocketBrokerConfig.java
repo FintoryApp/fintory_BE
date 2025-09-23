@@ -1,5 +1,6 @@
 package com.fintory.infra.domain.stock.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -15,6 +16,13 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final TaskScheduler messageBrokerTaskScheduler;
+
+    @Autowired
+    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler) {
+        this.messageBrokerTaskScheduler = webSocketTaskScheduler;
+    }
+
     @Bean(name = "webSocketTaskScheduler")
     public TaskScheduler messageBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
@@ -26,7 +34,8 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic") // 서버 -> 클라이언트
-              .setHeartbeatValue(new long[]{10000, 10000});
+              .setHeartbeatValue(new long[]{10000, 10000})
+              .setTaskScheduler(this.messageBrokerTaskScheduler);
 
         config.setApplicationDestinationPrefixes("/app"); //클라이언트 -> 서버
     }
