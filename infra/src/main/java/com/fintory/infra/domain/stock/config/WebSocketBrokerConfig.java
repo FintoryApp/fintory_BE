@@ -15,10 +15,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
     private final TaskScheduler messageBrokerTaskScheduler;
+    private final WebSocketInterceptor webSocketInterceptor;
 
     @Autowired
     public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler) {
         this.messageBrokerTaskScheduler = webSocketTaskScheduler;
+        this.webSocketInterceptor = new WebSocketInterceptor();
     }
 
     @Override
@@ -33,6 +35,7 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns("*")
+                .addInterceptors(webSocketInterceptor);
     }
 }
