@@ -27,7 +27,6 @@ spring:
             user-name-attribute: id
 
 
-
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${LOCAL_DB_URL}
@@ -67,6 +66,8 @@ spring:
           temperature: ${OPENAI_TEMPERATURE}
           max-tokens: ${OPENAI_MAX_TOKENS}
           timeout: 60s
+  main:
+    allow-bean-definition-overriding: true
 
 jwt:
   secret: ${JWT_SECRET_KEY}

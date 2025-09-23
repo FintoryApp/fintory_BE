@@ -15,7 +15,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
-    @Bean
+    @Bean(name = "webSocketTaskScheduler")
     public TaskScheduler messageBrokerTaskScheduler() {
         return new ThreadPoolTaskScheduler();
     }
