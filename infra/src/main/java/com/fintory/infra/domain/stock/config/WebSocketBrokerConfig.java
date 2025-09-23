@@ -18,9 +18,9 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     private final WebSocketInterceptor webSocketInterceptor;
 
     @Autowired
-    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler) {
+    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler, WebSocketInterceptor webSocketInterceptor) {
         this.messageBrokerTaskScheduler = webSocketTaskScheduler;
-        this.webSocketInterceptor = new WebSocketInterceptor();
+        this.webSocketInterceptor = webSocketInterceptor;
     }
 
     @Override
