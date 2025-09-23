@@ -68,7 +68,12 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
         this.session = session;
         isConnected.set(true);
         connectionLatch.countDown();
-        log.info("해외 주식 웹소켓 연결 성공 - 세션 ID: {}", session.getId());
+        log.info("해외 주식 웹소켓 연결 성공");
+        log.info("세션 ID: {}", session.getId());
+        log.info("웹소켓 handshake 헤더: {}", session.getHandshakeHeaders());
+        log.info("웹소켓 URI: {}", session.getUri());
+        log.info("웹소켓 로컬 주소: {}", session.getLocalAddress());
+        log.info("웹소켓 리모트 주소: {}", session.getRemoteAddress());
     }
 
     @Override
