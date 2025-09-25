@@ -97,6 +97,16 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         this.stockPriceHistoryRepository = stockPriceHistoryRepository;
     }
 
+    @Override
+    public void subscribe(List<String> codes) {
+
+    }
+
+    @Override
+    public void unsubscribe(List<String> codes) {
+
+    }
+
     /* 구독 관리 메서드 */
     @Override
     public void koreanStockSubscribe(String code) {

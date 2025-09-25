@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.config;
+package com.fintory.infra.domain.stock.config.servertoapi;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;

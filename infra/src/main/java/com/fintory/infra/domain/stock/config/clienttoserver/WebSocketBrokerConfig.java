@@ -1,9 +1,7 @@
 package com.fintory.infra.domain.stock.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.scheduling.TaskScheduler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -14,28 +12,28 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final TaskScheduler messageBrokerTaskScheduler;
-    private final WebSocketInterceptor webSocketInterceptor;
-
-    @Autowired
-    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler, WebSocketInterceptor webSocketInterceptor) {
-        this.messageBrokerTaskScheduler = webSocketTaskScheduler;
-        this.webSocketInterceptor = webSocketInterceptor;
-    }
+//    private final TaskScheduler messageBrokerTaskScheduler;
+//    private final WebSocketInterceptor webSocketInterceptor;
+//
+//    @Autowired
+//    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler, WebSocketInterceptor webSocketInterceptor) {
+//        this.messageBrokerTaskScheduler = webSocketTaskScheduler;
+//        this.webSocketInterceptor = webSocketInterceptor;
+//    }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
-        config.enableSimpleBroker("/topic") // 서버 -> 클라이언트
-              .setHeartbeatValue(new long[]{10000, 10000})
-              .setTaskScheduler(this.messageBrokerTaskScheduler);
+        config.enableSimpleBroker("/topic"); // 서버 -> 클라이언트
+//              .setHeartbeatValue(new long[]{10000, 10000})
+//              .setTaskScheduler(this.messageBrokerTaskScheduler);
 
-        config.setApplicationDestinationPrefixes("/app"); //클라이언트 -> 서버
+        config.setApplicationDestinationPrefixes("/app"); // 클라이언트 -> 서버
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("*")
-                .addInterceptors(webSocketInterceptor);
+                .setAllowedOriginPatterns("*");
+//                .addInterceptors(webSocketInterceptor);
     }
 }

@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.config;
+package com.fintory.infra.domain.stock.config.servertoapi;
 
 
 import com.google.common.net.HttpHeaders;

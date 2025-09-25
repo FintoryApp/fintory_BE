@@ -1,13 +1,17 @@
 package com.fintory.child.domain.stock.controller.websocket;
+
 import com.fintory.domain.stock.dto.websocket.StockMessageRequest;
+import com.fintory.domain.stock.dto.websocket.StockSubscriptionRequest;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 
@@ -19,6 +23,25 @@ public class StockWebSocketControllerImpl {
 
     private final LiveStockPriceWebsocketService liveStockWebSocketService;
     private final StockRepository stockRepository;
+
+    /**
+     * 클라이언트로부터 STOMP 구독/해제 요청을 받아 처리하는 단일 엔드포인트
+     *
+     * @param request 구독/해제할 종목 코드 목록과 요청 타입("subscribe" 또는 "unsubscribe")을 담은 요청
+     */
+    @MessageMapping("/stock/subscription") // /app이 자동으로 추가
+    @SendTo("/topic/stock/subscription") // /topic이 있어야 브로커가 인식
+    public void handleStockSubscription(@RequestBody StockSubscriptionRequest request) {
+        if ("subscribe".equalsIgnoreCase(request.type())) {
+            log.info("STOMP 구독 요청: {}", request.codes());
+            liveStockWebSocketService.subscribe(request.codes());
+        } else if ("unsubscribe".equalsIgnoreCase(request.type())) {
+            log.info("STOMP 구독 해제 요청: {}", request.codes());
+            liveStockWebSocketService.unsubscribe(request.codes());
+        } else {
+            log.warn("알 수 없는 STOMP 요청 타입: {}", request.type());
+        }
+    }
 
     /**
      * 프론트엔드에서 STOMP로 한국 주식 구독 요청

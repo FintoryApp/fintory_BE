@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.config;
+package com.fintory.infra.domain.stock.config.servertoapi;
 
 import com.fintory.infra.domain.stock.handler.*;
 import org.springframework.beans.factory.annotation.Qualifier;

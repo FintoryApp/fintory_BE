@@ -1,13 +1,16 @@
 package com.fintory.domain.stock.service.websocket;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
 
 /**
  * 실시간 주식 가격 WebSocket 서비스 인터페이스
  * 한국 및 해외 주식의 실시간 가격 구독/해제 및 데이터 전송을 담당
  */
 public interface LiveStockPriceWebsocketService {
+
+    void subscribe(List<String> codes);
+
+    void unsubscribe(List<String> codes);
 
     /**
      * 한국 주식 종목 구독
