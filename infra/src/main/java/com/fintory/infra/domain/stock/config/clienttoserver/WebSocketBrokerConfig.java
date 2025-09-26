@@ -1,6 +1,8 @@
 package com.fintory.infra.domain.stock.config.clienttoserver;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -11,7 +13,10 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 //REVIEW 일반적인 어플에서도 시세 데이터는 별도의 로그인 과정 없이도 조회가 가능해서 핸드셰이크 인터셉터 설정x(jwt 토큰 인증x)
 @Configuration
 @EnableWebSocketMessageBroker
+@RequiredArgsConstructor
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
+
+    private final StompLoggingInterceptor stompLoggingInterceptor;
 
 //    private final TaskScheduler messageBrokerTaskScheduler;
 //    private final WebSocketInterceptor webSocketInterceptor;
@@ -36,5 +41,10 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*");
 //                .addInterceptors(webSocketInterceptor);
+    }
+
+    @Override
+    public void configureClientInboundChannel(ChannelRegistration registration) {
+        registration.interceptors(stompLoggingInterceptor);
     }
 }
