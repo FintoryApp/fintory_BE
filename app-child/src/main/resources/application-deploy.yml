@@ -1,6 +1,12 @@
 server:
   port: 8080
 
+logging:
+  level:
+    org.springframework.web.socket: DEBUG
+    org.springframework.messaging.simp: DEBUG
+    org.springframework.web.socket.messaging: DEBUG
+
 spring:
   config:
     activate:
