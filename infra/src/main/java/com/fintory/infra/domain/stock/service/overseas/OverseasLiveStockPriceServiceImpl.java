@@ -25,6 +25,10 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse.convertFromLiveStockPrice;
@@ -131,6 +135,24 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
     public OverseasLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
         //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
         LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock).orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
+
+        //장이 닫혀있으면 REST API로 최신 가격 조회
+        if(!isOverseasMarketOpen()){
+            String token = (String) redisTemplate.opsForValue().get("kis-access-token");
+            getLiveStockPriceViaRestAPI(stock.getCode(), token);
+
+            liveStockPrice = liveStockPriceRepository.findByStock(stock)
+                    .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
+        }
+
         return convertFromLiveStockPrice(liveStockPrice);
+    }
+
+    private boolean isOverseasMarketOpen() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("America/New_York"));
+        boolean weekday = now.getDayOfWeek() != DayOfWeek.SATURDAY && now.getDayOfWeek() != DayOfWeek.SUNDAY;
+        return weekday
+                && !now.toLocalTime().isBefore(LocalTime.of(9, 30))
+                && now.toLocalTime().isBefore(LocalTime.of(16, 0));
     }
 }

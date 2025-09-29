@@ -247,16 +247,15 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         LiveStockPriceStream previous = previousData.get(dto.code());
 
         //이전 데이터와 비교하여 중복 체크
-
         if (previous != null && previous.equals(dto)) {
             log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
-            return;
+            return; //똑같은 데이터면 무시
         }
 
-        //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값 저장
+        //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
         if(previous == null) {
             try {
-                saveStockData(dto);
+                saveStockData(dto); //DB에 바로 저장
                 log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
             } catch (Exception e) {
                 // 실패 시 배치 저장을 위해 pendingData에 보관
@@ -265,7 +264,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             }
         }
 
-        //새로운 데이텨면 다음 중복 체크용으로 저장
+        //새로운 데이터면 다음 중복 체크용으로 저장
         previousData.put(dto.code(), dto);
         pendingData.put(dto.code(), dto); //배치 저장 대기
         sendStockData(dto.code(), dto); //클라이언트에게 전송
@@ -359,6 +358,71 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 stockPriceHistoryRepository.save(stockPriceHistory);
             }
     }
+
+    /* 스케쥴링 - 장 시작 시 자동으로 필요한 종목 전부 구독*/
+    @Scheduled(cron="0 0 9 * * MON-FRI", zone="Asia/Seoul")
+    public void startKoreanMarketSubscription(){
+
+        if (!isKoreanMarketOpen()) {
+            log.info("국내 장이 열려있지 않아 자동 구독 스킵");
+            return;
+        }
+
+        if (!isKoreanConnected.get()) {
+            connectKoreanWebSocket();
+        }
+        List<Stock> targetStocks = stockRepository.findByCurrencyName("KRW");
+        int beforeSize = koreanSubscribedStocks.size();
+
+        targetStocks.forEach(dto -> {
+            if(!koreanSubscribedStocks.contains(dto.getCode())) {
+                try {
+                    koreanHandler.subscribe(dto.getCode());
+                    koreanSubscribedStocks.add(dto.getCode());
+                }catch (Exception e){
+                    log.error("종목 {} 구독 실패: {}", dto.getCode(), e.getMessage());
+                }
+            }
+        });
+        int successCount = koreanSubscribedStocks.size() - beforeSize;
+        log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
+                targetStocks.size(), successCount);
+    }
+
+
+    @Scheduled(cron="0 30 9 * * MON-FRI", zone="America/New_York")
+    public void startOverseasMarketSubscription(){
+
+        if (!isOverseasMarketOpen()) {
+            log.info("해외 장이 열려있지 않아 자동 구독 스킵");
+            return;
+        }
+
+        if(!isOverseasConnected.get()) {
+            connectOverseasWebSocket();
+        }
+
+        List<Stock> targetStocks = stockRepository.findByCurrencyName("USD");
+        int beforeSize = overseasSubscribedStocks.size();
+
+        targetStocks.forEach(stock -> {
+            if (!overseasSubscribedStocks.contains(stock.getCode())) {
+                try {
+                    overseasHandler.subscribe(stock.getCode());
+                    overseasSubscribedStocks.add(stock.getCode());
+                }catch(Exception e){
+                    log.error("종목 {} 구독 실패: {}", stock.getCode(), e.getMessage());
+                }
+            }
+        });
+
+        int successCount = overseasSubscribedStocks.size() - beforeSize;
+        log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
+                targetStocks.size(), successCount);
+
+    }
+
+
 
     /* 스케줄링 - 장 마감 정리 */
 
