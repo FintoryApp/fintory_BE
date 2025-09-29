@@ -9,5 +9,6 @@ public record OwnedStockMetrics(
         String stockName,
         BigDecimal avgPurchasePrice,
         int currentQuantity,
+        BigDecimal currentPrice,
         List<StockTransactionInfo> stockTransactionInfoList
 ){}

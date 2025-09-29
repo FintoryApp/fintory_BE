@@ -8,10 +8,14 @@ import com.fintory.domain.portfolio.dto.PortfolioSummary;
 import com.fintory.domain.portfolio.dto.StockMetricsResult;
 import com.fintory.domain.portfolio.dto.StockTransactionInfo;
 import com.fintory.domain.portfolio.model.OwnedStock;
-import com.fintory.domain.portfolio.model.Status;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
 import com.fintory.domain.portfolio.service.PortfolioService;
+import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
+import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
+import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.service.korean.KoreanLiveStockPriceService;
+import com.fintory.domain.stock.service.overseas.OverseasLiveStockPriceService;
 import com.fintory.infra.domain.account.repository.AccountRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.portfolio.repository.StockTransactionRepository;
@@ -33,6 +37,8 @@ public class PortfolioServiceImpl implements PortfolioService {
     private final StockTransactionRepository stockTransactionRepository;
     private final OwnedStockRepository ownedStockRepository;
     private final AccountRepository accountRepository;
+    private final KoreanLiveStockPriceService koreanLiveStockPriceService;
+    private final OverseasLiveStockPriceService overseasLiveStockPriceService;
 
     @Transactional(readOnly = true)
     public List<OwnedStockMetrics>  getOwnedStockMetrics() {
@@ -55,12 +61,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 
                 StockMetricsResult result = calculateCurrentMetrics(transactionList);
 
+                BigDecimal currentPrice = getCurrentPrice(ownedStock.getStock());
+
                 // 주식별 거래내역이 포함된 OwnedStockMetrics 생성
                 return new OwnedStockMetrics(
                         ownedStock.getStock().getCode(),
                         ownedStock.getStock().getName(),
                         result.avgPurchasePrice(),
                         result.currentQuantity(),
+                        currentPrice,
                         stockTransactionInfos
                 );
             }).collect(Collectors.toList());
@@ -92,6 +101,18 @@ public class PortfolioServiceImpl implements PortfolioService {
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.PORTFOLIO_CALCULATION_ERROR);
         }
+    }
+
+    //현재가 조회 메소드
+    private BigDecimal getCurrentPrice(Stock stock) {
+        if ("KRW".equals(stock.getCurrencyName())) {
+            KoreanLiveStockPriceResponse response = koreanLiveStockPriceService.getLiveStockPriceViaQuery(stock);
+            return response.currentPrice();
+        } else if ("USD".equals(stock.getCurrencyName())) {
+            OverseasLiveStockPriceResponse response = overseasLiveStockPriceService.getLiveStockPriceViaQuery(stock);
+            return response.currentPrice();
+        }
+        throw new IllegalStateException("지원하지 않는 통화: " + stock.getCurrencyName());
     }
 
     //주식별 평균 매수가, 총 매수 수량, 총 매수가 계산

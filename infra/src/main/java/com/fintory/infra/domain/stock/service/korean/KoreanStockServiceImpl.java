@@ -85,7 +85,8 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         List<Stock> results = stockRepository.findByCurrencyName("KRW");
         return results.stream()
                 .map(result->{
-                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap());
+                    KoreanLiveStockPriceResponse  response =koreanLiveStockPriceService.getLiveStockPriceViaQuery(result);
+                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap(),response.currentPrice());
                 })
                 .sorted(Comparator.comparing(KoreanMarketCapResponse::marketCap).reversed())
                 .collect(Collectors.toList());
@@ -97,8 +98,8 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         List<Stock> results = stockRepository.findByCurrencyName("KRW");
         return results.stream()
                 .map(stock->{
-                    BigDecimal closePrice = stockPriceHistoryRepository.findByStockAndDate(stock);
-                    return new KoreanROCResponse(stock.getCode(),stock.getName(),closePrice);
+                    KoreanLiveStockPriceResponse  response =koreanLiveStockPriceService.getLiveStockPriceViaQuery(stock);
+                    return new KoreanROCResponse(stock.getCode(),stock.getName(),response.currentPrice());
                 })
                 .collect(Collectors.toUnmodifiableList());
     }
