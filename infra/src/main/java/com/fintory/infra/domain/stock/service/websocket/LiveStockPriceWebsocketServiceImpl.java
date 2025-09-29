@@ -3,6 +3,7 @@ package com.fintory.infra.domain.stock.service.websocket;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
+import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
@@ -13,7 +14,6 @@ import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHan
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -421,6 +421,22 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
                 targetStocks.size(), successCount);
 
+    }
+
+    @Override
+    public MarketStatusResponse getMarketStatus() {
+        // 국내 장 시간이면 "korean"
+        if (isKoreanConnected.get() && isKoreanMarketOpen()) {
+            return new MarketStatusResponse("korean");
+        }
+
+        // 해외 장 시간이면 "overseas"
+        if (isOverseasConnected.get() && isOverseasMarketOpen()) {
+            return new MarketStatusResponse("overseas");
+        }
+
+        // 둘 다 아니면 "no"
+        return new MarketStatusResponse("no");
     }
 
 

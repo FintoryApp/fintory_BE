@@ -1,5 +1,7 @@
 package com.fintory.domain.stock.service.websocket;
 
+import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -44,5 +46,11 @@ public interface LiveStockPriceWebsocketService {
      */
     void sendStockData(String stockCode, Object stockData);
 
+
+    /**
+     * stomp 구독 시 어떤 장이 열린건지 확인
+     * @return korean, overseas, no 중 하나
+     */
+    MarketStatusResponse getMarketStatus();
 
 }
