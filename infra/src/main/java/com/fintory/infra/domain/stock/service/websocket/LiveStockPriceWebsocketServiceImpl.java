@@ -14,6 +14,7 @@ import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHan
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
+import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -391,7 +392,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     }
 
 
-    @Scheduled(cron="0 00 11 * * MON-FRI", zone="America/New_York")
+    //@Scheduled(cron="0 00 11 * * MON-FRI", zone="America/New_York")
+    @PostConstruct
     public void startOverseasMarketSubscription(){
 
         if (!isOverseasMarketOpen()) {
