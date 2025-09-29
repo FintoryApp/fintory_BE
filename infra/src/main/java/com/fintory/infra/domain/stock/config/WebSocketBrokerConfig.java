@@ -16,13 +16,15 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
+    // REVIEW 현재 dev를 pull 받으니까 순환 참조 문제 발생
+    /*
     private final TaskScheduler messageBrokerTaskScheduler;
 
     @Autowired
     public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler) {
         this.messageBrokerTaskScheduler = webSocketTaskScheduler;
     }
-
+*/
     @Bean(name = "webSocketTaskScheduler")
     public TaskScheduler messageBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
@@ -30,12 +32,11 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
         scheduler.setThreadNamePrefix("webSocket-heartbeat-thread-");
         return scheduler;
     }
-
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         config.enableSimpleBroker("/topic") // 서버 -> 클라이언트
               .setHeartbeatValue(new long[]{10000, 10000})
-              .setTaskScheduler(this.messageBrokerTaskScheduler);
+              .setTaskScheduler(messageBrokerTaskScheduler());
 
         config.setApplicationDestinationPrefixes("/app"); //클라이언트 -> 서버
     }
@@ -44,5 +45,11 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*");
+
+        registry.addEndpoint("/ws-sockjs") // 초기 웹소켓 연결을 위한 경로
+                .setAllowedOriginPatterns("*") //cors 설정
+                .withSockJS(); //구형 브라우저를 위한 폴백
+
+
     }
 }
