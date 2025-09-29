@@ -187,7 +187,7 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
     //메시지를 받으면 실행되는 메소드
     public void handleTextMessage(WebSocketSession session, TextMessage message){
         String payload = message.getPayload();
-        log.info(payload);
+        //log.info(payload);
         try{
             String[] fields = payload.split("\\^");
             if (fields.length < 40) return;

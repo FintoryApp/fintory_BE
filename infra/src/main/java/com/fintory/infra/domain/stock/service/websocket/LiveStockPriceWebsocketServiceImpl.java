@@ -131,8 +131,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 log.debug("변동 없음 - 전송 스킵: {}", stockCode);
                 return;
             }
-
-            log.info("현재가 데이터: {}", stockData.toString());
             messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData);
         }
     }

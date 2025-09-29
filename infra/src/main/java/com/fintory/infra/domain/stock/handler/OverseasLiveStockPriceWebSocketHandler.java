@@ -189,7 +189,7 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         String payload = message.getPayload();
-        log.info("수신된 payload: {}", payload);
+        //log.info("수신된 payload: {}", payload);
 
 
         synchronized (sendLock) {
@@ -238,7 +238,7 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
             // 콜백 실행
             executeCallbacks(stockData);
 
-            log.debug("해외 주식 데이터 처리 완료: {}", stockData);
+            //log.debug("해외 주식 데이터 처리 완료: {}", stockData);
 
         } catch (Exception e) {
             log.error("메시지 파싱 중 에러 발생: {}", e.getMessage());
