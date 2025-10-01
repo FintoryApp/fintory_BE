@@ -9,7 +9,7 @@ import com.fintory.domain.common.Role;
 import com.fintory.domain.common.User;
 import com.fintory.domain.consulting.model.Report;
 import com.fintory.domain.point.model.PointWallet;
-import com.fintory.domain.stock.model.PriceAlert;
+import com.fintory.domain.alarm.model.PriceAlert;
 import jakarta.persistence.*;
 import lombok.*;
 

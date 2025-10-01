@@ -1,7 +1,8 @@
-package com.fintory.domain.stock.model;
+package com.fintory.domain.alarm.model;
 
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.common.BaseEntity;
+import com.fintory.domain.stock.model.Stock;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,5 +1,6 @@
 package com.fintory.domain.stock.model;
 
+import com.fintory.domain.alarm.model.PriceAlert;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.portfolio.model.OwnedStock;
 import com.fintory.domain.portfolio.model.StockTransaction;
