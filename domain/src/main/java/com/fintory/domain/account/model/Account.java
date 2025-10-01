@@ -80,6 +80,9 @@ public class Account extends BaseEntity {
 
     }
 
+    public void updateExchangePoint(BigDecimal exchangePoint) {
+        this.availableCash = this.availableCash.add(exchangePoint);
+    }
 }
 
 

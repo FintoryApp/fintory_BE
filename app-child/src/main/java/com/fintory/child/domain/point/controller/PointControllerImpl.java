@@ -22,10 +22,12 @@ public class PointControllerImpl implements PointController{
     private final AccountService accountService;
     private final ChildService childService;
 
-//   TODO:
 //    @Override
-//    public ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(CustomUserDetails user, Integer point) {
-//        return null;
+//    @PostMapping("/exchange-point")
+//    public ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(CustomUserDetails user, BigDecimal point) {
+//        Child child = childService.getChild(user.getUsername());
+//        ExchangedCashResponse response = pointService.exchangePointsToCash(child, point);
+//        return ResponseEntity.ok(ApiResponse.ok(response));
 //    }
 
     @Override

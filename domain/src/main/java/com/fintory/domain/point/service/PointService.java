@@ -12,4 +12,6 @@ public interface PointService {
     PointWalletResponse getPointWalletWithTransactions(Child child);
 
     int getTotalAmount(Child child);
+
+//    ExchangedCashResponse exchangePointsToCash(Child child, BigDecimal point);
 }
