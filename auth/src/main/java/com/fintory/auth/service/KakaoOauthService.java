@@ -12,6 +12,7 @@ import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.model.LoginType;
 import com.fintory.domain.child.model.Status;
 import com.fintory.domain.common.Role;
+import com.fintory.domain.point.service.PointService;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,7 @@ public class KakaoOauthService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final ChildRepository childRepository;
     private final AccountService accountService;
+    private final PointService pointService;
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisTemplate<String, String> redisTemplate;
     private final HttpHeaders headers = new HttpHeaders();
@@ -67,6 +69,7 @@ public class KakaoOauthService {
                     Child newChild = new Child(nickname, kakaoEmail, kakaoId, LoginType.KAKAO, Role.CHILD, Status.ACTIVE);
                     Child savedChild = childRepository.save(newChild);
                     accountService.createInitialAccount(savedChild);
+                    pointService.createInitialPointWallet(savedChild);
 
                     return childRepository.save(newChild);
                 });
