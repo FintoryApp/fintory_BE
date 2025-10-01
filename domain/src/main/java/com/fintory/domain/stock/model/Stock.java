@@ -46,4 +46,7 @@ public class Stock extends BaseEntity {
 
     @OneToMany(cascade=CascadeType.ALL, mappedBy="stock")
     private List<OwnedStock> ownedStocks;
+
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "stock")
+    private List<PriceAlert> priceAlerts;
 }

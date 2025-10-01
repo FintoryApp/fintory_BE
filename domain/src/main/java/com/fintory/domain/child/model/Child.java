@@ -9,6 +9,7 @@ import com.fintory.domain.common.Role;
 import com.fintory.domain.common.User;
 import com.fintory.domain.consulting.model.Report;
 import com.fintory.domain.point.model.PointWallet;
+import com.fintory.domain.stock.model.PriceAlert;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -90,6 +91,7 @@ public class Child extends BaseEntity implements User {
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
     private List<Report> reports;
 
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
+    private List<PriceAlert> priceAlerts;
 
 }
