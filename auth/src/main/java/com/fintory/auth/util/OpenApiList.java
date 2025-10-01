@@ -35,14 +35,13 @@ public class OpenApiList {
             "/v3/api-docs/**",
 
             // news
-            "/api/news/crawl-test",
+            "/api/child/news/crawl-test",
 
             //report
             "/api/child/consulting/test/consulting-report",
 
             //stock //REVIEW stock과 관련한 데이터는 로그인 없이도 조회 가능하도록
             "/api/child/stock/**",
-            "/api/child/trading",
             "/stock/**",
             "/ws/**",
             "/ws-sockjs/**"
