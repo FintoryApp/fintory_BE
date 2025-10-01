@@ -1,11 +1,6 @@
-package com.fintory.domain.stock.service;
+package com.fintory.domain.portfolio.service;
 
-import com.fintory.domain.account.model.Account;
 import com.fintory.domain.portfolio.dto.TradeRequest;
-import com.fintory.domain.portfolio.model.TransactionType;
-import com.fintory.domain.stock.model.Stock;
-
-import java.math.BigDecimal;
 
 public interface TradingService {
 

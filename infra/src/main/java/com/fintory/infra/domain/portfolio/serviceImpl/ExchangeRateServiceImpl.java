@@ -1,8 +1,8 @@
-package com.fintory.infra.domain.trading;
+package com.fintory.infra.domain.portfolio.serviceImpl;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.service.ExchangeRateService;
+import com.fintory.domain.portfolio.service.ExchangeRateService;
 import com.fintory.infra.domain.portfolio.properties.EosProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

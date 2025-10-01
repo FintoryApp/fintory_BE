@@ -3,7 +3,7 @@ package com.fintory.child.domain.trading.controller;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.portfolio.dto.TradeRequest;
-import com.fintory.domain.stock.service.TradingService;
+import com.fintory.domain.portfolio.service.TradingService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

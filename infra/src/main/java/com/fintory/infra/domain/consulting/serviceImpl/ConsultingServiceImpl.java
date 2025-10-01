@@ -12,7 +12,7 @@ import com.fintory.domain.portfolio.model.OwnedStock;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
 import com.fintory.domain.stock.model.LiveStockPrice;
-import com.fintory.domain.stock.service.ExchangeRateService;
+import com.fintory.domain.portfolio.service.ExchangeRateService;
 import com.fintory.infra.domain.consulting.repository.ReportRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;

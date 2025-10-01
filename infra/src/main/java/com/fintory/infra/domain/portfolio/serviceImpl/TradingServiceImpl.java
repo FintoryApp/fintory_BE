@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.trading;
+package com.fintory.infra.domain.portfolio.serviceImpl;
 
 
 import com.fintory.common.exception.DomainErrorCode;
@@ -11,8 +11,8 @@ import com.fintory.domain.portfolio.dto.TradeCalculation;
 import com.fintory.domain.portfolio.dto.TradeRequest;
 import com.fintory.domain.portfolio.model.*;
 import com.fintory.domain.stock.model.Stock;
-import com.fintory.domain.stock.service.ExchangeRateService;
-import com.fintory.domain.stock.service.TradingService;
+import com.fintory.domain.portfolio.service.ExchangeRateService;
+import com.fintory.domain.portfolio.service.TradingService;
 import com.fintory.infra.domain.account.repository.AccountRepository;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
