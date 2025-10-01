@@ -9,6 +9,7 @@ import com.fintory.domain.point.dto.PointWalletResponse;
 import com.fintory.domain.point.service.PointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,6 +29,7 @@ public class PointControllerImpl implements PointController{
 //    }
 
     @Override
+    @GetMapping("/point-transactions")
     public ResponseEntity<ApiResponse<PointWalletResponse>> getPointTransactions(CustomUserDetails user) {
         Child child = childService.getChild(user.getUsername());
         PointWalletResponse response = pointService.getPointWalletWithTransactions(child);
@@ -35,6 +37,7 @@ public class PointControllerImpl implements PointController{
     }
 
     @Override
+    @GetMapping("/total-point")
     public ResponseEntity<ApiResponse<Integer>> getTotalAmountPoint(CustomUserDetails user) {
         Child child = childService.getChild(user.getUsername());
         int response = pointService.getTotalAmount(child);
