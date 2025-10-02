@@ -13,5 +13,5 @@ public interface PointService {
 
     int getTotalAmount(Child child);
 
-//    ExchangedCashResponse exchangePointsToCash(Child child, BigDecimal point);
+    Integer exchangePointsToCash(Child child, int point);
 }

@@ -3,6 +3,8 @@ package com.fintory.infra.domain.point.serviceimpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.model.Account;
+import com.fintory.domain.account.model.DepositTransaction;
+import com.fintory.domain.account.model.DepositTransactionType;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.point.dto.PointWalletResponse;
 import com.fintory.domain.point.model.PointTransaction;
@@ -76,24 +78,24 @@ public class PointServiceImpl implements PointService {
         return wallet.getTotalAmount();
     }
 
-//    @Override
-//    public ExchangedCashResponse exchangePointsToCash(Child child, BigDecimal point) {
-//        //포인트지갑 가져오기
-//        PointWallet pointWallet = pointRepository.findByChildId(child.getId())
-//                .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
-//
-//        //현금 지갑 가져오기
-//        Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
-//        //포인트 지갑 업데이트
-//        updatePointAccountByExchange(pointWallet, point);
-//        //포인트 내역 생성
-//        createPointTransactions(pointWallet, point, PointTransactionSource.EXCHANGE_POINT);
-//        //현금 지갑 업데이트
-//        updateAccountByExchange(account, point);
-//        //현금 내역 생성
-//        DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW);
-//        return null;
-//    }
+    @Override
+    public Integer exchangePointsToCash(Child child, int point) {
+        //포인트지갑 가져오기
+        PointWallet pointWallet = pointRepository.findByChildId(child.getId())
+                .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
+
+        //현금 지갑 가져오기
+        Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
+        //포인트 지갑 업데이트
+        updatePointAccountByExchange(pointWallet, point);
+        //포인트 내역 생성
+        createPointTransactions(pointWallet, point, PointTransactionSource.EXCHANGE_POINT);
+        //현금 지갑 업데이트, 보유 현금 반환
+        BigDecimal availableCash = updateAccountByExchange(account, BigDecimal.valueOf(point));
+        //현금 내역 생성
+        DepositTransaction.create(BigDecimal.valueOf(point), "포인트 환전", DepositTransactionType.DEPOSIT);
+        return availableCash.intValue();
+    }
 
     // 포인트 지갑 업데이트
     // 부모 메소드에 transactional이 적용됐기에 해당 메소드로 적용이 됨
@@ -114,8 +116,9 @@ public class PointServiceImpl implements PointService {
         pointWallet.addTransaction(pt);
     }
 
-    private void updateAccountByExchange(Account account, BigDecimal exchangePoint) {
+    private BigDecimal updateAccountByExchange(Account account, BigDecimal exchangePoint) {
         account.updateExchangePoint(exchangePoint);
-        accountRepository.save(account);
+        Account savedAccount = accountRepository.save(account);
+        return savedAccount.getAvailableCash();
     }
 }

@@ -2,7 +2,6 @@ package com.fintory.child.domain.point.controller;
 
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
-import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.service.ChildService;
 import com.fintory.domain.point.dto.PointWalletResponse;
@@ -10,6 +9,7 @@ import com.fintory.domain.point.service.PointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,16 +19,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class PointControllerImpl implements PointController{
 
     private final PointService pointService;
-    private final AccountService accountService;
     private final ChildService childService;
 
-//    @Override
-//    @PostMapping("/exchange-point")
-//    public ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(CustomUserDetails user, BigDecimal point) {
-//        Child child = childService.getChild(user.getUsername());
-//        ExchangedCashResponse response = pointService.exchangePointsToCash(child, point);
-//        return ResponseEntity.ok(ApiResponse.ok(response));
-//    }
+    @Override
+    @PostMapping("/exchange-point")
+    public ResponseEntity<ApiResponse<Integer>> exchangePoint(CustomUserDetails user, int point) {
+        Child child = childService.getChild(user.getUsername());
+        Integer response = pointService.exchangePointsToCash(child, point);
+        return ResponseEntity.ok(ApiResponse.ok(response));
+    }
 
     @Override
     @GetMapping("/point-transactions")
