@@ -6,7 +6,6 @@ import com.fintory.domain.attendence.dto.AttendanceLogResponse;
 import com.fintory.domain.attendence.service.AttendanceService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.service.ChildService;
-import com.fintory.domain.point.service.PointService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,7 +22,6 @@ import java.util.List;
 public class AttendanceControllerImpl implements AttendanceController{
 
     private final AttendanceService attendanceService;
-    private final PointService pointService;
     private final ChildService childService;
 
     @Override
@@ -32,7 +30,6 @@ public class AttendanceControllerImpl implements AttendanceController{
         Child child = childService.getChild(user.getUsername());
         int continuousDays = attendanceService.check(child); //연속 출석일 리턴
         // 연속 일 수 만큼 포인트 지급
-        pointService.givePointsByContinuousDays(continuousDays, child);
         return ResponseEntity.ok(ApiResponse.ok(continuousDays));
     }
 

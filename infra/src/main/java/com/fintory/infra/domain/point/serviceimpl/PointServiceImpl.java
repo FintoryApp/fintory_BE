@@ -12,7 +12,6 @@ import com.fintory.domain.point.model.PointTransactionSource;
 import com.fintory.domain.point.model.PointWallet;
 import com.fintory.domain.point.service.PointService;
 import com.fintory.infra.domain.account.repository.AccountRepository;
-import com.fintory.infra.domain.attendance.repository.AttendanceRepository;
 import com.fintory.infra.domain.point.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Slf4j
 @Service
@@ -28,24 +26,18 @@ import java.time.LocalDate;
 public class PointServiceImpl implements PointService {
 
     private final PointRepository pointRepository;
-    private final AttendanceRepository attendanceRepository;
     private final AccountRepository accountRepository;
 
     @Override
     @Transactional
     public void givePointsByContinuousDays(int continuousDays, Child child) {
         int pointToGive = continuousDays * 10000;
-        LocalDate today = LocalDate.now();
 
         PointWallet pointWallet = pointRepository.findByChildId(child.getId())
                 .orElseThrow(() -> new IllegalStateException("포인트 지갑이 없습니다. childId=" + child.getId()));
 
-        // 출석 중복 여부
-        boolean isAlreadyChecked = attendanceRepository.existsByChildAndAttendanceDate(child, today);
-        if (!isAlreadyChecked) {
-            updatePointAccount(pointWallet, pointToGive);
-            createPointTransactions(pointWallet, pointToGive, PointTransactionSource.ATTENDANCE_POINT);
-        }
+        updatePointAccount(pointWallet, pointToGive);
+        createPointTransactions(pointWallet, pointToGive, PointTransactionSource.ATTENDANCE_POINT);
 
     }
 
