@@ -78,6 +78,10 @@ public class PointServiceImpl implements PointService {
 
         //현금 지갑 가져오기
         Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
+
+        if (pointWallet.getTotalAmount() < point) {
+            throw new DomainException(DomainErrorCode.NOT_ENOUGH_POINT);
+        }
         //포인트 지갑 업데이트
         updatePointAccountByExchange(pointWallet, point);
         //포인트 내역 생성
