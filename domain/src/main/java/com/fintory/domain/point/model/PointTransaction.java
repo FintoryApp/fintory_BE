@@ -26,19 +26,21 @@ public class PointTransaction extends BaseEntity {
     @JoinColumn(name = "point_id")
     private PointWallet pointWallet;
 
-    private PointTransaction(int amount, PointTransactionType type, PointTransactionSource source, PointWallet pointWallet) {
-        this.amount = amount;
-        this.type = type;
-        this.source = source;
-        this.pointWallet = pointWallet;
+    public static PointTransaction createEarningTransaction(int amount, PointTransactionSource source, PointWallet pointWallet) {
+        PointTransaction pt = new PointTransaction();
+        pt.amount = amount;
+        pt.type = PointTransactionType.EARN;
+        pt.source = source;
+        pt.pointWallet = pointWallet;
+        return pt;
     }
 
-    public static PointTransaction earn(int amount, PointTransactionSource source, PointWallet pointWallet) {
-        return new PointTransaction(amount, PointTransactionType.EARN, source, pointWallet);
+    public static PointTransaction createWithdrawTransaction(int amount, PointTransactionSource source, PointWallet pointWallet) {
+        PointTransaction pt = new PointTransaction();
+        pt.amount = amount;
+        pt.type = PointTransactionType.WITHDRAW;
+        pt.source = source;
+        pt.pointWallet = pointWallet;
+        return pt;
     }
-
-    public static PointTransaction use(int amount, PointTransactionSource source, PointWallet pointWallet) {
-        return new PointTransaction(amount, PointTransactionType.WITHDRAW, source, pointWallet);
-    }
-
 }
