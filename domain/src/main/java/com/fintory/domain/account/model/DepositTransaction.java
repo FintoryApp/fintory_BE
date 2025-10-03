@@ -6,7 +6,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -29,17 +28,17 @@ public class DepositTransaction extends BaseEntity {
     private LocalDateTime occurredAt;
 
     // 연관관계 설정
-    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="account_id")
     private Account account;
 
-    public static DepositTransaction create(BigDecimal amount, String description, DepositTransactionType type) {
+    public static DepositTransaction create(BigDecimal amount, String description, DepositTransactionType type, Account account) {
         DepositTransaction dt = new DepositTransaction();
         dt.amount = amount;
         dt.description = description;
         dt.type = type;
         dt.occurredAt = LocalDateTime.now();
+        dt.account = account;
         return dt;
     }
 

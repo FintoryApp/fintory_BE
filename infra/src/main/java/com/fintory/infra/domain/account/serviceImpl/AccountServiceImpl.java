@@ -5,6 +5,7 @@ import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.dto.response.DepositTransactionResponse;
 import com.fintory.domain.account.model.Account;
 import com.fintory.domain.account.model.DepositTransaction;
+import com.fintory.domain.account.model.DepositTransactionType;
 import com.fintory.domain.account.service.AccountService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.infra.domain.account.repository.AccountRepository;
@@ -26,18 +27,26 @@ public class AccountServiceImpl implements AccountService {
     private final DepositTransactionRepository depositTransactionRepository;
 
     @Override
+    @Transactional
     public void createInitialAccount(Child child) {
+
         BigDecimal initialCash = new BigDecimal("100000");
+
         try {
-            Account account = Account.createWithInitialDeposit(child, initialCash);
+            //계좌 생성
+            Account account = Account.create(child, initialCash);
             accountRepository.save(account);
-            log.info("계좌 생성 완료: childId={}, 초기 입금={}", child.getId(), initialCash);
+
+            //초기금 입금 거래내역 생성
+            DepositTransaction deposit = DepositTransaction.create(initialCash, "기본금 지급", DepositTransactionType.DEPOSIT, account);
+            depositTransactionRepository.save(deposit);
+
         } catch (Exception e) {
             throw new DomainException(DomainErrorCode.INITIALIZE_ACCOUNT_FAILED, e);
         }
     }
 
-
+    @Override
     @Transactional(readOnly = true)
     public List<DepositTransactionResponse> getDepositTransactionsByChild(Child child) {
         Account account = accountRepository.findByChild(child)

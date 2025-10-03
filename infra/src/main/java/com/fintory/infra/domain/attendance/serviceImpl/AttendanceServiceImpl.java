@@ -8,6 +8,7 @@ import com.fintory.infra.domain.attendance.repository.AttendanceRepository;
 import com.fintory.infra.domain.point.serviceimpl.PointServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,6 +22,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     private final PointServiceImpl pointService;
 
     @Override
+    @Transactional
     public int check(Child child) {
 
         LocalDate today = LocalDate.now();
