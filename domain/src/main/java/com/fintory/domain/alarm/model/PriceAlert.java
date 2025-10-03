@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PriceAlert extends BaseEntity {
 
-    @Column(name="target_price")
+    @Column(name="target_price",precision = 15, scale=3)
     private BigDecimal targetPrice;
 
     @ManyToOne
