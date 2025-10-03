@@ -72,6 +72,10 @@ public enum DomainErrorCode {
     //live stock price
     LIVE_STOCK_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND,"LIVE_STOCK_PRICE_NOT_FOUND","현재가 데이터를 찾을 수 없습니다."),
 
+    // price alert
+    PRICE_ALERT_NOT_FOUND(HttpStatus.NOT_FOUND,"PRICE_ALERT_NOT_FOUND","해당 감시가 데이터를 찾을 수 없습니다"),
+    PRICE_ALERT_FORBIDDEN(HttpStatus.FORBIDDEN,"PRICE_ALERT_FORBIDDEN","해당 감시가 데이터에 대한 권한이 없습니다."),
+
     //report
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"REPORT_NOT_FOUND","리포트를 찾을 수 없습니다."),
 
