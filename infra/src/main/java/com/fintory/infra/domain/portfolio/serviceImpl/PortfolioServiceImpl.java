@@ -3,10 +3,9 @@ package com.fintory.infra.domain.portfolio.serviceImpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.account.model.Account;
-import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
-import com.fintory.domain.portfolio.dto.PortfolioSummary;
-import com.fintory.domain.portfolio.dto.StockMetricsResult;
-import com.fintory.domain.portfolio.dto.StockTransactionInfo;
+import com.fintory.domain.child.model.Child;
+import com.fintory.domain.portfolio.dto.*;
+import com.fintory.domain.portfolio.dto.summary.PortfolioSummaryResponse;
 import com.fintory.domain.portfolio.model.OwnedStock;
 import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
@@ -101,6 +100,15 @@ public class PortfolioServiceImpl implements PortfolioService {
             log.error("포트폴리오 요약 조회 시 에러 발생: {}", e.getMessage());
             throw new DomainException(DomainErrorCode.PORTFOLIO_CALCULATION_ERROR);
         }
+    }
+
+    public PortfolioSummaryResponse getPortfolioSummaryResponseByChild(Child child) {
+        Account account = accountRepository.findByChild(child)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
+
+        List<OwnedStock> ownedStocks = ownedStockRepository.findAllWithStockByAccount(account);
+
+        return PortfolioSummaryResponse.from(account, ownedStocks);
     }
 
     //현재가 조회 메소드

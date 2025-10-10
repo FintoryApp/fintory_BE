@@ -1,11 +1,14 @@
 package com.fintory.child.domain.portfolio.controller;
 
+import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
 import com.fintory.domain.portfolio.dto.PortfolioSummary;
+import com.fintory.domain.portfolio.dto.summary.PortfolioSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -19,4 +22,9 @@ public interface PortfolioController {
     @Operation(summary = "보유 주식 목록 조회", description = "현재 보유 중인 모든 주식의 상세 정보를 조회합니다")
     @ApiResponse(responseCode = "200", description = "보유 주식 목록 조회 성공")
     public ResponseEntity<com.fintory.common.api.ApiResponse<List<OwnedStockMetrics>>> getOwnedStockList();
+
+    @Operation(summary = "투자 현황 조회", description = "보유 주식에 대해 가격, 수량 및 총 보유 현금 반환")
+    public ResponseEntity<com.fintory.common.api.ApiResponse<PortfolioSummaryResponse>> getPortfolioSummaryResponse(
+            @AuthenticationPrincipal CustomUserDetails user
+    );
 }
