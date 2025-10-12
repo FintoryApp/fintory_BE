@@ -18,20 +18,12 @@ public class LiveStockPrice extends BaseEntity {
     @Column(name="current_price")
     private BigDecimal currentPrice;
 
-    @Column(name="price_change")
-    private BigDecimal priceChange;
-
-    @Column(name="price_change_rate")
-    private BigDecimal priceChangeRate;
-
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="stock_id")
     private Stock stock;
 
-    public LiveStockPrice updateLiveStockPrice(BigDecimal currentPrice, BigDecimal priceChange, BigDecimal priceChangeRate) {
+    public LiveStockPrice updateLiveStockPrice(BigDecimal currentPrice) {
         this.currentPrice = currentPrice;
-        this.priceChange = priceChange;
-        this.priceChangeRate = priceChangeRate;
         return this;
 
     }

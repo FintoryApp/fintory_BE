@@ -6,10 +6,11 @@ public record KoreanROCResponse (
         String stockCode,
         String stockName,
         BigDecimal closePrice,
+        BigDecimal openPrice,
         String profileImageUrl
 
 ){
-    public KoreanROCResponse(String stockCode, String stockName, BigDecimal closePrice){
-        this(stockCode,stockName,closePrice,null);
+    public KoreanROCResponse(String stockCode, String stockName, BigDecimal closePrice,BigDecimal openPrice){
+        this(stockCode,stockName,closePrice,openPrice,null);
     }
 }

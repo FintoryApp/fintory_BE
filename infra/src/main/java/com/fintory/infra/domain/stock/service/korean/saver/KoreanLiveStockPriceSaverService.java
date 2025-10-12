@@ -28,7 +28,7 @@ public class KoreanLiveStockPriceSaverService {
                 .orElseGet(() -> LiveStockPrice.builder()
                         .stock(stock)
                         .build());
-        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice(),priceDto.priceChange(),priceDto.priceChangeRate());
+        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice());
         liveStockPriceRepository.save(liveStockPrice);
     }
 }

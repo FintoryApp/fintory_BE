@@ -366,6 +366,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             if(stockPriceHistories.size()<=60) {
                 StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
                         .closePrice(dto.currentPrice())
+                        .openPrice(dto.currentPrice())
                         .stock(stock)
                         .intervalType(IntervalType.HOURLY)
                         .date(now)

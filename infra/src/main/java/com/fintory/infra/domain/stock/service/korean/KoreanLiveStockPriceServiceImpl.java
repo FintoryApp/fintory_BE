@@ -4,13 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.korean.core.KoreanLiveStockPrice;
 import com.fintory.domain.stock.dto.korean.response.KoreanLiveStockPriceResponse;
 import com.fintory.domain.stock.dto.korean.wrapper.KoreanLiveStockPriceWrapper;
+import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.service.korean.KoreanLiveStockPriceService;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import com.fintory.infra.domain.stock.service.korean.saver.KoreanLiveStockPriceSaverService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +55,7 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
     private final KoreanLiveStockPriceSaverService  koreanLiveStockPriceSaverService;
+    private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
@@ -137,8 +140,7 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
     @Override
     public KoreanLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
         //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock).orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
-
+        /*
         //장중에만 DB 데이터 사용 , 장마감 : REST API 호출해서 최신 가격 조회
         if(!isKoreanMarketOpen()){
             String token = (String) redisTemplate.opsForValue().get("kis-access-token");
@@ -146,9 +148,17 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
 
             liveStockPrice = liveStockPriceRepository.findByStock(stock)
                     .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
-        }
+        }*/
 
-        return convertFromLiveStockPrice(liveStockPrice);
+        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
+
+
+        //openPrice 전달
+        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalType(stock, IntervalType.HOURLY)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_PRICE_HISTORY_FAILED));
+
+        return convertFromLiveStockPrice(liveStockPrice,stockPriceHistory.getOpenPrice());
     }
 
     private boolean isKoreanMarketOpen(){
