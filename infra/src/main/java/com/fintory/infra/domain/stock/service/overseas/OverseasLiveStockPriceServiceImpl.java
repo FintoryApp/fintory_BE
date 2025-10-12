@@ -156,8 +156,8 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
                 .orElse(null); //TODO orElseThrow로 변경
 
         BigDecimal openPrice = stockPriceHistory!=null ? stockPriceHistory.getOpenPrice() : BigDecimal.ZERO;
-
-        return convertFromLiveStockPrice(stockPriceHistory.getClosePrice(),openPrice);
+        BigDecimal closePrice = stockPriceHistory!=null ? stockPriceHistory.getClosePrice() : BigDecimal.ZERO;
+        return convertFromLiveStockPrice(closePrice,openPrice);
     }
 
     private boolean isOverseasMarketOpen() {
