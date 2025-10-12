@@ -21,12 +21,6 @@ public interface OverseasStockService {
      */
     List<OverseasROCResponse> getOverseasROCTop20();
 
-    /**
-     * 해외 주식 거래량 Top20 조회
-     * @return 거래량 순위 리스트
-     */
-    List<OverseasRankResponse> getOverseasTradingVolumeTop20();
-
 
     /**
      * 해외 주식 가격 이력 조회

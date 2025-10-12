@@ -3,9 +3,7 @@ package com.fintory.infra.domain.stock.service.overseas;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.overseas.response.*;
-import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
-import com.fintory.domain.stock.model.StockRank;
 import com.fintory.domain.stock.service.overseas.*;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRankRepository;
@@ -117,12 +115,6 @@ public class OverseasStockServiceImpl implements OverseasStockService {
                 .collect(Collectors.toUnmodifiableList());
     }
 
-    //거래량 순위 조회
-    @Override
-    public List<OverseasRankResponse> getOverseasTradingVolumeTop20(){
-        List<Object[]> ranks = stockRankRepository.findTradingVolumeTop20("USD");
-        return mapToOverseasRankResponse(ranks,StockRank::getTradingVolumeRank);
-    }
 
     //기간별 시세 데이터 조회
     @Override
@@ -135,23 +127,6 @@ public class OverseasStockServiceImpl implements OverseasStockService {
     public OverseasLiveStockPriceResponse getLiveStockPrice(String code) {
         Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
         return overseasLiveStockPriceService.getLiveStockPriceViaQuery(stock);
-    }
-
-    private List<OverseasRankResponse> mapToOverseasRankResponse(List<Object[]> results, Function<StockRank, Integer> rankExtractor){
-        return results.stream()
-                .map(result->{
-                    StockRank stockRank = (StockRank) result[0];
-                    LiveStockPrice liveStockPrice = (LiveStockPrice) result[1];
-
-                    return new OverseasRankResponse(
-                            stockRank.getStock().getName(),
-                            stockRank.getStock().getCode(),
-                            rankExtractor.apply(stockRank),
-                            liveStockPrice.getCurrentPrice(),
-                            liveStockPrice.getPriceChange(),
-                            liveStockPrice.getPriceChangeRate()
-                    );
-                }).collect(Collectors.toList());
     }
 
 

@@ -36,15 +36,6 @@ public class OverseasStockControllerImpl implements OverseasStockController{
         return ResponseEntity.ok(ApiResponse.ok(overseasStockROCTop20s));
     }
 
-
-    //해외 주식 랭킹 - 거래량
-    @Override
-    @GetMapping("overseas/rankings/trading-volume")
-    public ResponseEntity<ApiResponse<List<OverseasRankResponse>>> getOverseasStockTradingVolumeTop20(){
-        List<OverseasRankResponse> overseasStockTradingVolumes = overseasStockService.getOverseasTradingVolumeTop20();
-        return ResponseEntity.ok(ApiResponse.ok(overseasStockTradingVolumes));
-    }
-
     //해외 주식 - 차트 데이터
     @Override
     @GetMapping("/overseas/price-history/{code}")
