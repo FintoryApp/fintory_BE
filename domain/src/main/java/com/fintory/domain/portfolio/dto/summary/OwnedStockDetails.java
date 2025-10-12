@@ -9,7 +9,7 @@ public record OwnedStockDetails(
 
         String stockCode,
         String stockName,
-        String companyImageUrl,
+        String profileImageUrl,
         BigDecimal currentPrice,
         BigDecimal quantity,
         BigDecimal purchaseamount,

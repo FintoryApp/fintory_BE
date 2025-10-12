@@ -8,6 +8,6 @@ public record KoreanMarketCapResponse(
         String stockName,
         BigDecimal marketCap,
         BigDecimal currentPrice,
-        String companyImageUrl
+        String profileImageUrl
 ) {
 }
