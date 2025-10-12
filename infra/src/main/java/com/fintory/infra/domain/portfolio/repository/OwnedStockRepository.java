@@ -19,4 +19,6 @@ public interface OwnedStockRepository extends JpaRepository<OwnedStock,Long> {
     List<OwnedStock> findAllWithStockByAccount(@Param("account") Account account);
 
     Optional<OwnedStock> findByAccountAndStock(Account account, Stock stock);
+
+    List<OwnedStock> findAllWithStockByAccountAndStock_CurrencyName(Account account, String currencyName);
 }
