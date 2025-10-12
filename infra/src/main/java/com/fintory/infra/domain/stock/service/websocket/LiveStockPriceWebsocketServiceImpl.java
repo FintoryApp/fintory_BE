@@ -135,6 +135,35 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         }
     }
 
+    /* 구독 자동 실행 메소드 */
+    @Scheduled(cron="0 30 09 * * MON-FRI", zone="America/New_York")
+    public void scheduledOverseasMarketSubscription(){
+            startOverseasMarketSubscription();
+    }
+
+    @Scheduled(cron="0 0 9 * * MON-FRI", zone="Asia/Seoul")
+    public void scheduledKoreanMarketSubscription(){
+            startKoreanMarketSubscription();
+    }
+
+    @PostConstruct
+    public void initMarketSubscriptions() {
+        // 국내 장 체크 및 구독
+        if (isKoreanMarketOpen()) {
+            log.info("애플리케이션 시작 - 국내 장 열림, 자동 구독 시작");
+            startKoreanMarketSubscription();
+        } else {
+            log.info("국내 장이 열려있지 않아 자동 구독 스킵");
+        }
+
+        // 해외 장 체크 및 구독
+        if (isOverseasMarketOpen()) {
+            log.info("애플리케이션 시작 - 해외 장 열림, 자동 구독 시작");
+            startOverseasMarketSubscription();
+        } else {
+            log.info("해외 장이 열려있지 않아 자동 구독 스킵");
+        }
+    }
 
     /* 통합 구독/구독해제 로직 */
     private void subscribeStock(String code, String marketName, AtomicBoolean isConnected,
@@ -316,7 +345,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
                 .orElseGet(() -> LiveStockPrice.builder().stock(stock).build());
 
-        liveStockPrice.updateLiveStockPrice(dto.currentPrice(), dto.priceChange(), dto.priceChangeRate());
+        liveStockPrice.updateLiveStockPrice(dto.currentPrice());
         liveStockPriceRepository.save(liveStockPrice);
 
 
@@ -359,10 +388,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             }
     }
 
-    /* 스케쥴링 - 장 시작 시 자동으로 필요한 종목 전부 구독*/
-    @Scheduled(cron="0 0 9 * * MON-FRI", zone="Asia/Seoul")
+    /*  장 시작 시 자동으로 필요한 종목 전부 구독*/
     public void startKoreanMarketSubscription(){
-
         if (!isKoreanMarketOpen()) {
             log.info("국내 장이 열려있지 않아 자동 구독 스킵");
             return;
@@ -389,9 +416,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 targetStocks.size(), successCount);
     }
 
-
-    //@Scheduled(cron="0 00 11 * * MON-FRI", zone="America/New_York")
-    @PostConstruct
     public void startOverseasMarketSubscription(){
 
         if (!isOverseasMarketOpen()) {
@@ -420,7 +444,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         int successCount = overseasSubscribedStocks.size() - beforeSize;
         log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
                 targetStocks.size(), successCount);
-
     }
 
     @Override
