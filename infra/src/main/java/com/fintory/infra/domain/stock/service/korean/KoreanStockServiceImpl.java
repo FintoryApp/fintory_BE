@@ -80,7 +80,8 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         List<Stock> results = stockRepository.findByCurrencyName("KRW");
         return results.stream()
                 .map(result->{
-                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap());
+                    KoreanLiveStockPriceResponse koreanLiveStockPriceResponse = koreanLiveStockPriceService.getLiveStockPriceViaQuery(result);
+                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap(),koreanLiveStockPriceResponse.currentPrice());
                 })
                 .sorted(Comparator.comparing(KoreanMarketCapResponse::marketCap).reversed())
                 .collect(Collectors.toList());

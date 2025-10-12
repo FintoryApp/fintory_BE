@@ -28,6 +28,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -154,10 +155,11 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
 
         //openPrice 전달
         StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalType(stock, IntervalType.HOURLY)
-                .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_PRICE_HISTORY_FAILED));
+                .orElse(null); //TODO orElseThrow로 변경
 
+        BigDecimal openPrice = stockPriceHistory!=null ? stockPriceHistory.getOpenPrice() : BigDecimal.ZERO;
 
-        return convertFromLiveStockPrice(liveStockPrice,stockPriceHistory.getOpenPrice());
+        return convertFromLiveStockPrice(liveStockPrice,openPrice);
     }
 
     private boolean isOverseasMarketOpen() {
