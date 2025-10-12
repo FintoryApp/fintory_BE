@@ -4,6 +4,7 @@ import com.fintory.domain.news.model.News;
 
 public record NewsSummaryResponse(
 
+        Long newsId,
         String title,
         String content,
         String publishedAt,
@@ -14,6 +15,7 @@ public record NewsSummaryResponse(
 
     public static NewsSummaryResponse from(News article) {
         return new NewsSummaryResponse(
+                article.getId(),
                 article.getTitle(),
                 article.getContents(),
                 article.getPublishedAt(),
