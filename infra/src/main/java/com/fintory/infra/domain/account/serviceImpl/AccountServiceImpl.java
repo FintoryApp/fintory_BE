@@ -59,4 +59,12 @@ public class AccountServiceImpl implements AccountService {
                 .map(DepositTransactionResponse::from)
                 .toList();
     }
+
+    @Override
+    public BigDecimal getTotalCashByChild(Child child) {
+        Account account = accountRepository.findByChild(child)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
+
+        return account.getAvailableCash();
+    }
 }

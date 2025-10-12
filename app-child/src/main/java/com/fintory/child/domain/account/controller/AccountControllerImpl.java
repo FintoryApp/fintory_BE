@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -31,6 +32,15 @@ public class AccountControllerImpl implements AccountController{
         List<DepositTransactionResponse> list = accountService.getDepositTransactionsByChild(child);
 
         return ResponseEntity.ok(ApiResponse.ok(list));
+    }
+
+    @Override
+    @GetMapping("/total-cash")
+    public ResponseEntity<ApiResponse<BigDecimal>> getTotalCash(CustomUserDetails user) {
+        Child child = childService.getChild(user.getUsername());
+        BigDecimal totalCash = accountService.getTotalCashByChild(child);
+
+        return ResponseEntity.ok(ApiResponse.ok(totalCash));
     }
 
 }
