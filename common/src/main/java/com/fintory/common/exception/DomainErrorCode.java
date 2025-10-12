@@ -51,6 +51,9 @@ public enum DomainErrorCode {
     ACCOUNT_NOT_FOUND(HttpStatus.INTERNAL_SERVER_ERROR,"ACCOUNT_NOT_FOUND","계좌 불러오기 실패"),
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST,"INSUFFICIENT_BALANCE","계좌 내 금액이 부족합니다"),
 
+    //attendance
+    ALREADY_CHECKED_IN(HttpStatus.BAD_REQUEST, "ALREADY_CHECKED_IN","이미 출석하셨습니다"),
+
 
     //ownedStock
     OWNED_STOCK_LIST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OWNED_STOCK_LIST_ERROR", "보유 종목 리스트 조회 중 오류 발생"),
