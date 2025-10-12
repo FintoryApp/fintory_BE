@@ -13,7 +13,7 @@ public record OwnedStockDetails(
         BigDecimal currentPrice,
         BigDecimal quantity,
         BigDecimal purchaseamount,
-        BigDecimal averagePurchase
+        BigDecimal averagePurchasePrice
 ) {
     public static OwnedStockDetails from(OwnedStock ownedStock,BigDecimal currentPrice) {
         Stock stock = ownedStock.getStock();
