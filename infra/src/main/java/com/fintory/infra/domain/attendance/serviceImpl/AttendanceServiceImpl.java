@@ -8,6 +8,7 @@ import com.fintory.domain.child.model.Child;
 import com.fintory.infra.domain.attendance.repository.AttendanceRepository;
 import com.fintory.infra.domain.point.serviceimpl.PointServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AttendanceServiceImpl implements AttendanceService {
@@ -27,6 +29,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     public CheckInResponse check(Child child) {
 
         LocalDate today = LocalDate.now();
+        log.info(today.toString());
+
         int continuousDays = calculateContinuousDays(child, today);
         boolean isCheckedIn = false;
         // 출석 중복 여부
