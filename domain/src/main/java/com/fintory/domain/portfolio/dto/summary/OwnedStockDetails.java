@@ -9,6 +9,7 @@ public record OwnedStockDetails(
 
         String stockCode,
         String stockName,
+        String companyImageUrl,
         BigDecimal currentPrice,
         BigDecimal quantity,
         BigDecimal purchaseamount,
@@ -20,6 +21,7 @@ public record OwnedStockDetails(
         return new OwnedStockDetails(
                 stock.getCode(),
                 stock.getName(),
+                stock.getCompanyImageUrl(),
                 currentPrice,
                 ownedStock.getQuantity(),
                 ownedStock.getPurchaseAmount(),
