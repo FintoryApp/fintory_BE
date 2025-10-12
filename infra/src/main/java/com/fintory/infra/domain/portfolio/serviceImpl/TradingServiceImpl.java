@@ -61,7 +61,7 @@ public class TradingServiceImpl implements TradingService {
     private void processBuyTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate){
 
 
-        TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
+        TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock);
         BigDecimal totalTradeAmount = tradeCalculation.amount();
         MarketType marketType =  tradeCalculation.marketType();
 
@@ -71,7 +71,7 @@ public class TradingServiceImpl implements TradingService {
         }
 
         //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
-        updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate, marketType);
+        updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate,marketType);
 
         // 현금거래 내역 생성 -> 정적 팩토리 메소드
         DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
@@ -84,7 +84,7 @@ public class TradingServiceImpl implements TradingService {
     //주식 판매 기능
     private void processSellTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate){
 
-        TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
+        TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock);
         BigDecimal totalTradeAmount = tradeCalculation.amount(); // 환율 적용
         MarketType marketType =  tradeCalculation.marketType();
 
@@ -101,7 +101,7 @@ public class TradingServiceImpl implements TradingService {
                 .multiply(tradeRequest.quantity());
 
         //ownedStock, stockTransaction 업데이트
-        updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount, exchangeRate, marketType, soldPurchaseAmount);
+        updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount,exchangeRate, marketType, soldPurchaseAmount);
 
         // 현금 내역 생성 -> 정적 팩토리 메소드
         DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount, stock.getName() + "매도", DepositTransactionType.DEPOSIT, account);
@@ -138,7 +138,7 @@ public class TradingServiceImpl implements TradingService {
                 .orElse(null);
 
         //해외 주식이면 환율 적용
-        BigDecimal averagePurchasePrice = calculatePriceWithExchange(tradeRequest.price(), marketType,exchangeRate);
+        //BigDecimal averagePurchasePrice = calculatePriceWithExchange(tradeRequest.price(), marketType,exchangeRate);
 
         // 새로 구매한 주식일 경우
         if(ownedStock == null){
@@ -147,7 +147,7 @@ public class TradingServiceImpl implements TradingService {
                     .stock(stock)
                     .purchaseAmount(totalTradeAmount)
                     .quantity(tradeRequest.quantity())
-                    .averagePurchasePrice(averagePurchasePrice)
+                    .averagePurchasePrice(tradeRequest.price())
                     .build();
 
             ownedStockRepository.save(ownedStock);
@@ -203,11 +203,11 @@ public class TradingServiceImpl implements TradingService {
     }
 
     /* 헬퍼 메서드 */
-    private TradeCalculation calculateTradeAmount(TradeRequest tradeRequest, Stock stock, BigDecimal exchangeRate){
+    private TradeCalculation calculateTradeAmount(TradeRequest tradeRequest, Stock stock){
         BigDecimal amount;
         MarketType marketType;
         if(stock.getCurrencyName().equals("USD")) {
-            amount = tradeRequest.price().multiply(tradeRequest.quantity()).multiply(exchangeRate);
+            amount = tradeRequest.price().multiply(tradeRequest.quantity());
             marketType= MarketType.OVERSEAS;
         } else {
             amount = tradeRequest.price().multiply(tradeRequest.quantity());
@@ -216,7 +216,4 @@ public class TradingServiceImpl implements TradingService {
         return new TradeCalculation(amount,marketType);
     }
 
-    private BigDecimal calculatePriceWithExchange(BigDecimal price, MarketType marketType, BigDecimal exchangeRate) {
-        return marketType.equals(MarketType.OVERSEAS) ? price.multiply(exchangeRate) : price;
-    }
 }
