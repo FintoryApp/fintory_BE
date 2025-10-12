@@ -8,11 +8,6 @@ public record KoreanMarketCapResponse(
         String stockName,
         BigDecimal marketCap,
         BigDecimal currentPrice,
-        String profileImageUrl
+        String companyImageUrl
 ) {
-
-    //TODO profileImageURL
-    public KoreanMarketCapResponse(String stockCode, String stockName, BigDecimal marketCap,BigDecimal currentPrice) {
-        this(stockCode, stockName, marketCap, currentPrice,null);
-    }
 }

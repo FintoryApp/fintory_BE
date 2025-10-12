@@ -81,7 +81,7 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         return results.stream()
                 .map(result->{
                     KoreanLiveStockPriceResponse koreanLiveStockPriceResponse = koreanLiveStockPriceService.getLiveStockPriceViaQuery(result);
-                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap(),koreanLiveStockPriceResponse.currentPrice());
+                    return new KoreanMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap(),koreanLiveStockPriceResponse.currentPrice(),result.getCompanyImageUrl());
                 })
                 .sorted(Comparator.comparing(KoreanMarketCapResponse::marketCap).reversed())
                 .collect(Collectors.toList());
@@ -94,7 +94,7 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         return results.stream()
                 .map(stock->{
                     KoreanLiveStockPriceResponse  response =koreanLiveStockPriceService.getLiveStockPriceViaQuery(stock);
-                    return new KoreanROCResponse(stock.getCode(),stock.getName(),response.currentPrice(),response.openPrice());
+                    return new KoreanROCResponse(stock.getCode(),stock.getName(),response.currentPrice(),response.openPrice(),stock.getCompanyImageUrl());
                 })
                 .collect(Collectors.toUnmodifiableList());
     }

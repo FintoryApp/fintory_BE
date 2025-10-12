@@ -7,12 +7,7 @@ public record OverseasMarketCapResponse (
         String stockName,
         BigDecimal marketCap,
         BigDecimal currentPrice,
-        String profileImageUrl
+        String companyImageUrl
 ) {
-
-    //TODO profileImageURL
-    public OverseasMarketCapResponse(String stockCode, String stockName, BigDecimal marketCap,BigDecimal currentPrice) {
-        this(stockCode, stockName, marketCap,currentPrice,null);
-    }
 }
 

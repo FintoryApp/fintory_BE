@@ -7,10 +7,7 @@ public record OverseasROCResponse (
         String stockName,
         BigDecimal closePrice,
         BigDecimal openPrice,
-        String profileImageUrl
+        String companyImageUrl
 
 ){
-    public OverseasROCResponse(String stockCode, String stockName, BigDecimal closePrice,BigDecimal openPrice){
-        this(stockCode,stockName,closePrice,openPrice,null);
-    }
 }
