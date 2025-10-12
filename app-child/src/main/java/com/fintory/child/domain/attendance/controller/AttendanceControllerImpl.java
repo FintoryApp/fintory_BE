@@ -3,6 +3,7 @@ package com.fintory.child.domain.attendance.controller;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.attendence.dto.AttendanceLogResponse;
+import com.fintory.domain.attendence.dto.CheckInResponse;
 import com.fintory.domain.attendence.service.AttendanceService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.child.service.ChildService;
@@ -26,11 +27,11 @@ public class AttendanceControllerImpl implements AttendanceController{
 
     @Override
     @PostMapping("/check-in")
-    public ResponseEntity<ApiResponse<Integer>> attendanceCheck(@AuthenticationPrincipal CustomUserDetails user) {
+    public ResponseEntity<ApiResponse<CheckInResponse>> attendanceCheck(@AuthenticationPrincipal CustomUserDetails user) {
         Child child = childService.getChild(user.getUsername());
-        int continuousDays = attendanceService.check(child); //연속 출석일 리턴
+        CheckInResponse response = attendanceService.check(child); //연속 출석일 리턴
         // 연속 일 수 만큼 포인트 지급
-        return ResponseEntity.ok(ApiResponse.ok(continuousDays));
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
     @Override

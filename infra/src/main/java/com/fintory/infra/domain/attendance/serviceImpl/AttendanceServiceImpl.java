@@ -1,8 +1,7 @@
 package com.fintory.infra.domain.attendance.serviceImpl;
 
-import com.fintory.common.exception.DomainErrorCode;
-import com.fintory.common.exception.DomainException;
 import com.fintory.domain.attendence.dto.AttendanceLogResponse;
+import com.fintory.domain.attendence.dto.CheckInResponse;
 import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.attendence.service.AttendanceService;
 import com.fintory.domain.child.model.Child;
@@ -25,20 +24,22 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional
-    public int check(Child child) {
+    public CheckInResponse check(Child child) {
 
         LocalDate today = LocalDate.now();
         int continuousDays = calculateContinuousDays(child, today);
+        boolean isCheckedIn = false;
         // 출석 중복 여부
         boolean isAlreadyChecked = attendanceRepository.existsByChildAndAttendanceDate(child, today);
         if (isAlreadyChecked) {
-            throw new DomainException(DomainErrorCode.ALREADY_CHECKED_IN);
+            isCheckedIn = true;
+            return CheckInResponse.from(isCheckedIn, continuousDays);
         }
         AttendanceLog attendanceLog = new AttendanceLog(child, today);
         attendanceRepository.save(attendanceLog);
         pointService.givePointsByContinuousDays(continuousDays, child);
 
-        return continuousDays;
+        return CheckInResponse.from(isCheckedIn, continuousDays);
     }
 
     @Override
