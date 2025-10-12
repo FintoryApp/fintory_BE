@@ -108,7 +108,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
         List<OwnedStock> ownedStocks = ownedStockRepository.findAllWithStockByAccount(account);
 
-        return PortfolioSummaryResponse.from(account, ownedStocks);
+        BigDecimal currentPrice = getCurrentPrice(ownedStocks.get(0).getStock());
+        return PortfolioSummaryResponse.from(account, ownedStocks,currentPrice);
     }
 
     //현재가 조회 메소드

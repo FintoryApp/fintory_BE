@@ -15,10 +15,11 @@ public record PortfolioSummaryResponse(
 
     public static PortfolioSummaryResponse from(
             Account account,
-            List<OwnedStock> ownedStocks
+            List<OwnedStock> ownedStocks,
+            BigDecimal currentPrice
     ) {
         List<OwnedStockDetails> stockDetails = ownedStocks.stream()
-                .map(OwnedStockDetails::from)
+                .map(ownedStock->OwnedStockDetails.from(ownedStock,currentPrice))
                 .collect(Collectors.toList());
 
         return new PortfolioSummaryResponse(
