@@ -150,15 +150,11 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
                     .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
         }*/
 
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
-
-
         //openPrice 전달
-        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalType(stock, IntervalType.HOURLY)
+        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalTypeOrderByUpdatedAtDesc(stock, IntervalType.HOURLY)
                 .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_PRICE_HISTORY_FAILED));
 
-        return convertFromLiveStockPrice(liveStockPrice,stockPriceHistory.getOpenPrice());
+        return convertFromLiveStockPrice(stockPriceHistory.getClosePrice(),stockPriceHistory.getOpenPrice());
     }
 
     private boolean isKoreanMarketOpen(){

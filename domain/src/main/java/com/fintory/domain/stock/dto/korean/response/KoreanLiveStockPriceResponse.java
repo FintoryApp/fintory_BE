@@ -8,7 +8,7 @@ public record KoreanLiveStockPriceResponse(
         BigDecimal currentPrice,
         BigDecimal openPrice
 ) {
-    public static KoreanLiveStockPriceResponse convertFromLiveStockPrice(LiveStockPrice liveStockPrice,BigDecimal openPrice) {
-        return new KoreanLiveStockPriceResponse(liveStockPrice.getCurrentPrice(),openPrice);
+    public static KoreanLiveStockPriceResponse convertFromLiveStockPrice(BigDecimal currentPrice,BigDecimal openPrice) {
+        return new KoreanLiveStockPriceResponse(currentPrice,openPrice);
     }
 }

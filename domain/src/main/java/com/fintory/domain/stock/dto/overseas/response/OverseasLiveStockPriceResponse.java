@@ -8,7 +8,7 @@ public record OverseasLiveStockPriceResponse(
         BigDecimal currentPrice,
         BigDecimal openPrice
 ) {
-    public static OverseasLiveStockPriceResponse convertFromLiveStockPrice(LiveStockPrice liveStockPrice,BigDecimal openPrice) {
-        return new OverseasLiveStockPriceResponse(liveStockPrice.getCurrentPrice(),openPrice);
+    public static OverseasLiveStockPriceResponse convertFromLiveStockPrice(BigDecimal closePrice,BigDecimal openPrice) {
+        return new OverseasLiveStockPriceResponse(closePrice,openPrice);
     }
 }

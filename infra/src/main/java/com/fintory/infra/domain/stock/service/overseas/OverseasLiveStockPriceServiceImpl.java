@@ -150,16 +150,14 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
                     .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
         }*/
 
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
 
-        //openPrice 전달
-        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalType(stock, IntervalType.HOURLY)
+        //currentPrice openPrice 전달
+        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalTypeOrderByUpdatedAtDesc(stock, IntervalType.HOURLY)
                 .orElse(null); //TODO orElseThrow로 변경
 
         BigDecimal openPrice = stockPriceHistory!=null ? stockPriceHistory.getOpenPrice() : BigDecimal.ZERO;
 
-        return convertFromLiveStockPrice(liveStockPrice,openPrice);
+        return convertFromLiveStockPrice(stockPriceHistory.getClosePrice(),openPrice);
     }
 
     private boolean isOverseasMarketOpen() {

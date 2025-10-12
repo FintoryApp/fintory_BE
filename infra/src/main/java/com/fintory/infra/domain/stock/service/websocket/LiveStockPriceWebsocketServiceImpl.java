@@ -467,7 +467,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
     /* 스케줄링 - 장 마감 정리 */
 
-    @Scheduled(cron = "0 30 15 * * MON-FRI", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 20 15 * * MON-FRI", zone = "Asia/Seoul")
     public void cleanUpAfterKoreanMarketClose() {
         log.debug("국내 장 마감 - 마지막 데이터 저장 및 정리 시작");
         saveRemainingData("국내", koreanPendingData);
