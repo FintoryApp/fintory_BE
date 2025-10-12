@@ -35,6 +35,9 @@ public class Stock extends BaseEntity {
     @Column(name="market_cap")
     private BigDecimal marketCap;
 
+    @Column(name="company_image_url")
+    private String companyImageUrl;
+
     //연관관계 설정
     @OneToOne(cascade = CascadeType.ALL,mappedBy="stock")
     private LiveStockPrice liveStockPrice;

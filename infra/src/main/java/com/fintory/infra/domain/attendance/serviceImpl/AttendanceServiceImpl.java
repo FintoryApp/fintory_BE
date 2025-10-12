@@ -5,8 +5,10 @@ import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.attendence.service.AttendanceService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.infra.domain.attendance.repository.AttendanceRepository;
+import com.fintory.infra.domain.point.serviceimpl.PointServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,18 +19,22 @@ import java.util.stream.Collectors;
 public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceRepository attendanceRepository;
+    private final PointServiceImpl pointService;
 
     @Override
+    @Transactional
     public int check(Child child) {
 
         LocalDate today = LocalDate.now();
+        int continuousDays = calculateContinuousDays(child, today);
         // 출석 중복 여부
         boolean isAlreadyChecked = attendanceRepository.existsByChildAndAttendanceDate(child, today);
         if (!isAlreadyChecked) {
             AttendanceLog attendanceLog = new AttendanceLog(child, today);
             attendanceRepository.save(attendanceLog);
+            pointService.givePointsByContinuousDays(continuousDays, child);
         }
-        return calculateContinuousDays(child, today);
+        return continuousDays;
     }
 
     @Override

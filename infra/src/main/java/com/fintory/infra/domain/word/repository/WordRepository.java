@@ -12,7 +12,10 @@ public interface WordRepository extends JpaRepository<FinancialWord, Long> {
 
     Optional<FinancialWord> findFirstByWord(String word);
 
-    @Query(value = "SELECT * FROM FinancialWord ORDER BY RAND() LIMIT 1", nativeQuery = true)
+    @Query(
+            value = "SELECT * FROM financial_word ORDER BY RAND() LIMIT 1",
+            nativeQuery = true
+    )
     Optional<FinancialWord> wordRepositoryRandomWord();
 
     @Query("SELECT f FROM FinancialWord f WHERE f.word LIKE %:keyword%")

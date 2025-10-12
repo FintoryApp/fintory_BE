@@ -14,6 +14,7 @@ import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.portfolio.service.ExchangeRateService;
 import com.fintory.domain.portfolio.service.TradingService;
 import com.fintory.infra.domain.account.repository.AccountRepository;
+import com.fintory.infra.domain.account.repository.DepositTransactionRepository;
 import com.fintory.infra.domain.child.repository.ChildRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.portfolio.repository.StockTransactionRepository;
@@ -26,8 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class TradingServiceImpl implements TradingService {
 
@@ -37,10 +38,11 @@ public class TradingServiceImpl implements TradingService {
     private final StockRepository stockRepository;
     private final OwnedStockRepository ownedStockRepository;
     private final StockTransactionRepository stockTransactionRepository;
+    private final DepositTransactionRepository depositTransactionRepository;
 
 
-    @Transactional
     @Override
+    @Transactional
     public void trade(TradeRequest tradeRequest, String email){
         Child child = childRepository.findByEmail(email).orElseThrow(()-> new DomainException(DomainErrorCode.USER_NOT_FOUND));
         Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
@@ -56,7 +58,7 @@ public class TradingServiceImpl implements TradingService {
     }
 
     //주식 구매 기능
-    public void processBuyTrade(TradeRequest tradeRequest,Account account,Stock stock,BigDecimal exchangeRate){
+    private void processBuyTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate){
 
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
@@ -64,22 +66,23 @@ public class TradingServiceImpl implements TradingService {
         MarketType marketType =  tradeCalculation.marketType();
 
         //현재 account 금액을 넘지 않는지 확인
-        if(!isAvailablePurchase(account,totalTradeAmount)){
+        if(!isAvailablePurchase(account, totalTradeAmount)){
             throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
         }
 
-        //ownedStock, stockTransaction 업데이트
-        updateStockAndTransactionForPurchase(tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType);
+        //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
+        updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate, marketType);
 
-        // 현금내역 생성, account.getDepositTransactions() 쓸일 없으면 양방향 제거 고려
-        DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW);
-        //account 업데이트
-        updateAccountForPurchase(account,totalTradeAmount);
+        // 현금거래 내역 생성 -> 정적 팩토리 메소드
+        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
+        depositTransactionRepository.save(depositTransaction);
+        //account 업데이트 -> setter
+        updateAccountForPurchase(account, totalTradeAmount);
     }
 
 
     //주식 판매 기능
-    private void processSellTrade(TradeRequest tradeRequest,Account account, Stock stock, BigDecimal exchangeRate){
+    private void processSellTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock, exchangeRate);
         BigDecimal totalTradeAmount = tradeCalculation.amount(); // 환율 적용
@@ -98,13 +101,14 @@ public class TradingServiceImpl implements TradingService {
                 .multiply(tradeRequest.quantity());
 
         //ownedStock, stockTransaction 업데이트
-        updateStockAndTransactionForSell(ownedStock,tradeRequest,account,stock,totalTradeAmount,exchangeRate,marketType,soldPurchaseAmount);
+        updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount, exchangeRate, marketType, soldPurchaseAmount);
 
-        // 현금 내역 생성
-        DepositTransaction.create(totalTradeAmount, stock.getName() + "매도", DepositTransactionType.DEPOSIT);
+        // 현금 내역 생성 -> 정적 팩토리 메소드
+        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount, stock.getName() + "매도", DepositTransactionType.DEPOSIT, account);
+        depositTransactionRepository.save(depositTransaction);
 
-        //account 업데이트
-        updateAccountForSell(account,totalTradeAmount,soldPurchaseAmount);
+        //account 업데이트 -> setter
+        updateAccountForSell(account, totalTradeAmount, soldPurchaseAmount);
 
 
     }
@@ -119,26 +123,22 @@ public class TradingServiceImpl implements TradingService {
     }
 
     private void updateAccountForPurchase(Account account, BigDecimal purchasePrice){
-        // 계좌 업데이트
         account.updatePurchaseStock(purchasePrice);
-
-        accountRepository.save(account);
     }
 
-    private void updateAccountForSell(Account account, BigDecimal purchasePrice,BigDecimal soldPurchaseAmount){
+    private void updateAccountForSell(Account account, BigDecimal purchasePrice, BigDecimal soldPurchaseAmount){
         // 계좌 업데이트
-        account.updateSellStock(purchasePrice,soldPurchaseAmount);
+        account.updateSellStock(purchasePrice, soldPurchaseAmount);
 
-        accountRepository.save(account);
     }
 
 
-    private void updateStockAndTransactionForPurchase(TradeRequest tradeRequest, Account account,Stock stock, BigDecimal totalTradeAmount, BigDecimal exchangeRate,MarketType marketType){
-        OwnedStock ownedStock = ownedStockRepository.findByAccountAndStock(account,stock)
+    private void updateStockAndTransactionForPurchase(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal totalTradeAmount, BigDecimal exchangeRate, MarketType marketType){
+        OwnedStock ownedStock = ownedStockRepository.findByAccountAndStock(account, stock)
                 .orElse(null);
 
         //해외 주식이면 환율 적용
-        BigDecimal averagePurchasePrice = calculatePriceWithExchange(tradeRequest.price(),marketType,exchangeRate);
+        BigDecimal averagePurchasePrice = calculatePriceWithExchange(tradeRequest.price(), marketType,exchangeRate);
 
         // 새로 구매한 주식일 경우
         if(ownedStock == null){
@@ -149,12 +149,13 @@ public class TradingServiceImpl implements TradingService {
                     .quantity(tradeRequest.quantity())
                     .averagePurchasePrice(averagePurchasePrice)
                     .build();
+
+            ownedStockRepository.save(ownedStock);
         }else{
             // 기존에 구매한 주식이 있을 경우
-            ownedStock.updateOwnedStockPurchase(tradeRequest.quantity(),totalTradeAmount);
+            ownedStock.updateOwnedStockPurchase(tradeRequest.quantity(), totalTradeAmount);
         }
 
-        ownedStockRepository.save(ownedStock);
 
         // 주식 거래 내역 업데이트
         StockTransaction stockTransaction = StockTransaction.builder()
@@ -173,10 +174,10 @@ public class TradingServiceImpl implements TradingService {
 
     }
 
-    private void updateStockAndTransactionForSell(OwnedStock ownedStock,TradeRequest tradeRequest, Account account,Stock stock, BigDecimal totalTradeAmount,
-                                                 BigDecimal exchangeRate,MarketType marketType,BigDecimal soldPurchaseAmount){
+    private void updateStockAndTransactionForSell(OwnedStock ownedStock, TradeRequest tradeRequest, Account account, Stock stock, BigDecimal totalTradeAmount,
+                                                 BigDecimal exchangeRate, MarketType marketType, BigDecimal soldPurchaseAmount){
 
-        ownedStock.updateOwnedStockSell(tradeRequest.quantity(),soldPurchaseAmount);
+        ownedStock.updateOwnedStockSell(tradeRequest.quantity(), soldPurchaseAmount);
 
         if (ownedStock.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
             ownedStockRepository.delete(ownedStock);

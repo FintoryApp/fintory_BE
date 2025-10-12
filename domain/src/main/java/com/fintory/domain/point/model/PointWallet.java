@@ -43,8 +43,4 @@ public class PointWallet extends BaseEntity {
         this.totalAmount -= amount;
     }
 
-    public void addTransaction(PointTransaction pt) {
-        this.transactions.add(pt);
-        pt.setPointWallet(this);
-    }
 }

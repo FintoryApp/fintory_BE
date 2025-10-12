@@ -1,7 +1,10 @@
 package com.fintory.domain.portfolio.service;
 
+import com.fintory.domain.child.model.Child;
 import com.fintory.domain.portfolio.dto.OwnedStockMetrics;
 import com.fintory.domain.portfolio.dto.PortfolioSummary;
+import com.fintory.domain.portfolio.dto.summary.PortfolioSummaryResponse;
+
 import java.util.List;
 
 /**
@@ -18,7 +21,7 @@ public interface PortfolioService {
      * @return 보유 주식 지표(평균매수가, 총 수량) 및 거래 내역 리스트
      * @throws DomainException 계정을 찾을 수 없거나 조회 중 에러 발생시
      */
-    public List<OwnedStockMetrics> getOwnedStockMetrics();
+    List<OwnedStockMetrics> getOwnedStockMetrics();
 
     /**
      *
@@ -27,5 +30,7 @@ public interface PortfolioService {
      * @return 포트폴리오 요약 정보 (총 매수금액, 총 자산)
      * @throws DomainException 계정을 찾을 수 없거나 계산 중 에러 발생시
      */
-    public PortfolioSummary getPortfolioSummary();
+    PortfolioSummary getPortfolioSummary();
+
+    PortfolioSummaryResponse getPortfolioSummaryResponseByChild(Child  child);
 }

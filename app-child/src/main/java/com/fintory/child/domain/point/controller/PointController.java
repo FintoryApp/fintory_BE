@@ -10,9 +10,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 @Tag(name = "포인트 API")
 public interface PointController {
-//   TODO:
-//    // 포인트 환전
-//    ResponseEntity<ApiResponse<ExchangedCashResponse>> exchangePoint(@AuthenticationPrincipal CustomUserDetails user, Integer point);
+
+     @Operation(summary = "포인트 환전")
+     ResponseEntity<ApiResponse<Integer>> exchangePoint(@AuthenticationPrincipal CustomUserDetails user, int point);
 
      //포인트 내역 전체 반환
      @Operation(summary = "포인트 거래내역 반환")
