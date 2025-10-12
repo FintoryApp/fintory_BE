@@ -9,10 +9,11 @@ public record OwnedStockDetails(
 
         String stockCode,
         String stockName,
+        String profileImageUrl,
         BigDecimal currentPrice,
         BigDecimal quantity,
         BigDecimal purchaseamount,
-        BigDecimal averagePurchase
+        BigDecimal averagePurchasePrice
 ) {
     public static OwnedStockDetails from(OwnedStock ownedStock,BigDecimal currentPrice) {
         Stock stock = ownedStock.getStock();
@@ -20,6 +21,7 @@ public record OwnedStockDetails(
         return new OwnedStockDetails(
                 stock.getCode(),
                 stock.getName(),
+                stock.getCompanyImageUrl(),
                 currentPrice,
                 ownedStock.getQuantity(),
                 ownedStock.getPurchaseAmount(),

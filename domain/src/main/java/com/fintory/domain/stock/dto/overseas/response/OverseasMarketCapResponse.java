@@ -7,7 +7,7 @@ public record OverseasMarketCapResponse (
         String stockName,
         BigDecimal marketCap,
         BigDecimal currentPrice,
-        String companyImageUrl
+        String profileImageUrl
 ) {
 }
 

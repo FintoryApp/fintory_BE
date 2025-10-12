@@ -7,7 +7,7 @@ public record KoreanROCResponse (
         String stockName,
         BigDecimal closePrice,
         BigDecimal openPrice,
-        String companyImageUrl
+        String profileImageUrl
 
 ){
 }
