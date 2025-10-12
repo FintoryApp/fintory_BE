@@ -96,8 +96,7 @@ public class OverseasStockServiceImpl implements OverseasStockService {
         List<Stock> results = stockRepository.findByCurrencyName("USD");
         return results.stream()
                 .map(result->{
-                    OverseasLiveStockPriceResponse response =overseasLiveStockPriceService.getLiveStockPriceViaQuery(result);
-                    return new OverseasMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap(),response.currentPrice());
+                    return new OverseasMarketCapResponse(result.getCode(),result.getName(),result.getMarketCap());
                 })
                 .sorted(Comparator.comparing(OverseasMarketCapResponse::marketCap).reversed())
                 .collect(Collectors.toList());
@@ -110,7 +109,7 @@ public class OverseasStockServiceImpl implements OverseasStockService {
         return results.stream()
                 .map(stock->{
                     OverseasLiveStockPriceResponse response =overseasLiveStockPriceService.getLiveStockPriceViaQuery(stock);
-                    return new OverseasROCResponse(stock.getCode(),stock.getName(),response.currentPrice());
+                    return new OverseasROCResponse(stock.getCode(),stock.getName(),response.currentPrice(),response.openPrice());
                 })
                 .collect(Collectors.toUnmodifiableList());
     }

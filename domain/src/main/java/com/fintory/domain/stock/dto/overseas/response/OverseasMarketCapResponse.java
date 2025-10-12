@@ -6,13 +6,12 @@ public record OverseasMarketCapResponse (
         String stockCode,
         String stockName,
         BigDecimal marketCap,
-        BigDecimal currentPrice,
         String profileImageUrl
 ) {
 
     //TODO profileImageURL
-    public OverseasMarketCapResponse(String stockCode, String stockName, BigDecimal marketCap, BigDecimal currentPrice) {
-        this(stockCode, stockName, marketCap,currentPrice,null);
+    public OverseasMarketCapResponse(String stockCode, String stockName, BigDecimal marketCap) {
+        this(stockCode, stockName, marketCap,null);
     }
 }
 

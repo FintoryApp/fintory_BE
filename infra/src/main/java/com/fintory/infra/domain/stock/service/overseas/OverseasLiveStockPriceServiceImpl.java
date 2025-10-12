@@ -6,10 +6,13 @@ import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.overseas.response.OverseasLiveStockPriceResponse;
 import com.fintory.domain.stock.dto.overseas.wrapper.OverseasLiveStockPriceWrapper;
+import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
+import com.fintory.domain.stock.model.StockPriceHistory;
 import com.fintory.domain.stock.service.overseas.OverseasLiveStockPriceService;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
+import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import com.fintory.infra.domain.stock.service.overseas.saver.OverseasLiveStockPriceSaverService;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +56,7 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
     private final OverseasLiveStockPriceSaverService liveStockPriceSaverService;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final StockPriceHistoryRepository stockPriceHistoryRepository;
 
     @Override
     @Retryable(maxAttempts=3, backoff = @Backoff(delay = 1000))
@@ -134,18 +138,26 @@ public class OverseasLiveStockPriceServiceImpl implements OverseasLiveStockPrice
     @Transactional(readOnly = true)
     public OverseasLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
         //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock).orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
 
         //장이 닫혀있으면 REST API로 최신 가격 조회
+        /*
         if(!isOverseasMarketOpen()){
             String token = (String) redisTemplate.opsForValue().get("kis-access-token");
             getLiveStockPriceViaRestAPI(stock.getCode(), token);
 
             liveStockPrice = liveStockPriceRepository.findByStock(stock)
                     .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
-        }
+        }*/
 
-        return convertFromLiveStockPrice(liveStockPrice);
+        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
+
+        //openPrice 전달
+        StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalType(stock, IntervalType.HOURLY)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_PRICE_HISTORY_FAILED));
+
+
+        return convertFromLiveStockPrice(liveStockPrice,stockPriceHistory.getOpenPrice());
     }
 
     private boolean isOverseasMarketOpen() {

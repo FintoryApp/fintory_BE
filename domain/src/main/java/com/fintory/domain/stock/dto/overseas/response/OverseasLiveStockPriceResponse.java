@@ -6,10 +6,9 @@ import java.math.BigDecimal;
 
 public record OverseasLiveStockPriceResponse(
         BigDecimal currentPrice,
-        BigDecimal priceChange,
-        BigDecimal priceChangeRate
+        BigDecimal openPrice
 ) {
-    public static OverseasLiveStockPriceResponse convertFromLiveStockPrice(LiveStockPrice liveStockPrice) {
-        return new OverseasLiveStockPriceResponse(liveStockPrice.getCurrentPrice(), liveStockPrice.getPriceChange(), liveStockPrice.getPriceChangeRate());
+    public static OverseasLiveStockPriceResponse convertFromLiveStockPrice(LiveStockPrice liveStockPrice,BigDecimal openPrice) {
+        return new OverseasLiveStockPriceResponse(liveStockPrice.getCurrentPrice(),openPrice);
     }
 }

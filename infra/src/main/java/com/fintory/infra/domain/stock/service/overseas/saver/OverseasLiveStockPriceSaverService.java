@@ -44,7 +44,7 @@ public class OverseasLiveStockPriceSaverService {
                         .setScale(2, RoundingMode.HALF_UP) :
                 BigDecimal.ZERO;
 
-        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice(), priceChange, priceChangeRate);
+        liveStockPrice.updateLiveStockPrice(priceDto.currentPrice());
         liveStockPriceRepository.save(liveStockPrice);
     }
 
