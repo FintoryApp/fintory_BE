@@ -32,5 +32,7 @@ public interface PortfolioService {
      */
     PortfolioSummary getPortfolioSummary();
 
-    PortfolioSummaryResponse getPortfolioSummaryResponseByChild(Child  child);
+    PortfolioSummaryResponse getKoreanPortfolioSummaryResponseByChild(Child child);
+
+    PortfolioSummaryResponse getOverseasPortfolioSummaryResponseByChild(Child child);
 }

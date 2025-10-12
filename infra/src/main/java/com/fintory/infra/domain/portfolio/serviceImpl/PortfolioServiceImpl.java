@@ -102,11 +102,26 @@ public class PortfolioServiceImpl implements PortfolioService {
         }
     }
 
-    public PortfolioSummaryResponse getPortfolioSummaryResponseByChild(Child child) {
+
+    //국내 주식 포트폴리오
+    @Override
+    public PortfolioSummaryResponse getKoreanPortfolioSummaryResponseByChild(Child child) {
         Account account = accountRepository.findByChild(child)
                 .orElseThrow(() -> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
 
-        List<OwnedStock> ownedStocks = ownedStockRepository.findAllWithStockByAccount(account);
+        List<OwnedStock> ownedStocks = ownedStockRepository.findAllWithStockByAccountAndStock_CurrencyName(account,"KRW");
+
+        BigDecimal currentPrice = getCurrentPrice(ownedStocks.get(0).getStock());
+        return PortfolioSummaryResponse.from(account, ownedStocks,currentPrice);
+    }
+
+    //해외 주식 포트폴리오
+    @Override
+    public PortfolioSummaryResponse getOverseasPortfolioSummaryResponseByChild(Child child) {
+        Account account = accountRepository.findByChild(child)
+                .orElseThrow(() -> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
+
+        List<OwnedStock> ownedStocks = ownedStockRepository.findAllWithStockByAccountAndStock_CurrencyName(account,"USD");
 
         BigDecimal currentPrice = getCurrentPrice(ownedStocks.get(0).getStock());
         return PortfolioSummaryResponse.from(account, ownedStocks,currentPrice);
