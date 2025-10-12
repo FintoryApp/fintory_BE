@@ -4,10 +4,7 @@ package com.fintory.infra.domain.stock.service.korean;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.korean.response.*;
-import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
-import com.fintory.domain.stock.model.StockPriceHistory;
-import com.fintory.domain.stock.model.StockRank;
 import com.fintory.domain.stock.service.korean.*;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
@@ -20,10 +17,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,18 +93,10 @@ public class KoreanStockServiceImpl implements KoreanStockService {
         return results.stream()
                 .map(stock->{
                     KoreanLiveStockPriceResponse  response =koreanLiveStockPriceService.getLiveStockPriceViaQuery(stock);
-                    return new KoreanROCResponse(stock.getCode(),stock.getName(),response.currentPrice());
+                    return new KoreanROCResponse(stock.getCode(),stock.getName(),response.currentPrice(),response.openPrice());
                 })
                 .collect(Collectors.toUnmodifiableList());
     }
-
-    //거래량 순위 조회
-    @Override
-    public List<KoreanRankResponse> getKoreanTradingVolumeTop20() {
-        List<Object[]> results = stockRankRepository.findTradingVolumeTop20("KRW");
-        return mapToKoreanRankResponse(results,StockRank::getTradingVolumeRank);
-    }
-
 
     //기간별 시세 데이터 조회
     @Override
@@ -122,25 +109,6 @@ public class KoreanStockServiceImpl implements KoreanStockService {
     public KoreanLiveStockPriceResponse getLiveStockPrice(String code) {
         Stock stock = stockRepository.findByCode(code).orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
         return koreanLiveStockPriceService.getLiveStockPriceViaQuery(stock);
-    }
-
-
-    private List<KoreanRankResponse> mapToKoreanRankResponse(List<Object[]> results, Function<StockRank, Integer> rankExtractor){
-        return results.stream()
-                .map(result-> {
-                    StockRank stockRank = (StockRank) result[0];
-                    LiveStockPrice liveStockPrice = (LiveStockPrice) result[1];
-
-                    return new KoreanRankResponse(
-                            stockRank.getStock().getName(),
-                            stockRank.getStock().getCode(),
-                            rankExtractor.apply(stockRank),
-                            liveStockPrice.getCurrentPrice(),
-                            liveStockPrice.getPriceChange(),
-                            liveStockPrice.getPriceChangeRate()
-                    );
-                })
-                .collect(Collectors.toList());
     }
 
     // 모든 재시도 로직이 실패했을 때 다음 초기화 메서드를 실행시키기 위해서 만든 메소드

@@ -23,10 +23,6 @@ public interface KoreanStockController {
     @ApiResponse(responseCode="200", description="국내 주식 상승률 순위 조회 성공")
     public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanROCResponse>>> getKoreanStockROCTop20();
 
-    @Operation(summary="국내 주식 거래량 순위 조회", description = "국내 주식 거래량 순위 조회")
-    @ApiResponse(responseCode="200", description="국내 주식 거래량 순위 조회 성공")
-    public ResponseEntity<com.fintory.common.api.ApiResponse<List<KoreanRankResponse>>> getKoreanStockTradingVolumeTop20();
-
     @Operation(summary="국내 주식 차트 조회", description="특정 국내 주식의 기간별 시세 조회")
     @ApiResponse(responseCode="200", description="국내 주식 차트 조회 성공")
     public ResponseEntity<com.fintory.common.api.ApiResponse<KoreanStockPriceHistoryResponse>> getKoreanStockDetailInfo

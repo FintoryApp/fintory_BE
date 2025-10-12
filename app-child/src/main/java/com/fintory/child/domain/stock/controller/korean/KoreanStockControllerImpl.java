@@ -38,13 +38,6 @@ public class KoreanStockControllerImpl implements KoreanStockController {
         return ResponseEntity.ok(ApiResponse.ok(koreanStockROCTop20s));
     }
 
-    //국내 주식 랭킹 - 거래량
-    @Override
-    @GetMapping("korean/rankings/tradingVolume")
-    public ResponseEntity<ApiResponse<List<KoreanRankResponse>>> getKoreanStockTradingVolumeTop20(){
-        List<KoreanRankResponse> koreanStockTradingVolumes = stockService.getKoreanTradingVolumeTop20();
-        return ResponseEntity.ok(ApiResponse.ok(koreanStockTradingVolumes));
-    }
 
     //국내 주식 차트 데이터
     @Override
