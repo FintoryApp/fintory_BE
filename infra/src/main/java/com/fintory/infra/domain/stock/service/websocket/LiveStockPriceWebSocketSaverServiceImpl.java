@@ -15,8 +15,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
     private static LocalDate lastCleanupDate=null;
+    private static final Map<String, BigDecimal> todayOpenPrices = new ConcurrentHashMap<>();
 
     //데이터 DB에 저장 메소드
     @Override
@@ -41,7 +44,6 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         liveStockPrice.updateLiveStockPrice(dto.currentPrice());
         liveStockPriceRepository.save(liveStockPrice);
 
-
         //오늘 날짜
         LocalDate now = LocalDate.now();
 
@@ -50,6 +52,7 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         if(!now.equals(lastCleanupDate)) {
             stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now);
             lastCleanupDate = now;
+            todayOpenPrices.clear();
         }
 
         //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
@@ -57,9 +60,13 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
 
         //60개의 데이터만 저장함
         if(stockPriceHistories.size()<=60) {
+                BigDecimal openPrice = todayOpenPrices.computeIfAbsent(
+                        dto.code(), //key
+                        k -> dto.currentPrice()); //값이 없을 때 실행되는 람다
+
             StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
                     .closePrice(dto.currentPrice())
-                    .openPrice(dto.currentPrice())
+                    .openPrice(openPrice)
                     .stock(stock)
                     .intervalType(IntervalType.HOURLY)
                     .date(now)
