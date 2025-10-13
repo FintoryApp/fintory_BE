@@ -139,30 +139,15 @@ public class KoreanLiveStockPriceServiceImpl implements KoreanLiveStockPriceServ
 
     @Override
     public KoreanLiveStockPriceResponse getLiveStockPriceViaQuery(Stock stock){
-        //DB에 저장된 현재가가 없는 것은 @PostConstruct 과정에서 초기화가 제대로 실행이 안되었다는 뜻이므로 live_stock_price 에러 발생
-        /*
-        //장중에만 DB 데이터 사용 , 장마감 : REST API 호출해서 최신 가격 조회
-        if(!isKoreanMarketOpen()){
-            String token = (String) redisTemplate.opsForValue().get("kis-access-token");
-            getLiveStockPriceViaRestAPI(stock.getCode(), token);
-
-            liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                    .orElseThrow(() -> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
-        }*/
+        //TODO
+        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
+                .orElseThrow(()-> new DomainException(DomainErrorCode.LIVE_STOCK_PRICE_NOT_FOUND));
 
         //openPrice 전달
         StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findFirstByStockAndIntervalTypeOrderByUpdatedAtDesc(stock, IntervalType.HOURLY)
                 .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_PRICE_HISTORY_FAILED));
 
-        return convertFromLiveStockPrice(stockPriceHistory.getClosePrice(),stockPriceHistory.getOpenPrice());
-    }
-
-    private boolean isKoreanMarketOpen(){
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
-        boolean weekday = now.getDayOfWeek() != DayOfWeek.SATURDAY && now.getDayOfWeek() != DayOfWeek.SUNDAY;
-        return weekday
-                && !now.toLocalTime().isBefore(LocalTime.of(9,00))
-                && !now.toLocalTime().isBefore(LocalTime.of(15,30));
+        return convertFromLiveStockPrice(liveStockPrice.getCurrentPrice(),stockPriceHistory.getOpenPrice());
     }
 
 }

@@ -4,10 +4,8 @@ import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
-import com.fintory.domain.stock.model.IntervalType;
-import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
-import com.fintory.domain.stock.model.StockPriceHistory;
+import com.fintory.domain.stock.service.websocket.LiveStockPriceWebSocketSaverService;
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
 import com.fintory.infra.domain.stock.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHandler;
@@ -74,8 +72,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     private volatile AtomicBoolean  isOverseasConnected = new AtomicBoolean(false);
     private String cachedAccessToken;
 
-    private static LocalDate lastCleanupDate = null;
-
+    private final LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService;
 
 
     public LiveStockPriceWebsocketServiceImpl(
@@ -85,7 +82,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
             LiveStockPriceRepository liveStockPriceRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, StockPriceHistoryRepository stockPriceHistoryRepository) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, StockPriceHistoryRepository stockPriceHistoryRepository, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -97,6 +94,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         this.restTemplate = restTemplate;
         this.redisTemplate = redisTemplate;
         this.stockPriceHistoryRepository = stockPriceHistoryRepository;
+        this.liveStockPriceWebSocketSaverService = liveStockPriceWebSocketSaverService;
     }
 
     /* 구독 관리 메서드 */
@@ -284,7 +282,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
         if(previous == null) {
             try {
-                saveStockData(dto); //DB에 바로 저장
+                liveStockPriceWebSocketSaverService.saveStockData(dto); //DB에 바로 저장
                 log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
             } catch (Exception e) {
                 // 실패 시 배치 저장을 위해 pendingData에 보관
@@ -327,66 +325,13 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         dataToSave.values().forEach(dto -> {
             try {
-                saveStockData(dto);
+                liveStockPriceWebSocketSaverService.saveStockData(dto);
             } catch (Exception e) {
                 log.error("{} 종목 {} 저장 실패: {}", marketName, dto.code(), e.getMessage());
             }
         });
 
         log.info("{} 주식 배치 저장 완료 - 저장된 종목 수: {}", marketName, dataToSave.size());
-    }
-
-    //데이터 DB에 저장 메소드
-    private void saveStockData(LiveStockPriceStream dto) {
-        Stock stock = stockRepository.findByCode(dto.code())
-                .orElseThrow(() -> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
-
-        //NOTE 웹소켓 통신 중에 디비에 저장하지 않아도 된다는 확신이 들때 지우기
-        LiveStockPrice liveStockPrice = liveStockPriceRepository.findByStock(stock)
-                .orElseGet(() -> LiveStockPrice.builder().stock(stock).build());
-
-        liveStockPrice.updateLiveStockPrice(dto.currentPrice());
-        liveStockPriceRepository.save(liveStockPrice);
-
-
-        //오늘 날짜
-        LocalDate now = LocalDate.now();
-
-        // 오늘이 아닌 이전 날짜의 HOURLY 데이터 모두 삭제
-        // 매번 웹소켓 데이터 저장 시 삭제 쿼리 실행 방지
-        if(!now.equals(lastCleanupDate)) {
-            stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now);
-            lastCleanupDate = now;
-        }
-
-            //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
-            List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock,IntervalType.HOURLY);
-
-            //60개의 데이터만 저장함
-            if(stockPriceHistories.size()<=60) {
-                StockPriceHistory stockPriceHistory = StockPriceHistory.builder()
-                        .closePrice(dto.currentPrice())
-                        .openPrice(dto.currentPrice())
-                        .stock(stock)
-                        .intervalType(IntervalType.HOURLY)
-                        .date(now)
-                        .build();
-
-                stockPriceHistoryRepository.save(stockPriceHistory);
-            }else{
-                //이미 60개의 데이터가 저장된 경우(저장 시작한지 1시간이 넘은 경우) - 업데이트 방식
-                StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now)
-                        .orElseGet(()->StockPriceHistory.builder()
-                                .closePrice(dto.currentPrice())
-                                .stock(stock)
-                                .intervalType(IntervalType.HOURLY)
-                                .date(now)
-                                .build());
-
-                stockPriceHistory =stockPriceHistory.updateStockPriceHistory(dto.currentPrice());
-
-                stockPriceHistoryRepository.save(stockPriceHistory);
-            }
     }
 
     /*  장 시작 시 자동으로 필요한 종목 전부 구독*/
@@ -491,7 +436,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
             dataToSave.values().forEach(dto -> {
                 try {
-                    saveStockData(dto);
+                    liveStockPriceWebSocketSaverService.saveStockData(dto);
                 } catch (Exception e) {
                     log.error("{} 종목 {} 마지막 저장 실패: {}", marketName, dto.code(), e.getMessage());
                 }
