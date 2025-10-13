@@ -175,6 +175,8 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
                 );
 
                 String jsonMessage = objectMapper.writeValueAsString(request);
+                log.info("전송할 구독 메시지 전체 내용: {}", jsonMessage);
+
                 session.sendMessage(new TextMessage(jsonMessage));
                 log.info("해외 주식 구독 해제 메시지 전송 완료 - 종목: {}", code);
 
