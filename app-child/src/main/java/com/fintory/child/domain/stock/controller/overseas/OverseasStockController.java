@@ -27,7 +27,7 @@ public interface OverseasStockController {
     public ResponseEntity<com.fintory.common.api.ApiResponse<OverseasStockPriceHistoryResponse>> getOverseasStockPriceHistory
             (@PathVariable
              @NotBlank(message = "종목 코드는 필수입니다.")
-             @Pattern(regexp="^[A-Z]{1,4}$", message = "미국 종목 코드는 1-4자리 대문자여야 합니다.")
+             @Pattern(regexp="^[A-Z]{1,5}$", message = "미국 종목 코드는 1-5자리 대문자여야 합니다.")
              String code);
 
     @Operation(summary="해외 주식 현재가 조회", description="특정 해외 주식의 현재가, 변동가격, 변화율 조회")
