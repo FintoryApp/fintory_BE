@@ -22,7 +22,7 @@ public interface OverseasStockController {
     @ApiResponse(responseCode="200", description="해외 주식 상승률 순위 조회 성공")
     public ResponseEntity<com.fintory.common.api.ApiResponse<List<OverseasROCResponse>>> getOverseasStockROCTop20();
 
-    @Operation(summary="해외 주식 차트 조회", description="특정 해외 주식//의 기간별 시세 조회")
+    @Operation(summary="해외 주식 차트 조회", description="특정 해외 주식의 기간별 시세 조회")
     @ApiResponse(responseCode="200", description="해외 주식 차트 조회 성공")
     public ResponseEntity<com.fintory.common.api.ApiResponse<OverseasStockPriceHistoryResponse>> getOverseasStockPriceHistory
             (@PathVariable
@@ -35,7 +35,7 @@ public interface OverseasStockController {
     public ResponseEntity<com.fintory.common.api.ApiResponse<OverseasLiveStockPriceResponse>> getOverseasLiveStockPrice
             (@PathVariable
              @NotBlank(message = "종목 코드는 필수입니다.")
-             @Pattern(regexp="^[A-Z]{1,4}$", message = "미국 종목 코드는 1-4자리 대문자여야 합니다.")
+             @Pattern(regexp="^[A-Z]{1,5}$", message = "미국 종목 코드는 1-5자리 대문자여야 합니다.")
              String code);
 
 }
