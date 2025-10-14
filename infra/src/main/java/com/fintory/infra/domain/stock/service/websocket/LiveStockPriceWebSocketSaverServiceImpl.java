@@ -12,6 +12,7 @@ import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWebSocketSaverService {
 
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
@@ -57,8 +59,9 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         boolean shouldCleanup = (lastCleanupDate == null) ||
                 (Duration.between(lastCleanupDate,now).toHours()>=10);
 
-        if(shouldCleanup) {
+        log.info("lastCleanupDate : "+ lastCleanupDate);
 
+        if(shouldCleanup) {
             stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now.toLocalDate());
             lastCleanupDate = now;
             todayOpenPrices.clear();
