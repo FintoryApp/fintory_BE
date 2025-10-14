@@ -9,8 +9,6 @@ import com.fintory.domain.stock.service.websocket.LiveStockPriceWebSocketSaverSe
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
 import com.fintory.infra.domain.stock.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHandler;
-import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
-import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -50,8 +48,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     private final KoreanLiveStockPriceWebSocketHandler koreanHandler;
     private final OverseasLiveStockPriceWebSocketHandler overseasHandler;
     private final StockRepository stockRepository;
-    private final LiveStockPriceRepository liveStockPriceRepository;
-    private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final SimpMessagingTemplate messageTemplate;
 
     // 공통 데이터 구조들
@@ -81,19 +77,16 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            LiveStockPriceRepository liveStockPriceRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, StockPriceHistoryRepository stockPriceHistoryRepository, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
         this.koreanHandler = koreanHandler;
         this.overseasHandler = overseasHandler;
         this.stockRepository = stockRepository;
-        this.liveStockPriceRepository = liveStockPriceRepository;
         this.messageTemplate = messageTemplate;
         this.restTemplate = restTemplate;
         this.redisTemplate = redisTemplate;
-        this.stockPriceHistoryRepository = stockPriceHistoryRepository;
         this.liveStockPriceWebSocketSaverService = liveStockPriceWebSocketSaverService;
     }
 
@@ -405,10 +398,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         return new MarketStatusResponse("no");
     }
 
-
-
     /* 스케줄링 - 장 마감 정리 */
-
     @Scheduled(cron = "0 20 15 * * MON-FRI", zone = "Asia/Seoul")
     public void cleanUpAfterKoreanMarketClose() {
         log.debug("국내 장 마감 - 마지막 데이터 저장 및 정리 시작");
@@ -492,7 +482,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
     public void disconnectDBSession(){
         try {
-
              //ERROR LettuceConnectionFactory has been STOPPED. Use start() to initialize it
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -520,7 +509,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     }
 
     /* 유틸리티 메서드 */
-
     private boolean isKoreanMarketOpen() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
         boolean weekday = now.getDayOfWeek() != DayOfWeek.SATURDAY && now.getDayOfWeek() != DayOfWeek.SUNDAY;

@@ -59,6 +59,7 @@ public enum DomainErrorCode {
     OWNED_STOCK_LIST_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "OWNED_STOCK_LIST_ERROR", "보유 종목 리스트 조회 중 오류 발생"),
     OWNED_STOCK_NOT_FOUND(HttpStatus.NOT_FOUND, "OWNED_STOCK_NOT_FOUND", "보유하지 않은 종목입니다."),
     PORTFOLIO_CALCULATION_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,"PORTFOLIO_CALCULATION_ERROR","포트폴리오 계산 중 오류 발생"),
+    INSUFFICIENT_QUANTITY(HttpStatus.BAD_REQUEST,"INSUFFICIENT_QUANTITY","보유 주식 수량보다 더 많은 주식을 팔 수 없습니다."),
 
     // stock price history
     STOCK_CHART_API_UNAVAILABLE(HttpStatus.SERVICE_UNAVAILABLE, "STOCK_CHART_API_UNAVAILABLE", "주식 차트 조회 실패"),

@@ -65,19 +65,24 @@ public class TradingServiceImpl implements TradingService {
         BigDecimal totalTradeAmount = tradeCalculation.amount();
         MarketType marketType =  tradeCalculation.marketType();
 
+        BigDecimal totalTradeAmountInKRW = marketType.equals(MarketType.OVERSEAS)
+                ? totalTradeAmount.multiply(exchangeRate)
+                : totalTradeAmount;
+
         //현재 account 금액을 넘지 않는지 확인
-        if(!isAvailablePurchase(account, totalTradeAmount)){
-            throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
+        if(!isAvailablePurchase(account, totalTradeAmountInKRW)){
+            throw new DomainException(DomainErrorCode.INSUFFICIENT_QUANTITY);
         }
 
         //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
         updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate,marketType);
 
+
         // 현금거래 내역 생성 -> 정적 팩토리 메소드
-        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
+        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
         depositTransactionRepository.save(depositTransaction);
         //account 업데이트 -> setter
-        updateAccountForPurchase(account, totalTradeAmount);
+        updateAccountForPurchase(account, totalTradeAmountInKRW);
     }
 
 
@@ -85,30 +90,39 @@ public class TradingServiceImpl implements TradingService {
     private void processSellTrade(TradeRequest tradeRequest, Account account, Stock stock, BigDecimal exchangeRate){
 
         TradeCalculation tradeCalculation = calculateTradeAmount(tradeRequest, stock);
-        BigDecimal totalTradeAmount = tradeCalculation.amount(); // 환율 적용
+        BigDecimal totalTradeAmount = tradeCalculation.amount();
         MarketType marketType =  tradeCalculation.marketType();
 
         OwnedStock ownedStock = ownedStockRepository.findByAccountAndStock(account, stock).orElseThrow(()-> new DomainException(DomainErrorCode.OWNED_STOCK_NOT_FOUND));
 
-
-        //현재 주식 판매가 가능한지
+        //현재 주식 판매가 가능한지 -> quantity 검사
         if(!isAvailableSell(tradeRequest,ownedStock)){
-            throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
+            throw new DomainException(DomainErrorCode.INSUFFICIENT_QUANTITY);
         }
 
-        // 매도신청할 수량 X 매수평균가
+        // 매도신청할 수량 X 매수평균가 -> 매수금액
         BigDecimal soldPurchaseAmount = ownedStock.getAveragePurchasePrice()
                 .multiply(tradeRequest.quantity());
+
+        //매수 금액 KRW 변환
+        BigDecimal soldPurchaseAmountInKRW = marketType.equals(MarketType.OVERSEAS)
+                ? soldPurchaseAmount.multiply(exchangeRate)
+                : soldPurchaseAmount;
+
+        //tradeAmount(매도 금액) -> KRW 변환
+        BigDecimal totalTradeAmountInKRW = marketType.equals(MarketType.OVERSEAS)
+                ? totalTradeAmount.multiply(exchangeRate)
+                : totalTradeAmount;;
 
         //ownedStock, stockTransaction 업데이트
         updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount,exchangeRate, marketType, soldPurchaseAmount);
 
         // 현금 내역 생성 -> 정적 팩토리 메소드
-        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmount, stock.getName() + "매도", DepositTransactionType.DEPOSIT, account);
+        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW, stock.getName() + "매도", DepositTransactionType.DEPOSIT, account);
         depositTransactionRepository.save(depositTransaction);
 
         //account 업데이트 -> setter
-        updateAccountForSell(account, totalTradeAmount, soldPurchaseAmount);
+        updateAccountForSell(account, totalTradeAmountInKRW, soldPurchaseAmountInKRW);
 
 
     }
@@ -129,7 +143,6 @@ public class TradingServiceImpl implements TradingService {
     private void updateAccountForSell(Account account, BigDecimal purchasePrice, BigDecimal soldPurchaseAmount){
         // 계좌 업데이트
         account.updateSellStock(purchasePrice, soldPurchaseAmount);
-
     }
 
 
@@ -206,11 +219,10 @@ public class TradingServiceImpl implements TradingService {
     private TradeCalculation calculateTradeAmount(TradeRequest tradeRequest, Stock stock){
         BigDecimal amount;
         MarketType marketType;
+        amount = tradeRequest.price().multiply(tradeRequest.quantity());
         if(stock.getCurrencyName().equals("USD")) {
-            amount = tradeRequest.price().multiply(tradeRequest.quantity());
             marketType= MarketType.OVERSEAS;
         } else {
-            amount = tradeRequest.price().multiply(tradeRequest.quantity());
             marketType = MarketType.DOMESTIC;
         }
         return new TradeCalculation(amount,marketType);
