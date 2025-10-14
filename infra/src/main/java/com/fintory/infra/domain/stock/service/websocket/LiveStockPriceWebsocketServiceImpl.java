@@ -298,7 +298,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     }
 
     /* 스케줄링 - 배치 저장 */
-    //REVIEW 지금은 1시간 간격 -> 1분은 너무 많음.
     @Scheduled(cron = "0 * 9-15 * * MON-FRI", zone = "Asia/Seoul")
     public void saveKoreanStockDataBatch() {
         if (!isKoreanMarketOpen()) {
@@ -341,9 +340,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             return;
         }
 
-        if (!isKoreanConnected.get()) {
-            connectKoreanWebSocket();
-        }
+        connectKoreanWebSocket();
+
         List<Stock> targetStocks = stockRepository.findByCurrencyName("KRW");
         int beforeSize = koreanSubscribedStocks.size();
 
@@ -369,9 +367,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             return;
         }
 
-        if(!isOverseasConnected.get()) {
-            connectOverseasWebSocket();
-        }
+        connectOverseasWebSocket();
+
 
         List<Stock> targetStocks = stockRepository.findByCurrencyName("USD");
         int beforeSize = overseasSubscribedStocks.size();
