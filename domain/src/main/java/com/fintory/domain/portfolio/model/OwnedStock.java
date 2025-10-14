@@ -41,9 +41,9 @@ public class OwnedStock extends BaseEntity {
                 .divide(this.quantity, 4, RoundingMode.HALF_UP);
     }
 
-    public void updateOwnedStockSell(BigDecimal quantity,BigDecimal soldPurchaseAmount){
+    public void updateOwnedStockSell(BigDecimal quantity){
         this.quantity = this.quantity.subtract(quantity);
-        this.purchaseAmount = this.purchaseAmount.subtract(soldPurchaseAmount);
+        this.purchaseAmount = this.purchaseAmount.subtract(averagePurchasePrice.multiply(quantity));
 
     }
 }

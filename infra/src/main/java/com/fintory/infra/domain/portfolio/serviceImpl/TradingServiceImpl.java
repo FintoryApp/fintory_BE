@@ -71,7 +71,7 @@ public class TradingServiceImpl implements TradingService {
 
         //현재 account 금액을 넘지 않는지 확인
         if(!isAvailablePurchase(account, totalTradeAmountInKRW)){
-            throw new DomainException(DomainErrorCode.INSUFFICIENT_QUANTITY);
+            throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
         }
 
         //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
@@ -115,14 +115,20 @@ public class TradingServiceImpl implements TradingService {
                 : totalTradeAmount;;
 
         //ownedStock, stockTransaction 업데이트
-        updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount,exchangeRate, marketType, soldPurchaseAmount);
+        updateStockAndTransactionForSell(ownedStock, tradeRequest, account, stock, totalTradeAmount,exchangeRate, marketType);
 
         // 현금 내역 생성 -> 정적 팩토리 메소드
         DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW, stock.getName() + "매도", DepositTransactionType.DEPOSIT, account);
         depositTransactionRepository.save(depositTransaction);
 
+        BigDecimal totalPurchaseAmount = ownedStock.getAveragePurchasePrice().multiply(tradeRequest.quantity());
+
+        BigDecimal totalPurchaseAmountInKRW =  marketType.equals(MarketType.OVERSEAS)
+                ? totalPurchaseAmount.multiply(exchangeRate)
+                : totalPurchaseAmount;
+
         //account 업데이트 -> setter
-        updateAccountForSell(account, totalTradeAmountInKRW, soldPurchaseAmountInKRW);
+        updateAccountForSell(account, totalTradeAmountInKRW, totalPurchaseAmountInKRW);
 
 
     }
@@ -188,9 +194,10 @@ public class TradingServiceImpl implements TradingService {
     }
 
     private void updateStockAndTransactionForSell(OwnedStock ownedStock, TradeRequest tradeRequest, Account account, Stock stock, BigDecimal totalTradeAmount,
-                                                 BigDecimal exchangeRate, MarketType marketType, BigDecimal soldPurchaseAmount){
+                                                 BigDecimal exchangeRate, MarketType marketType){
 
-        ownedStock.updateOwnedStockSell(tradeRequest.quantity(), soldPurchaseAmount);
+
+        ownedStock.updateOwnedStockSell(tradeRequest.quantity());
 
         if (ownedStock.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
             ownedStockRepository.delete(ownedStock);
