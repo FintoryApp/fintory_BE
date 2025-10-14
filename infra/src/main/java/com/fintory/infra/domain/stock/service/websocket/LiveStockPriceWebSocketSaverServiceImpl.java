@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,7 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
-    private static LocalDate lastCleanupDate=null;
+    private static LocalDateTime lastCleanupDate=null;
     private static final Map<String, BigDecimal> todayOpenPrices = new ConcurrentHashMap<>();
 
     //데이터 DB에 저장 메소드
@@ -45,13 +46,20 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         liveStockPrice.updateLiveStockPrice(dto.currentPrice());
         liveStockPriceRepository.save(liveStockPrice);
 
-        //오늘 날짜
-        LocalDate now = LocalDate.now();
+        /*
+        * 지금 문제 -> 날짜(LocalDate)로만 비교하니까 hourly 데이터 삭제가 안됨(해외 주식은 새벽 5시에 마지막으로 받고 같은 날짜에 10시반에 다시 받기 때문)
+        * lastCleanupDate랑 now가 10시간 이상 차이이면 다음날 데이터인 것으로 처리 + hourly 데이터 삭제
+        * */
 
-        // 오늘이 아닌 이전 날짜의 HOURLY 데이터 모두 삭제
+        LocalDateTime now = LocalDateTime.now();
+
         // 매번 웹소켓 데이터 저장 시 삭제 쿼리 실행 방지
-        if(!now.equals(lastCleanupDate)) {
-            stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now);
+        boolean shouldCleanup = (lastCleanupDate == null) ||
+                (Duration.between(lastCleanupDate,now).toHours()>=10);
+
+        if(shouldCleanup) {
+
+            stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now.toLocalDate());
             lastCleanupDate = now;
             todayOpenPrices.clear();
         }
@@ -70,18 +78,18 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
                     .openPrice(openPrice)
                     .stock(stock)
                     .intervalType(IntervalType.HOURLY)
-                    .date(now)
+                    .date(now.toLocalDate())
                     .build();
 
             stockPriceHistoryRepository.save(stockPriceHistory);
         }else{
             //이미 60개의 데이터가 저장된 경우(저장 시작한지 1시간이 넘은 경우) - 업데이트 방식
-            StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now)
+            StockPriceHistory stockPriceHistory = stockPriceHistoryRepository.findOldestByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now.toLocalDate())
                     .orElseGet(()->StockPriceHistory.builder()
                             .closePrice(dto.currentPrice())
                             .stock(stock)
                             .intervalType(IntervalType.HOURLY)
-                            .date(now)
+                            .date(now.toLocalDate())
                             .build());
 
             stockPriceHistory =stockPriceHistory.updateStockPriceHistory(dto.currentPrice());
