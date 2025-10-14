@@ -31,7 +31,7 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final StockRepository stockRepository;
     private final LiveStockPriceRepository liveStockPriceRepository;
-    private static LocalDateTime lastCleanupDate=null;
+    private static final Map<String, LocalDateTime> lastCleanupDateByStock = new ConcurrentHashMap<>();
     private static final Map<String, BigDecimal> todayOpenPrices = new ConcurrentHashMap<>();
 
     //데이터 DB에 저장 메소드
@@ -56,6 +56,7 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         LocalDateTime now = LocalDateTime.now();
 
         // 매번 웹소켓 데이터 저장 시 삭제 쿼리 실행 방지
+        LocalDateTime lastCleanupDate = lastCleanupDateByStock.get(stock.getCode());
         boolean shouldCleanup = (lastCleanupDate == null) ||
                 (Duration.between(lastCleanupDate,now).toHours()>=10);
 
@@ -63,15 +64,15 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
 
         if(shouldCleanup) {
             stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now.toLocalDate());
-            lastCleanupDate = now;
-            todayOpenPrices.clear();
+            lastCleanupDateByStock.put(stock.getCode(), now);
+            todayOpenPrices.remove(stock.getCode());
         }
 
         //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
         List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock,IntervalType.HOURLY);
 
         //60개의 데이터만 저장함
-        if(stockPriceHistories.size()<=60) {
+        if(stockPriceHistories.size()<60) {
                 BigDecimal openPrice = todayOpenPrices.computeIfAbsent(
                         dto.code(), //key
                         k -> dto.currentPrice()); //값이 없을 때 실행되는 람다
