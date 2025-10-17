@@ -317,6 +317,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         dataToSave.values().forEach(dto -> {
             try {
+                log.info("종목 {} 새 StockPriceHistory 생성 시도, 현재가 : {}", dto.code(),dto.currentPrice());
                 liveStockPriceWebSocketSaverService.saveStockData(dto);
             } catch (Exception e) {
                 log.error("{} 종목 {} 저장 실패: {}", marketName, dto.code(), e.getMessage());

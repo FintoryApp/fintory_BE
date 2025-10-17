@@ -60,8 +60,6 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         boolean shouldCleanup = (lastCleanupDate == null) ||
                 (Duration.between(lastCleanupDate,now).toHours()>=10);
 
-        log.info("lastCleanupDate : "+ lastCleanupDate);
-
         if(shouldCleanup) {
             stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now.toLocalDate());
             lastCleanupDateByStock.put(stock.getCode(), now);
