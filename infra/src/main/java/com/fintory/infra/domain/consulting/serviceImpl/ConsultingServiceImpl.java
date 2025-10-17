@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.account.model.Account;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.consulting.dto.*;
 import com.fintory.domain.consulting.model.Report;
@@ -13,6 +14,7 @@ import com.fintory.domain.portfolio.model.StockTransaction;
 import com.fintory.domain.portfolio.model.TransactionType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.portfolio.service.ExchangeRateService;
+import com.fintory.infra.domain.account.repository.AccountRepository;
 import com.fintory.infra.domain.consulting.repository.ReportRepository;
 import com.fintory.infra.domain.portfolio.repository.OwnedStockRepository;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
@@ -33,6 +35,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -101,49 +104,25 @@ public class ConsultingServiceImpl implements ConsultingService {
             );
 
             return parseOpenAiResponse(response.getBody());
-            /*
-            String response = chatClient.prompt()
-                    .system("""
-        당신은 주식 트레이딩 전문가입니다.\s
-        거래 내역을 분석하여 투자 성향과 조언을 제공하는 역할입니다.
-        반드시 정확한 JSON 형식으로만 응답해주세요.
-       \s""")
-                    .user("""
-        다음 거래 내역을 분석해주세요:
-        %s
-        
-        위 거래 내역을 바탕으로 다음을 분석하여 JSON 형식으로 응답해주세요:
-        1. 투자 성향 (공격형, 중립형, 안정형 중 하나)
-        2. 향후 전략 추천 메시지
-        
-        응답 형식:
-        {
-            "investmentStyle": "공격형",
-            "advice": "향후 전략 추천 메시지"
-        }
-        """.formatted(transactionData))
-                    .call()
-                    .content();
-
-            log.info("AI 원본 응답: {}", response);
-
-
-            return objectMapper.readValue(response, AiResponse.class);
-
-             */
     }
 
     //조회 메서드
     @Override
     @Transactional
-    public ReportDetail getConsultingByDate(String date, Child child)  {
+    public ReportDetail getConsultingByDate(String date, Child child) {
+        Optional<Report> reportOpt = reportRepository.findByReportMonthAndChild(date, child);
+
+        if (reportOpt.isEmpty()) {
+            // 리포트가 없으면 null return
+            return null;
+        }
+
         try {
-            Report report = reportRepository.findByReportMonthAndChild(date,child).orElseThrow(() -> new DomainException(DomainErrorCode.REPORT_NOT_FOUND));
+            Report report = reportOpt.get();
             TradingReport tradingReportDto = objectMapper.readValue(
                     report.getReportJson(),
                     TradingReport.class
             );
-
             return ReportDetail.from(report, tradingReportDto);
         } catch (JsonProcessingException e) {
             throw new DomainException(DomainErrorCode.JSON_PARSING_ERROR);
@@ -175,7 +154,7 @@ public class ConsultingServiceImpl implements ConsultingService {
                 aiResponse = getConsulting(stockTransactions);
             } else {
                 // 거래내역이 없으면 기본 응답
-                aiResponse = createDefaultResponse();
+                aiResponse = createDefaultResponseForNoTransactions();
             }
 
             InvestmentStyle investmentStyle = InvestmentStyle.builder()

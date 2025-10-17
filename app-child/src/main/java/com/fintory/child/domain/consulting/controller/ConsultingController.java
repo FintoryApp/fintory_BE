@@ -6,9 +6,9 @@ import com.fintory.domain.consulting.dto.ReportDetail;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
-
 @Tag(name = "컨설팅 리포트 API")
 public interface ConsultingController {
 
@@ -18,7 +18,7 @@ public interface ConsultingController {
 
     @Operation(summary = "날짜별 컨설팅 리포트 조회")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "컨설팅 리포트 상세 정보 반환")
-    ApiResponse<ReportDetail> getConsultingByDate(
+    ResponseEntity<ApiResponse<ReportDetail>> getConsultingByDate(
             @Parameter(description = "리포트 월 (예: 2024-01)", required = true)
             @PathVariable String reportMonth,
             @AuthenticationPrincipal CustomUserDetails user

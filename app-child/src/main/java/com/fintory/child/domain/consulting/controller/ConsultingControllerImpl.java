@@ -9,6 +9,7 @@ import com.fintory.domain.consulting.dto.ReportDetail;
 import com.fintory.domain.consulting.service.ConsultingService;
 import com.fintory.infra.domain.consulting.serviceImpl.ConsultingSchedulerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,10 +30,10 @@ public class ConsultingControllerImpl implements ConsultingController{
 
     // 날짜별 리포트 조회
     @GetMapping("/{reportMonth}")
-    public ApiResponse<ReportDetail> getConsultingByDate(@PathVariable String reportMonth,  @AuthenticationPrincipal CustomUserDetails user){
+    public ResponseEntity<ApiResponse<ReportDetail>> getConsultingByDate(@PathVariable String reportMonth,  @AuthenticationPrincipal CustomUserDetails user){
         Child child = childService.getChild(user.getUsername());
         ReportDetail reportDetail =  consultingService.getConsultingByDate(reportMonth,child);
-        return ApiResponse.ok(reportDetail);
+        return ResponseEntity.ok(ApiResponse.ok(reportDetail));
     }
 
 }
