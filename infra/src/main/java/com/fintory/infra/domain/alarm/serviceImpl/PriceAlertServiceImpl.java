@@ -12,6 +12,7 @@ import com.fintory.infra.domain.alarm.repository.PriceAlertRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openqa.selenium.devtools.v85.schema.model.Domain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,12 @@ public class PriceAlertServiceImpl implements PriceAlertService {
     @Override
     public void createPriceAlert(Child child,PriceAlertRequest priceAlertRequest) {
         Stock stock = stockRepository.findByCode(priceAlertRequest.stockCode()).orElseThrow(()->new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
+
+        boolean isDuplicate = priceAlertRepository.existsByChildIdAndStockCodeAndTargetPrice(child.getId(),stock.getCode(),priceAlertRequest.targetPrice());
+
+        if(isDuplicate){
+            throw new DomainException(DomainErrorCode.PRICE_ALERT_DUPLICATION);
+        }
         PriceAlert priceAlert = PriceAlert.builder()
                 .targetPrice(priceAlertRequest.targetPrice())
                 .child(child)

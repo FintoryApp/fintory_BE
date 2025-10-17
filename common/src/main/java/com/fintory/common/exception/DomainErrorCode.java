@@ -80,6 +80,7 @@ public enum DomainErrorCode {
     // price alert
     PRICE_ALERT_NOT_FOUND(HttpStatus.NOT_FOUND,"PRICE_ALERT_NOT_FOUND","해당 감시가 데이터를 찾을 수 없습니다"),
     PRICE_ALERT_FORBIDDEN(HttpStatus.FORBIDDEN,"PRICE_ALERT_FORBIDDEN","해당 감시가 데이터에 대한 권한이 없습니다."),
+    PRICE_ALERT_DUPLICATION(HttpStatus.BAD_REQUEST,"PRICE_ALERT_DUPLICATION","이미 동일한 감시가 가격이 설정되어 있습니다."),
 
     //report
     REPORT_NOT_FOUND(HttpStatus.NOT_FOUND,"REPORT_NOT_FOUND","리포트를 찾을 수 없습니다."),
