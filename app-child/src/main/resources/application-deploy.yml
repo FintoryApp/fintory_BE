@@ -91,3 +91,6 @@ db-openapi:
 
 eos:
   api-key: ${EOS_API_KEY}
+
+firebase:
+  config: ${FIREBASE_CONFIG}
