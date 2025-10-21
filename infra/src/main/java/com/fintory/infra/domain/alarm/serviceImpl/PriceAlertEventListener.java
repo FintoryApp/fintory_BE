@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class PriceAlertEventListener {
 
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<Object, Object> redisTemplate;
     private final PriceAlertRepository priceAlertRepository;
     private final AlarmService alarmService;
 
