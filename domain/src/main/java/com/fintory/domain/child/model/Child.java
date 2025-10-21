@@ -2,6 +2,7 @@ package com.fintory.domain.child.model;
 
 import com.fintory.domain.account.model.Account;
 import com.fintory.domain.alarm.model.Alarm;
+import com.fintory.domain.alarm.model.FcmToken;
 import com.fintory.domain.attendence.model.AttendanceLog;
 import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
@@ -93,5 +94,8 @@ public class Child extends BaseEntity implements User {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
     private List<PriceAlert> priceAlerts;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "child")
+    private List<FcmToken> fcmTokens;
 
 }
