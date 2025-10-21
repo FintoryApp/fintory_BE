@@ -7,6 +7,7 @@ import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebSocketSaverService;
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
+import com.fintory.infra.domain.alarm.event.PriceAlertEvent;
 import com.fintory.infra.domain.stock.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.handler.OverseasLiveStockPriceWebSocketHandler;
 import com.fintory.infra.domain.stock.repository.StockRepository;
@@ -15,6 +16,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -70,6 +72,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
     private final LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService;
 
+    //이벤트
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public LiveStockPriceWebsocketServiceImpl(
             @Qualifier("koreanLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager koreanConnectionManager,
@@ -77,7 +81,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -88,6 +92,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         this.restTemplate = restTemplate;
         this.redisTemplate = redisTemplate;
         this.liveStockPriceWebSocketSaverService = liveStockPriceWebSocketSaverService;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     /* 구독 관리 메서드 */
@@ -271,6 +276,11 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
             return; //똑같은 데이터면 무시
         }
+
+        //새로운 데이터를 받으면 -> 감시가 이벤트 발행
+        applicationEventPublisher.publishEvent(
+                new PriceAlertEvent(this,dto)
+        );
 
         //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
         if(previous == null) {
