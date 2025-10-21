@@ -1,5 +1,7 @@
 package com.fintory.infra.domain.consulting.config;
 
+import com.fintory.domain.alarm.model.NotificationType;
+import com.fintory.domain.alarm.service.AlarmService;
 import com.fintory.domain.child.model.Child;
 import com.fintory.domain.consulting.service.ConsultingService;
 import com.fintory.domain.portfolio.model.StockTransaction;
@@ -22,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
 import java.util.List;
@@ -37,6 +40,7 @@ public class ReportBatchConfig {
     private final StockTransactionRepository stockTransactionRepository;
     private final ChildRepository childRepository;
     private final ReportRepository reportRepository;
+    private final AlarmService alarmService;
 
     // Batch Job 설정
     @Bean
@@ -109,6 +113,8 @@ public class ReportBatchConfig {
             // processor에서 이미 저장이 완료되므로 로그만 기록
             children.forEach(child -> {
                 if (child != null) {
+                    LocalDate now =  LocalDate.now();
+                    alarmService.pushMessage(child.getId(),NotificationType.REPORT,now + "자 Report 생성","Report가 생성되었습니다. 와서 확인하세요");
                     log.info("리포트 생성 성공 for child: {}", child.getId());
                 }
             });
