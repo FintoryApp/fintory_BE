@@ -97,7 +97,8 @@ db-openapi:
   db-appsecret: ${DB_APPSECRET}
   base-url: https://openapi.dbsec.co.kr:8443
 
-
+firebase:
+  config: ${FIREBASE_CONFIG}
 
 
 

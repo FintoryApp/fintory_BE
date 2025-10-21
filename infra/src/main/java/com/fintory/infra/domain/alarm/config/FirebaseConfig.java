@@ -8,9 +8,11 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 /* firebase 서비스를 이용하기 위한 연결 설정 */
@@ -18,11 +20,14 @@ import java.io.InputStream;
 @Slf4j
 public class FirebaseConfig {
 
+    @Value("${firebase.config}")
+    private String firebaseConfig;
+
     @PostConstruct
     public void init(){
         try{
             // firebase 설정 파일 로드
-            InputStream serviceAccount = new ClassPathResource("firebaseConfig.json").getInputStream();
+            InputStream serviceAccount = new ByteArrayInputStream(firebaseConfig.getBytes());
 
             // firebase 인증 정보 설정
             FirebaseOptions options = new FirebaseOptions.Builder()
