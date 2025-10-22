@@ -74,7 +74,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
 
-
+    /* Netty DNS Resolver */
+    runtimeOnly 'io.netty:netty-resolver-dns-native-macos:4.1.x.Final:osx-aarch_64'
 
 }
 
