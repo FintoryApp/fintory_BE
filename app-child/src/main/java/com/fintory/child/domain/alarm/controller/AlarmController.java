@@ -3,6 +3,7 @@ package com.fintory.child.domain.alarm.controller;
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.alarm.dto.FcmTokenRequest;
+import com.fintory.domain.alarm.dto.AlarmStatusRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
@@ -19,4 +20,8 @@ public interface AlarmController {
     @Operation(summary = "로그아웃 시 FCM 토큰 삭제")
     @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "FCM 토큰 삭제")
     ResponseEntity<ApiResponse<Void>> deleteToken(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody FcmTokenRequest request);
+
+    @Operation(summary="알림을 받을 지 여부 설정")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "알림 설정")
+    ResponseEntity<ApiResponse<Void>> updateToken(@RequestBody AlarmStatusRequest request);
 }
