@@ -52,17 +52,10 @@ public class KoreanStockServiceImpl implements KoreanStockService {
 
 
     private void initializeAllStockData() {
-        executeWithErrorHandling("주식 랭킹",this::initiateStockRankWithRetry);
-        sleepSafely(3000);
         executeWithErrorHandling("현재가 데이터",this::initiateLiveStockPriceWithRetry);
         sleepSafely(3000);
         executeWithErrorHandling("기간별 시세",this::initiateStockPriceHistoryWithRetry);
         sleepSafely(3000);
-    }
-
-
-    private void initiateStockRankWithRetry() {
-        koreanStockRankService.initiateKoreanStockRank();
     }
 
     private void initiateLiveStockPriceWithRetry() {

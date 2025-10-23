@@ -94,7 +94,11 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-batch'
     implementation 'org.springframework.boot:spring-boot-starter-quartz'
 
+    /* fcm */
+    implementation 'com.google.firebase:firebase-admin:9.2.0'
 
+    /* Spring Security */
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 }
 
 bootJar{

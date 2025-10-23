@@ -67,8 +67,6 @@ public class OverseasStockServiceImpl implements OverseasStockService {
     }
 
     private void initializeAllStockData() {
-            executeWithErrorHandling("주식 랭킹",this::initiateStockRankWithRetry);
-            sleepSafely(1000);
 
             executeWithErrorHandling("현재가 데이터",this::initiateLiveStockPriceWithRetry);
             sleepSafely(1000);
@@ -78,9 +76,6 @@ public class OverseasStockServiceImpl implements OverseasStockService {
     }
 
     //@Retryable도 프록시 기반 AOP => 내부 자기 호출 + private은 @Retryable 적용x
-    public void initiateStockRankWithRetry() {
-        overseasStockRankService.initiateOverseasStockRank();
-    }
     public void initiateLiveStockPriceWithRetry() {
         overseasLiveStockPriceService.initLiveStockPrice();
     }
