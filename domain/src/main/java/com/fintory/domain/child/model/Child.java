@@ -48,6 +48,9 @@ public class Child extends BaseEntity implements User {
     @Enumerated(EnumType.STRING)
     private Status status;
 
+    @Column(name="is_alarm")
+    private boolean isAlarm;
+
     // id&pw 생성자
     @Builder(builderMethodName = "idPwBuilder")
     public Child(String nickname, String email, String password, Role role, LoginType loginType, Status status) {
@@ -71,6 +74,8 @@ public class Child extends BaseEntity implements User {
     public void updateStatus(Status status) {
         this.status = status;
     }
+
+    public void updateAlarm(boolean isAlarm) {this.isAlarm = isAlarm;}
 
     // 1:1
     @OneToOne(cascade = CascadeType.ALL, mappedBy="child")
