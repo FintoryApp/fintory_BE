@@ -82,7 +82,6 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public void setStatus(Child child, AlarmStatusRequest request) {
         child.updateAlarm(request.isAlarm());
-        childRepository.save(child);
     }
 
     private void sendToDevice(String fcmToken, NotificationType notificationType, String title, String body){
