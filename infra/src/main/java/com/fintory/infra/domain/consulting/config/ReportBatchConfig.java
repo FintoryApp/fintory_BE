@@ -64,8 +64,7 @@ public class ReportBatchConfig {
     @Bean
     @StepScope
     public ItemReader<Child> childItemReader(){
-        List<Child> children = childRepository.findAll();
-        log.info("Found {} children for report generation", children.size());
+        List<Child> children = childRepository.findTop20ByOrderByIdAsc(); //원래는 findAll
         return new ListItemReader<>(children);
     }
 
@@ -95,7 +94,6 @@ public class ReportBatchConfig {
                 //기존 생성 메서드 호출 
                 consultingService.saveReportDetail(stockTransactions, child);
 
-                log.info("리포트 생성 완료 child: {}", child.getId());
                 return child;
 
             } catch (Exception e) {
@@ -115,7 +113,6 @@ public class ReportBatchConfig {
                 if (child != null) {
                     LocalDate now =  LocalDate.now();
                     alarmService.pushMessage(child.getId(),NotificationType.REPORT,now + "자 Report 생성","Report가 생성되었습니다. 와서 확인하세요");
-                    log.info("리포트 생성 성공 for child: {}", child.getId());
                 }
             });
         };
