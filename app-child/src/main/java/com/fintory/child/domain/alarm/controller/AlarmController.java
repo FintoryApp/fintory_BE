@@ -2,6 +2,7 @@ package com.fintory.child.domain.alarm.controller;
 
 import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
+import com.fintory.domain.alarm.dto.AlarmStatusResponse;
 import com.fintory.domain.alarm.dto.FcmTokenRequest;
 import com.fintory.domain.alarm.dto.AlarmStatusRequest;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +23,12 @@ public interface AlarmController {
     ResponseEntity<ApiResponse<Void>> deleteToken(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody FcmTokenRequest request);
 
     @Operation(summary="알림을 받을 지 여부 설정")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "알림 설정")
-    ResponseEntity<ApiResponse<Void>> updateToken(@RequestBody AlarmStatusRequest request);
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "알림 여부 설정")
+    ResponseEntity<ApiResponse<Void>> setStatus(@RequestBody AlarmStatusRequest request);
+
+    @Operation(summary="알림을 받을 지 여부 조회")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",description = "알림 여부 조회")
+    ResponseEntity<ApiResponse<AlarmStatusResponse>> getStatus(@AuthenticationPrincipal CustomUserDetails userDetails);
+
+
 }
