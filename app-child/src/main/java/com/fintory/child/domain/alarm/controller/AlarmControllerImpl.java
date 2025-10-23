@@ -4,6 +4,7 @@ import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.alarm.dto.AlarmStatusResponse;
 import com.fintory.domain.alarm.dto.FcmTokenRequest;
 import com.fintory.domain.alarm.dto.AlarmStatusRequest;
 import com.fintory.domain.alarm.service.AlarmService;
@@ -41,5 +42,12 @@ public class AlarmControllerImpl {
         Child child = childRepository.findByEmail(userDetails.getUsername()).orElseThrow(()-> new DomainException(DomainErrorCode.USER_NOT_FOUND));
         alarmService.setStatus(child,request);
         return ResponseEntity.ok(ApiResponse.ok(null));
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<ApiResponse<AlarmStatusResponse>> getStatus(@AuthenticationPrincipal CustomUserDetails userDetails){
+        Child child = childRepository.findByEmail(userDetails.getUsername()).orElseThrow(()-> new DomainException(DomainErrorCode.USER_NOT_FOUND));
+        AlarmStatusResponse response = alarmService.getStatus(child);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 }
