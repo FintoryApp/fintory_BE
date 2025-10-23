@@ -62,7 +62,8 @@ public class AlarmServiceImpl implements AlarmService {
         List<FcmToken> fcmTokens = getToken(child);
 
         if(fcmTokens.isEmpty()){
-            throw new DomainException(DomainErrorCode.FCMTOKEN_EMPTY);
+            //throw new DomainException(DomainErrorCode.FCMTOKEN_EMPTY);
+            return;
         }
 
         // 모든 기기에 알림 전송
@@ -85,6 +86,7 @@ public class AlarmServiceImpl implements AlarmService {
         child.updateAlarm(request.isAlarm());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public AlarmStatusResponse getStatus(Child child) {
         return new AlarmStatusResponse(child.isAlarm());

@@ -48,7 +48,7 @@ public class Child extends BaseEntity implements User {
     private Status status;
 
     @Column(name="is_alarm")
-    private boolean isAlarm;
+    private boolean isAlarm = false;
 
     // id&pw 생성자
     @Builder(builderMethodName = "idPwBuilder")
