@@ -4,6 +4,7 @@ package com.fintory.infra.domain.alarm.serviceImpl;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.alarm.dto.AlarmStatusRequest;
+import com.fintory.domain.alarm.dto.AlarmStatusResponse;
 import com.fintory.domain.alarm.model.FcmToken;
 import com.fintory.domain.alarm.model.NotificationType;
 import com.fintory.domain.alarm.service.AlarmService;
@@ -82,6 +83,11 @@ public class AlarmServiceImpl implements AlarmService {
     @Override
     public void setStatus(Child child, AlarmStatusRequest request) {
         child.updateAlarm(request.isAlarm());
+    }
+
+    @Override
+    public AlarmStatusResponse getStatus(Child child) {
+        return new AlarmStatusResponse(child.isAlarm());
     }
 
     private void sendToDevice(String fcmToken, NotificationType notificationType, String title, String body){
