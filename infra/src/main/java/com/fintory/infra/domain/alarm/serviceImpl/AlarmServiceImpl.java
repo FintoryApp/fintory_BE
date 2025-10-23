@@ -3,6 +3,7 @@ package com.fintory.infra.domain.alarm.serviceImpl;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.alarm.dto.AlarmStatusRequest;
 import com.fintory.domain.alarm.model.FcmToken;
 import com.fintory.domain.alarm.model.NotificationType;
 import com.fintory.domain.alarm.service.AlarmService;
@@ -74,6 +75,14 @@ public class AlarmServiceImpl implements AlarmService {
     public void deleteToken( String token){
         fcmTokenRepository.deleteByToken(token);
         log.info("FCM 토큰 삭제:{}", token);
+    }
+
+    //알림 여부 설정 메소드
+    @Transactional
+    @Override
+    public void setStatus(Child child, AlarmStatusRequest request) {
+        child.updateAlarm(request.isAlarm());
+        childRepository.save(child);
     }
 
     private void sendToDevice(String fcmToken, NotificationType notificationType, String title, String body){

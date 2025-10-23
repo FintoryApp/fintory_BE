@@ -1,5 +1,6 @@
 package com.fintory.domain.alarm.service;
 
+import com.fintory.domain.alarm.dto.AlarmStatusRequest;
 import com.fintory.domain.alarm.model.NotificationType;
 import com.fintory.domain.child.model.Child;
 
@@ -13,4 +14,6 @@ public interface AlarmService {
                             String body);
 
      void deleteToken(String token);
+
+     void setStatus(Child child, AlarmStatusRequest request);
 }
