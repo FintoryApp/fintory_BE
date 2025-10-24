@@ -26,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StopWatch;
 
 import java.util.concurrent.TimeUnit;
 
@@ -91,13 +92,19 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public AuthToken login(String email, String password) {
+        StopWatch stopWatch = new StopWatch("Login Process Detail");
+
         try {
             // 이메일, 비밀번호 기반 인증 토큰 생성
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);
             // 인증 수행 (내부적으로 UserDetailsService 호출)
             //authenticate()가 내부적으로 CustomUserService.loadUserByUsername 호출하여 userDetails 반환
             //userDetails를 포함한 모든 인증 정보를 Authentication에 담음.
+
+            stopWatch.start("1. AuthAndPwdVerify"); // 🚨 측정 시작
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
+            stopWatch.stop();
+
             Object principal = authentication.getPrincipal();
             if (principal instanceof CustomUserDetails customUserDetails) {
                 log.info("인증 직후 password 값: {}", customUserDetails.getPassword());
@@ -107,11 +114,15 @@ public class AuthServiceImpl implements AuthService{
             log.info("authentication: {}", authentication);
 
             // 액세스/리프레시 토큰 발급
+            stopWatch.start("2. TokenGeneration");
             String accessToken = jwtTokenProvider.generateAccessToken(authentication);
             String refreshToken = jwtTokenProvider.generateRefreshToken(authentication.getName());
             long refreshTokenExpirationMillis =
                     jwtTokenProvider.getRefreshTokenExpirationDays() * 24 * 60 * 60 * 1000L;
+            stopWatch.stop();
 
+
+            stopWatch.start("3. RedisSet");
             // 리프레시 토큰 Redis 저장
             redisTemplate.opsForValue().set(
                     authentication.getName(),
@@ -119,6 +130,8 @@ public class AuthServiceImpl implements AuthService{
                     refreshTokenExpirationMillis,
                     TimeUnit.MILLISECONDS
             );
+            stopWatch.stop();
+
             log.info("at: {}, rt: {}", accessToken, refreshToken);
 
             return new AuthToken(accessToken, refreshToken);
