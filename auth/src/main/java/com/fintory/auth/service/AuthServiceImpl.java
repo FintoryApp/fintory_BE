@@ -132,6 +132,7 @@ public class AuthServiceImpl implements AuthService{
             );
             stopWatch.stop();
 
+            log.info("\n--- [Login Performance Breakdown] ---\n{}", stopWatch.prettyPrint());
             log.info("at: {}, rt: {}", accessToken, refreshToken);
 
             return new AuthToken(accessToken, refreshToken);
