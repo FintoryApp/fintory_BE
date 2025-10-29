@@ -80,6 +80,10 @@ dependencies {
     /* Spring AOP */
     implementation 'org.springframework.boot:spring-boot-starter-aop'
 
+    /* Micrometer(Prometheus) */
+    implementation("io.micrometer:micrometer-registry-prometheus:1.15.2")
+
+
 }
 
 test {
