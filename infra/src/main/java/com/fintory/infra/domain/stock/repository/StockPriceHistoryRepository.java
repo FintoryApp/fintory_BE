@@ -33,4 +33,6 @@ public interface StockPriceHistoryRepository extends JpaRepository<StockPriceHis
 
 
     Optional<StockPriceHistory> findFirstByStockAndIntervalTypeOrderByUpdatedAtDesc(Stock stock, IntervalType intervalType);
+
+    List<StockPriceHistory> findByStockAndIntervalTypeAndDate(Stock stock, IntervalType intervalType, LocalDate localDate);
 }
