@@ -4,7 +4,6 @@ import com.fintory.domain.account.model.Account;
 import com.fintory.domain.alarm.model.Alarm;
 import com.fintory.domain.alarm.model.FcmToken;
 import com.fintory.domain.attendence.model.AttendanceLog;
-import com.fintory.domain.challenge.model.Challenge;
 import com.fintory.domain.common.BaseEntity;
 import com.fintory.domain.common.Role;
 import com.fintory.domain.common.User;
@@ -85,9 +84,6 @@ public class Child extends BaseEntity implements User {
     private PointWallet pointWallet;
 
     // 1:n
-    @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
-    private List<Challenge> challenges;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy="child")
     private List<Alarm> alarms;
 

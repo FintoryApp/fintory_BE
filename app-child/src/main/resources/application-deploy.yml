@@ -13,7 +13,6 @@ spring:
     password: ${RDS_PASSWORD}
 
   jpa:
-    database-platform: org.hibernate.dialect.MySQLDialect
     show-sql: false
     hibernate:
       ddl-auto: update
@@ -74,7 +73,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health, prometheus
   endpoint:
     health:
       show-details: always
