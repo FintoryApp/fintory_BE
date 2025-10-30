@@ -53,4 +53,10 @@ public interface LiveStockPriceWebsocketService {
      */
     MarketStatusResponse getMarketStatus();
 
+
+    /* 매트릭용 Getter 함수 추가 */
+    Set<String> getKoreanSubscribedStocks();
+    Set<String> getOverseasSubscribedStocks();
+    boolean isKoreanConnected();
+    boolean isOverseasConnected();
 }
