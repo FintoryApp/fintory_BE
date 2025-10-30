@@ -49,16 +49,21 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         liveStockPriceRepository.save(liveStockPrice);
 
         /*
-        * 지금 문제 -> 날짜(LocalDate)로만 비교하니까 hourly 데이터 삭제가 안됨(해외 주식은 새벽 5시에 마지막으로 받고 같은 날짜에 10시반에 다시 받기 때문)
-        * lastCleanupDate랑 now가 10시간 이상 차이이면 다음날 데이터인 것으로 처리 + hourly 데이터 삭제
-        * */
+         * 지금 문제 -> 날짜(LocalDate)로만 비교하니까 hourly 데이터 삭제가 안됨(해외 주식은 새벽 5시에 마지막으로 받고 같은 날짜에 10시반에 다시 받기 때문)
+         * lastCleanupDate랑 now가 10시간 이상 차이이면 다음날 데이터인 것으로 처리 + hourly 데이터 삭제
+         *
+         * 날짜가 다를 때 -> 자정 넘어갈 때 이전 데이터 삭제 (날짜 다르면 cleanup 실행)
+         * 10시간 이상 차이 -> 해외 주식 특수 케이스(한국 시간 기준 같은날에 2번 거래)
+         * */
 
         LocalDateTime now = LocalDateTime.now();
 
         // 매번 웹소켓 데이터 저장 시 삭제 쿼리 실행 방지
         LocalDateTime lastCleanupDate = lastCleanupDateByStock.get(stock.getCode());
         boolean shouldCleanup = (lastCleanupDate == null) ||
-                (Duration.between(lastCleanupDate,now).toHours()>=10);
+                (!lastCleanupDate.toLocalDate().equals(now.toLocalDate())) //10시간으로 하면 이전 날짜의 60개 데이터가 지워지지 않음.
+                || (Duration.between(lastCleanupDate,now).toHours()>=10);
+
 
         if(shouldCleanup) {
             stockPriceHistoryRepository.deleteByStockAndIntervalTypeAndDateBefore(stock, IntervalType.HOURLY, now.toLocalDate());
@@ -67,11 +72,12 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
         }
 
         //오늘날짜 HOURLY 데이터 중에서 updateAt이 가장 오래된 것을 찾아서 closePrice를 새로운 가격으로 업데이트
-        List<StockPriceHistory> stockPriceHistories = stockPriceHistoryRepository.findByStockAndIntervalType(stock,IntervalType.HOURLY);
+        List<StockPriceHistory> todayHistories = stockPriceHistoryRepository.findByStockAndIntervalTypeAndDate(stock,IntervalType.HOURLY,now.toLocalDate());
 
         //60개의 데이터만 저장함
-        if(stockPriceHistories.size()<60) {
-                BigDecimal openPrice = todayOpenPrices.computeIfAbsent(
+        if(todayHistories.size()<60) {
+
+            BigDecimal openPrice = todayOpenPrices.computeIfAbsent(
                         dto.code(), //key
                         k -> dto.currentPrice()); //값이 없을 때 실행되는 람다
 
