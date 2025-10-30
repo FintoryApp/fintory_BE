@@ -64,6 +64,9 @@ dependencies {
     /* swagger */
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8")
 
+    /* Micrometer(Prometheus) */
+    implementation("io.micrometer:micrometer-registry-prometheus:1.15.2")
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
