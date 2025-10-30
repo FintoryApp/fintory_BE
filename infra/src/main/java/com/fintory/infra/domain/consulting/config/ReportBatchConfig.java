@@ -111,7 +111,7 @@ public class ReportBatchConfig {
             // processor에서 이미 저장이 완료되므로 로그만 기록
             children.forEach(child -> {
                 if (child != null) {
-                    LocalDate now =  LocalDate.now();
+                    YearMonth now = YearMonth.now();
                     alarmService.pushMessage(child.getId(),NotificationType.REPORT,now + "자 Report 생성","Report가 생성되었습니다. 와서 확인하세요");
                 }
             });
