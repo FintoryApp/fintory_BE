@@ -484,12 +484,18 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             });
 
             Thread.sleep(1000); //서버 처리 대기
-            disconnectDBSession(); //db증권은 세션 정리를 하지 않을 경우 에러 발생함
+            try {
+                disconnectDBSession();  //db증권은 세션 정리를 하지 않을 경우 에러 발생함
+                Thread.sleep(500);
+            } catch (Exception e) {
+                log.warn("세션 종료 실패 (무시): {}", e.getMessage()); // 에러 무시
+            }
 
         } catch (Exception e) {
             log.error("구독 해제 중 에러: {}", e.getMessage());
         } finally {
             overseasConnectionManager.stop();
+            isOverseasConnected.set(false);
             overseasSubscribedStocks.clear();
             previousOverseasData.clear();
             overseasPendingData.clear();
