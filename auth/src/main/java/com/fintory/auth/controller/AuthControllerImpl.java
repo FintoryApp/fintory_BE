@@ -10,6 +10,7 @@ import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.common.service.RequestMetricsService;
+import io.micrometer.core.annotation.Timed;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -106,6 +107,7 @@ public class AuthControllerImpl implements AuthController{
 
     @Override
     @GetMapping("/me")
+    @Timed(value="auth.me", description = " me 메서드의 실행 시간과 호출 횟수 측정")
     public ResponseEntity<ApiResponse<Map<String, String>>> me(@AuthenticationPrincipal CustomUserDetails user) {
         if (user == null) {
             throw new DomainException(DomainErrorCode.LOGINED_USER_NOT_FOUND);
