@@ -132,7 +132,6 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
 
                 String jsonMessage = objectMapper.writeValueAsString(message);
                 session.sendMessage(new TextMessage(jsonMessage));
-                log.info("구독 메시지 전송 완료");
             } catch (Exception e) {
                 log.error("KIS Developer 실시간 현재가 조회 시 요청 보내는 과정에서 에러 발생:{}", e.getMessage());
                 throw new DomainException(DomainErrorCode.WEBSOCKET_SEND_FAILED);

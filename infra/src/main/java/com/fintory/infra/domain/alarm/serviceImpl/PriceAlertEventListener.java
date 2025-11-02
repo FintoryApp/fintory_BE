@@ -1,5 +1,6 @@
 package com.fintory.infra.domain.alarm.serviceImpl;
 
+import com.fintory.domain.alarm.dto.PriceAlertCache;
 import com.fintory.domain.alarm.model.NotificationType;
 import com.fintory.domain.alarm.model.PriceAlert;
 import com.fintory.domain.alarm.service.AlarmService;
@@ -36,7 +37,7 @@ public class PriceAlertEventListener {
         BigDecimal currentPrice = event.getStockPriceStream().currentPrice();
 
         String cachedKey = "priceAlert:"+stockCode;
-        List<PriceAlert> priceAlertList = getPriceAlertFromCache(cachedKey,stockCode);
+        List<PriceAlertCache> priceAlertList = getPriceAlertFromCache(cachedKey,stockCode);
 
         // 감시가 설정 없음
         if(priceAlertList == null){
@@ -53,8 +54,8 @@ public class PriceAlertEventListener {
     }
 
 
-    private List<PriceAlert> getPriceAlertFromCache(String cachedKey, String stockCode){
-        List<PriceAlert> cached = (List<PriceAlert>) redisTemplate.opsForValue().get(cachedKey);
+    private List<PriceAlertCache> getPriceAlertFromCache(String cachedKey, String stockCode){
+        List<PriceAlertCache> cached = (List<PriceAlertCache>) redisTemplate.opsForValue().get(cachedKey);
 
         if (cached == null || cached.isEmpty()){
             //cache miss - db 조회
@@ -64,17 +65,22 @@ public class PriceAlertEventListener {
             if(priceAlertList == null || priceAlertList.isEmpty()){
                 return null;
             }
-            //Redis에서 캐싱 (10분)
-            redisTemplate.opsForValue().set(cachedKey,priceAlertList, Duration.ofMinutes(10));
 
-            return priceAlertList;
+            List<PriceAlertCache> cacheList = priceAlertList.stream()
+                    .map(PriceAlertCache::from)
+                    .toList();
+
+            //Redis에서 캐싱 (10분)
+            redisTemplate.opsForValue().set(cachedKey,cacheList, Duration.ofMinutes(10));
+
+            return cacheList;
         }
 
         return cached;
     }
 
 
-    private void checkAndSendPriceAlert(PriceAlert priceAlert, String stockCode, BigDecimal currentPrice, String cachedKey){
+    private void checkAndSendPriceAlert(PriceAlertCache priceAlert, String stockCode, BigDecimal currentPrice, String cachedKey){
 
 
         BigDecimal rangeMultiplier = BigDecimal.valueOf(0.01);
@@ -93,27 +99,27 @@ public class PriceAlertEventListener {
 
         // 알림 발송
         String message = String.format(
-                "%s이(가) 감시가 %,d원 근처에 도달했습니다! (현재가: %s원)",
-                priceAlert.getStock().getName(),
+                "%s이(가) 감시가 %,d원 근처에 도달했습니다! (현재가: %d원)",
+                priceAlert.getStockName(),
                 priceAlert.getTargetPrice().intValue(),
                 currentPrice.intValue()
         );
 
         alarmService.pushMessage(
-                priceAlert.getChild().getId(),
+                priceAlert.getChildId(),
                 NotificationType.PRICE_ALERT,
                 "감시가 알림",
                 message
         );
 
         // REVIEW 1회성 처리: 삭제
-        priceAlertRepository.delete(priceAlert);
+        priceAlertRepository.deleteById(priceAlert.getId());
 
         // Redis 캐시 무효화
         redisTemplate.delete(cachedKey);
 
         log.info("priceAlert 발송 : childId = {}, stock={}, targetPrice={}원, currentPrice={}원",
-                priceAlert.getChild().getId(), stockCode, priceAlert.getTargetPrice(), currentPrice);
+                priceAlert.getChildId(), stockCode, priceAlert.getTargetPrice(), currentPrice);
 
     }
 }

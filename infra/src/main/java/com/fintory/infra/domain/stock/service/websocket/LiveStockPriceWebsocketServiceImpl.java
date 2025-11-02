@@ -327,7 +327,6 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         dataToSave.values().forEach(dto -> {
             try {
-                log.info("종목 {} 새 StockPriceHistory 생성 시도, 현재가 : {}", dto.code(),dto.currentPrice());
                 liveStockPriceWebSocketSaverService.saveStockData(dto);
             } catch (Exception e) {
                 log.error("{} 종목 {} 저장 실패: {}", marketName, dto.code(), e.getMessage());
@@ -448,48 +447,63 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         if (!isKoreanConnected.get()) return;
 
         log.info("국내 WebSocket 연결 해제 시작");
-
-        new ArrayList<>(koreanSubscribedStocks).forEach(code -> {
-            try {
-                koreanStockUnsubscribe(code);
-            } catch (Exception e) {
-                log.warn("국내 종목 {} 구독 해제 중 에러 발생: {}", code, e.getMessage());
-            }
-        });
-
-        koreanSubscribedStocks.clear();
-        previousKoreanData.clear();
-        koreanConnectionManager.stop();
-        koreanPendingData.clear();
-        isKoreanConnected.set(false);
+        try {
+            new ArrayList<>(koreanSubscribedStocks).forEach(code -> {
+                try {
+                    koreanStockUnsubscribe(code);
+                } catch (Exception e) {
+                    log.warn("국내 종목 {} 구독 해제 중 에러 발생: {}", code, e.getMessage());
+                }
+            });
+            Thread.sleep(1000); //서버 처리 대기
+        } catch (Exception e) {
+            log.error("구독 해제 중 에러: {}", e.getMessage());
+        } finally {
+            // 반드시 실행
+            koreanConnectionManager.stop();
+            koreanSubscribedStocks.clear();
+            previousKoreanData.clear();
+            koreanPendingData.clear();
+        }
 
         log.info("국내 WebSocket 연결 해제 완료");
     }
+
 
     private void disconnectOverseasWebSocket() {
         if (!isOverseasConnected.get()) return;
 
         log.info("해외 WebSocket 연결 해제 시작");
+        try {
+            new ArrayList<>(overseasSubscribedStocks).forEach(code -> {
+                try {
+                    overseasStockUnsubscribe(code);
+                } catch (Exception e) {
+                    log.warn("해외 종목 {} 구독 해제 중 에러 발생: {}", code, e.getMessage());
+                }
+            });
 
-        new ArrayList<>(overseasSubscribedStocks).forEach(code -> {
+            Thread.sleep(1000); //서버 처리 대기
             try {
-                overseasStockUnsubscribe(code);
+                disconnectDBSession();  //db증권은 세션 정리를 하지 않을 경우 에러 발생함
+                Thread.sleep(500);
             } catch (Exception e) {
-                log.warn("해외 종목 {} 구독 해제 중 에러 발생: {}", code, e.getMessage());
+                log.warn("세션 종료 실패 (무시): {}", e.getMessage()); // 에러 무시
             }
-        });
 
-        disconnectDBSession(); //db증권은 세션 정리를 하지 않을 경우 에러 발생함
-
-
-        overseasSubscribedStocks.clear();
-        previousOverseasData.clear();
-        overseasConnectionManager.stop();
-        overseasPendingData.clear();
-        isOverseasConnected.set(false);
+        } catch (Exception e) {
+            log.error("구독 해제 중 에러: {}", e.getMessage());
+        } finally {
+            overseasConnectionManager.stop();
+            isOverseasConnected.set(false);
+            overseasSubscribedStocks.clear();
+            previousOverseasData.clear();
+            overseasPendingData.clear();
+        }
 
         log.info("해외 WebSocket 연결 해제 완료");
     }
+
 
     public void disconnectDBSession(){
         try {
@@ -574,5 +588,24 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         }
 
         log.info("WebSocket 연결 해제 완료");
+    }
+
+
+
+    /* 메트릭용 Getter 추가  */
+    public Set<String> getKoreanSubscribedStocks() {
+        return koreanSubscribedStocks;
+    }
+
+    public Set<String> getOverseasSubscribedStocks() {
+        return overseasSubscribedStocks;
+    }
+
+    public boolean isKoreanConnected() {
+        return isKoreanConnected.get();
+    }
+
+    public boolean isOverseasConnected() {
+        return isOverseasConnected.get();
     }
 }
