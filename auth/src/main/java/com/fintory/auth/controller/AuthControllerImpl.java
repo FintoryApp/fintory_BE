@@ -9,6 +9,7 @@ import com.fintory.auth.util.CustomUserDetails;
 import com.fintory.common.api.ApiResponse;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.common.service.RequestMetricsService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -29,6 +30,8 @@ public class AuthControllerImpl implements AuthController{
     private final AuthServiceImpl authService;
     private final GoogleOauthService googleOauthService;
     private final KakaoOauthService kakaoOauthService;
+    private final RequestMetricsService requestMetricsService;
+
     @Override
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthToken>> signup(@RequestBody @Valid SignUpRequest request) {
@@ -42,6 +45,7 @@ public class AuthControllerImpl implements AuthController{
     public ResponseEntity<ApiResponse<AuthToken>> login(@RequestBody @Valid LoginRequest request) {
         log.info("로그인 요청: {}", request.email());
         AuthToken token = authService.login(request.email(), request.password());
+        requestMetricsService.incrementRequestCounter("POST", "/api/child/auth/login");
         log.info("로그인 성공");
         return ResponseEntity.ok(ApiResponse.ok(token, "로그인 성공"));
     }
@@ -108,6 +112,9 @@ public class AuthControllerImpl implements AuthController{
         }
         log.info("user: {}", user);
         log.info("user.getUsername: {}", user.getUsername());
+
+        requestMetricsService.incrementRequestCounter("GET", "/api/child/auth/me");
+
         return ResponseEntity.ok(ApiResponse.ok(Map.of(
                 "username", user.getUsername(),
                 "nickname", user.getNickname(),
