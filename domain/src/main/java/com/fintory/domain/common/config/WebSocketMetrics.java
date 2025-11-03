@@ -1,11 +1,11 @@
 package com.fintory.domain.common.config;
 
 import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.messaging.simp.user.SimpUserRegistry;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,6 +18,7 @@ public class WebSocketMetrics {
     private final MeterRegistry meterRegistry;
     private final LiveStockPriceWebsocketService websocketService;
     private final AtomicInteger activeConnections = new AtomicInteger(0);
+    private Counter messageSent;
 
     @PostConstruct
     public void registerMetrics(){
@@ -52,6 +53,9 @@ public class WebSocketMetrics {
                 .description("Overseas WebSocket connection status")
                 .register(meterRegistry);
 
+        this.messageSent = Counter.builder("websocket.messages.sent")
+                .description("Messages sent to Front")
+                .register(meterRegistry);
     }
 
     // 연결 관리
@@ -61,6 +65,10 @@ public class WebSocketMetrics {
 
     public void decrementConnection() {
         activeConnections.decrementAndGet();
+    }
+
+    public void incrementMessageSent(){
+        messageSent.increment();
     }
 }
 

@@ -2,6 +2,7 @@ package com.fintory.infra.domain.stock.service.websocket;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.domain.common.config.WebSocketMetrics;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.model.Stock;
@@ -82,6 +83,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     //그라파나용 매트릭 -> 레이턴시, 효율성
     private final Timer dataProcessingTime;
 
+    private final WebSocketMetrics webSocketMetrics;
+
 
     public LiveStockPriceWebsocketServiceImpl(
             @Qualifier("koreanLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager koreanConnectionManager,
@@ -89,7 +92,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher,MeterRegistry meterRegistry) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher, MeterRegistry meterRegistry, WebSocketMetrics webSocketMetrics) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -106,6 +109,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 .description("Time to process and send stock data")
                 .publishPercentiles(0.5,0.95,0.99)
                 .register(meterRegistry);
+        this.webSocketMetrics = webSocketMetrics;
     }
 
     /* 구독 관리 메서드 */
@@ -146,6 +150,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();
             headerAccessor.setHeader("timestamp",System.currentTimeMillis());
 
+            webSocketMetrics.incrementMessageSent();
             messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData, headerAccessor.getMessageHeaders());
         }
     }
