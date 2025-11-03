@@ -50,6 +50,10 @@ dependencies {
     /* Micrometer(Prometheus) */
     implementation("io.micrometer:micrometer-registry-prometheus:1.15.2")
 
+    /* WebSocket */
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+
 
 }
 
