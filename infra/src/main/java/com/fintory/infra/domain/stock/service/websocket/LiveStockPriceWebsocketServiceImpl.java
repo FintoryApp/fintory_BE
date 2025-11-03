@@ -35,6 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
+
 //NOTE 구독 시도시 -> 에러 코드를 보고 프론트에서 DB API 호출
 //NOTE 구독 성공 후 일정시간 동안 데이터가 오지 않으면 -> 프론트에서 연결 끊김 판단
 @Service
@@ -75,13 +78,17 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     //이벤트
     private final ApplicationEventPublisher applicationEventPublisher;
 
+    //그라파나용 매트릭 -> 레이턴시, 효율성
+    private final Timer dataProcessingTime;
+
+
     public LiveStockPriceWebsocketServiceImpl(
             @Qualifier("koreanLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager koreanConnectionManager,
             @Qualifier("overseasLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager overseasConnectionManager,
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher) {
+            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher,MeterRegistry meterRegistry) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -93,6 +100,10 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
         this.redisTemplate = redisTemplate;
         this.liveStockPriceWebSocketSaverService = liveStockPriceWebSocketSaverService;
         this.applicationEventPublisher = applicationEventPublisher;
+
+        this.dataProcessingTime = Timer.builder("websocket.data.processing.time")
+                .description("Time to process and send stock data")
+                .register(meterRegistry);
     }
 
     /* 구독 관리 메서드 */
@@ -271,33 +282,40 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                                    String marketName) {
         LiveStockPriceStream previous = previousData.get(dto.code());
 
-        //이전 데이터와 비교하여 중복 체크
-        if (previous != null && previous.equals(dto)) {
-            log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
-            return; //똑같은 데이터면 무시
-        }
+        Timer.Sample sample = Timer.start();
+        try {
 
-        //새로운 데이터를 받으면 -> 감시가 이벤트 발행
-        applicationEventPublisher.publishEvent(
-                new PriceAlertEvent(this,dto)
-        );
-
-        //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
-        if(previous == null) {
-            try {
-                liveStockPriceWebSocketSaverService.saveStockData(dto); //DB에 바로 저장
-                log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
-            } catch (Exception e) {
-                // 실패 시 배치 저장을 위해 pendingData에 보관
-                pendingData.put(dto.code(), dto);
-                log.error("{} 종목 {} 실시간 저장 실패, 배치 저장 대기: {}", marketName, dto.code(), e.getMessage());
+            //이전 데이터와 비교하여 중복 체크
+            if (previous != null && previous.equals(dto)) {
+                log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
+                return; //똑같은 데이터면 무시
             }
-        }
 
-        //새로운 데이터면 다음 중복 체크용으로 저장
-        previousData.put(dto.code(), dto);
-        pendingData.put(dto.code(), dto); //배치 저장 대기
-        sendStockData(dto.code(), dto); //클라이언트에게 전송
+            //새로운 데이터를 받으면 -> 감시가 이벤트 발행
+            applicationEventPublisher.publishEvent(
+                    new PriceAlertEvent(this, dto)
+            );
+
+            //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
+            if (previous == null) {
+                try {
+                    liveStockPriceWebSocketSaverService.saveStockData(dto); //DB에 바로 저장
+                    log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
+                } catch (Exception e) {
+                    // 실패 시 배치 저장을 위해 pendingData에 보관
+                    pendingData.put(dto.code(), dto);
+                    log.error("{} 종목 {} 실시간 저장 실패, 배치 저장 대기: {}", marketName, dto.code(), e.getMessage());
+                }
+            }
+
+            //새로운 데이터면 다음 중복 체크용으로 저장
+            previousData.put(dto.code(), dto);
+            pendingData.put(dto.code(), dto); //배치 저장 대기
+            sendStockData(dto.code(), dto); //클라이언트에게 전송
+        }finally {
+            sample.stop(dataProcessingTime);
+
+        }
     }
 
     /* 스케줄링 - 배치 저장 */
