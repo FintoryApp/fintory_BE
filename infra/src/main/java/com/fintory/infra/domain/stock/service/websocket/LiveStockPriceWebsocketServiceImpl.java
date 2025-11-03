@@ -103,6 +103,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         this.dataProcessingTime = Timer.builder("websocket.data.processing.time")
                 .description("Time to process and send stock data")
+                .publishPercentiles(0.5,0.95,0.99)
                 .register(meterRegistry);
     }
 
