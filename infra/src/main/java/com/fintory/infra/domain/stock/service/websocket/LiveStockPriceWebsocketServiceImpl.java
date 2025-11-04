@@ -2,7 +2,7 @@ package com.fintory.infra.domain.stock.service.websocket;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
-import com.fintory.domain.common.config.WebSocketMetrics;
+import com.fintory.infra.monitoring.config.WebSocketMetrics;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.model.Stock;
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -92,7 +93,13 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher, MeterRegistry meterRegistry, WebSocketMetrics webSocketMetrics) {
+            SimpMessagingTemplate messageTemplate,
+            RestTemplate restTemplate,
+            RedisTemplate<Object, Object> redisTemplate,
+            LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService,
+            ApplicationEventPublisher applicationEventPublisher,
+            MeterRegistry meterRegistry,
+            @Lazy WebSocketMetrics webSocketMetrics) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -148,7 +155,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             // 지연 시간을 측정하기 위해 STOMP 헤더에 타임스탬프 추가
             // REVIEW 헤더에 데이터를 추가한 것일 뿐 바디는 바뀌지 않으므로 프론트 코드에는 문제가 없는 것으로 알고 있는데 아니라면 수정 필수
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();
-            headerAccessor.setHeader("timestamp",System.currentTimeMillis());
+            headerAccessor.setHeader("sentTimestamp",System.currentTimeMillis());
 
             webSocketMetrics.incrementMessageSent();
             messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData, headerAccessor.getMessageHeaders());

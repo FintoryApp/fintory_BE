@@ -1,6 +1,6 @@
-package com.fintory.domain.common.listener;
+package com.fintory.infra.monitoring.listener;
 
-import com.fintory.domain.common.config.WebSocketMetrics;
+import com.fintory.infra.monitoring.config.WebSocketMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
