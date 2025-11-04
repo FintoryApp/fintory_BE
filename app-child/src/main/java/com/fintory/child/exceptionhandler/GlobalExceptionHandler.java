@@ -12,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import java.util.ArrayList;
@@ -67,32 +66,12 @@ public class GlobalExceptionHandler {
                 .body(new ExceptionResponse(DomainErrorCode.VALIDATION_FAIL, message));
     }
 
-    // Prometheus scrape 중 클라이언트 연결 끊김 처리
-    @ExceptionHandler(AsyncRequestNotUsableException.class)
-    public ResponseEntity<Void> handleAsyncRequestNotUsable(AsyncRequestNotUsableException ex
-            , HttpServletRequest request) {
-        if(request.getRequestURI().startsWith("/actuator")){
-            log.debug("Prometheus scrape 중 클라이언트 연결 끊김 (무시): {}", request.getRequestURI());
-            return ResponseEntity.ok().build();
-        }
-
-        log.error("Async request error",ex);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ExceptionResponse> handleUnhandledException(Exception e, HttpServletRequest request) {
-
-        if (request.getRequestURI().startsWith("/actuator")) {
-            log.debug("Actuator 엔드포인트 에러 무시: {}", request.getRequestURI());
-            return ResponseEntity.ok().build();
-        }
-
         log.error("Unknown server error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ExceptionResponse(DomainErrorCode.INTERNAL_SERVER_ERROR));
     }
-
 
 }

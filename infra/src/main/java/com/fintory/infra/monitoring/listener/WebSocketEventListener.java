@@ -18,7 +18,7 @@ public class WebSocketEventListener {
     private final WebSocketMetrics webSocketMetrics;
 
     @EventListener
-    public void handleSessionConenct(SessionConnectedEvent event) {
+    public void handleSessionConnect(SessionConnectedEvent event) {
         webSocketMetrics.incrementConnection();
     }
 
