@@ -18,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.util.StopWatch;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -48,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        StopWatch stopWatch = new StopWatch("JwtFilterProcess");
+//        StopWatch stopWatch = new StopWatch("JwtFilterProcess");
 
         // 요청 로깅 추가
         log.info("Incoming Request - Method: {}, URI: {}, IP: {}, Headers: {}",
@@ -63,20 +62,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 
         try {
-            stopWatch.start("resolve token");
+//            stopWatch.start("resolve token");
             String token = resolveToken(request);
-            stopWatch.stop();
+//            stopWatch.stop();
 
             if (token == null || token.isBlank()) {
                 throw new DomainException(DomainErrorCode.EMPTY_TOKEN);
             }
-            stopWatch.start("validate token");
+//            stopWatch.start("validate token");
             if (StringUtils.hasText(token) && jwtTokenProvider.validateToken(token)) {
                 Authentication authentication = jwtTokenProvider.getAuthentication(token);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("Authentication success: {}", authentication);
+//                log.info("Authentication success: {}", authentication);
             }
-            stopWatch.stop();
+//            stopWatch.stop();
 
             filterChain.doFilter(request, response);
 

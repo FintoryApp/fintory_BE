@@ -44,10 +44,9 @@ public class AuthControllerImpl implements AuthController{
     @Override
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthToken>> login(@RequestBody @Valid LoginRequest request) {
-        log.info("로그인 요청: {}", request.email());
         AuthToken token = authService.login(request.email(), request.password());
         requestMetricsService.incrementRequestCounter("POST", "/api/child/auth/login");
-        log.info("로그인 성공");
+        log.info("로그인 성공: {}", request.email());
         return ResponseEntity.ok(ApiResponse.ok(token, "로그인 성공"));
     }
 
