@@ -48,8 +48,8 @@ public class TradingServiceImpl implements TradingService {
         Account account = accountRepository.findByChildId(child.getId()).orElseThrow(()-> new DomainException(DomainErrorCode.ACCOUNT_NOT_FOUND));
         Stock stock = stockRepository.findByCode(tradeRequest.stockCode()).orElseThrow(()-> new DomainException(DomainErrorCode.STOCK_NOT_FOUND));
 
-        BigDecimal exchangeRate = exchangeRateService.getExchangeRate();
-
+//        BigDecimal exchangeRate = exchangeRateService.getExchangeRate();
+        BigDecimal exchangeRate = BigDecimal.valueOf(1400);
         if (tradeRequest.transactionType() == TransactionType.BUY) {
             processBuyTrade(tradeRequest, account, stock, exchangeRate);
         } else {
