@@ -107,7 +107,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
             try {
                 String token = (String) redisTemplate.opsForValue().get("db-access-token");
 
-                log.info("토큰 확인"+token);
                 if (token == null || token.trim().isEmpty()) {
                     log.error("Redis에서 DB 토큰을 찾을 수 없습니다.");
                     throw new DomainException(DomainErrorCode.TOKEN_NOT_FOUND);
