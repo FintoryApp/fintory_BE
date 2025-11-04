@@ -155,7 +155,7 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             // 지연 시간을 측정하기 위해 STOMP 헤더에 타임스탬프 추가
             // REVIEW 헤더에 데이터를 추가한 것일 뿐 바디는 바뀌지 않으므로 프론트 코드에는 문제가 없는 것으로 알고 있는데 아니라면 수정 필수
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();
-            headerAccessor.setHeader("sentTimestamp",System.currentTimeMillis());
+            headerAccessor.setNativeHeader("sentTimestamp", String.valueOf(System.currentTimeMillis()));
 
             webSocketMetrics.incrementMessageSent();
             messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData, headerAccessor.getMessageHeaders());
