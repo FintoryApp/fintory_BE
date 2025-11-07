@@ -36,17 +36,17 @@ public class StompStatsMetricsConfiguration {
 
     // --- 1. WebSocket 세션 통계 등록 ---
     private void registerSessionMetrics() {
-        final String metricName = "websocket.sessions";
+        final String sessionsGaugeName = "websocket.sessions";
 
         // 현재 활성 세션 수 (Gauge)
-        registry.gauge(metricName, Arrays.asList(Tag.of("status", "current"), Tag.of("type", "total")),
+        registry.gauge(sessionsGaugeName, Arrays.asList(Tag.of("status", "current"), Tag.of("type", "total")),
                 this.stats, s -> {
                     SubProtocolWebSocketHandler.Stats sessionStats = s.getWebSocketSessionStats();
                     return (sessionStats != null) ? sessionStats.getWebSocketSessions() : 0;
                 });
 
         // 누적 총 세션 수 (FunctionCounter)
-        FunctionCounter.builder(metricName + ".total", this.stats, s -> {
+        FunctionCounter.builder(sessionsGaugeName + ".total", this.stats, s -> {
                     SubProtocolWebSocketHandler.Stats sessionStats = s.getWebSocketSessionStats();
                     return (sessionStats != null) ? sessionStats.getTotalSessions() : 0;
                 })
@@ -55,7 +55,7 @@ public class StompStatsMetricsConfiguration {
                 .register(registry);
 
         // 전송 오류로 종료된 세션 수 (FunctionCounter)
-        FunctionCounter.builder(metricName + ".closed.abnormally", this.stats, s -> {
+        FunctionCounter.builder(sessionsGaugeName + ".closed.abnormally", this.stats, s -> {
                     SubProtocolWebSocketHandler.Stats sessionStats = s.getWebSocketSessionStats();
                     return (sessionStats != null) ? sessionStats.getTransportErrorSessions() : 0;
                 })
