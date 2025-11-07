@@ -37,6 +37,7 @@ public class StompStatsMetricsConfiguration {
     // --- 1. WebSocket 세션 통계 등록 ---
     private void registerSessionMetrics() {
         final String sessionsGaugeName = "websocket.sessions";
+        final String sessionsGaugeNameTotal = "websocket.total.sessions";
 
         // 현재 활성 세션 수 (Gauge)
         registry.gauge(sessionsGaugeName, Arrays.asList(Tag.of("status", "current"), Tag.of("type", "total")),
@@ -46,7 +47,7 @@ public class StompStatsMetricsConfiguration {
                 });
 
         // 누적 총 세션 수 (FunctionCounter)
-        FunctionCounter.builder(sessionsGaugeName + ".total", this.stats, s -> {
+        FunctionCounter.builder(sessionsGaugeNameTotal, this.stats, s -> {
                     SubProtocolWebSocketHandler.Stats sessionStats = s.getWebSocketSessionStats();
                     return (sessionStats != null) ? sessionStats.getTotalSessions() : 0;
                 })
