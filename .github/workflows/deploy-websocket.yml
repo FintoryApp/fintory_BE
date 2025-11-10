@@ -49,8 +49,8 @@ jobs:
         run: |
           ./gradlew :websocket:clean build
           docker build -t websocket:latest ./websocket
-          docker tag websocket:latest ${{ steps.login-ecr.outputs.registry }}/fintory:websocket-latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/fintory:websocket-latest
+          docker tag websocket:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
 
   deploy-websocket:
     needs: build-and-push
@@ -90,7 +90,7 @@ jobs:
             aws ecr get-login-password --region ap-northeast-2 | \
             docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
 
-            docker pull ${{ steps.login-ecr.outputs.registry }}/fintory:websocket-latest
+            docker pull ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
 
             docker compose down
             docker compose up -d
