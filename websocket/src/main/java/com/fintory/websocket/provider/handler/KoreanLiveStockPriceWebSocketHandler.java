@@ -1,4 +1,4 @@
-package com.fintory.websocket.handler;
+package com.fintory.websocket.provider.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
@@ -68,14 +68,8 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         this.session = session;
-        isConnected.set(true);
-        connectionLatch.countDown();
-        log.info("국내 주식 웹소켓 연결 성공");
-        log.info("세션 ID: {}", session.getId());
-        log.info("웹소켓 handshake 헤더: {}", session.getHandshakeHeaders());
-        log.info("웹소켓 URI: {}", session.getUri());
-        log.info("웹소켓 로컬 주소: {}", session.getLocalAddress());
-        log.info("웹소켓 리모트 주소: {}", session.getRemoteAddress());
+        this.isConnected.set(true);
+        this.connectionLatch.countDown();
     }
 
     @Override
@@ -83,7 +77,6 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
         this.session = null;
         isConnected.set(false);
         this.connectionLatch = new CountDownLatch(1);
-        log.warn("웹소켓 연결 종료 - Code: {}, Reason: {}", status.getCode(), status.getReason());
         log.info("웹소켓 연결 종료");
     }
 
@@ -187,7 +180,6 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
     //메시지를 받으면 실행되는 메소드
     public void handleTextMessage(WebSocketSession session, TextMessage message){
         String payload = message.getPayload();
-        //log.info(payload);
         try{
             String[] fields = payload.split("\\^");
             if (fields.length < 40) return;
@@ -207,7 +199,6 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
 
             executeCallbacks(stockData);
 
-            log.debug("주식 데이터 처리 완료: {}", stockData);
         }catch(Exception e){
             log.error("KIS Developer 실시간 현재가 조회 시 응답 받는 과정에서 에러 발생:{}",e.getMessage());
             throw new DomainException(DomainErrorCode.WEBSOCKET_MESSAGE_PARSE_FAILED);

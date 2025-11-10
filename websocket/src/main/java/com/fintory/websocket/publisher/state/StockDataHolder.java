@@ -1,10 +1,9 @@
-package com.fintory.websocket.state;
+package com.fintory.websocket.publisher.state;
 
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 
 
 import lombok.Data;
-import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

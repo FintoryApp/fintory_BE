@@ -1,12 +1,11 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.publisher.service;
 
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
-import com.fintory.infra.domain.alarm.event.PriceAlertEvent;
 import com.fintory.websocket.monitoring.config.WebSocketMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
@@ -21,22 +20,22 @@ public class StockDataProcessService {
     private final WebSocketMetrics webSocketMetrics;
     private final SimpMessagingTemplate messageTemplate;
     private final Timer dataProcessingTime;
-    private final ApplicationEventPublisher applicationEventPublisher;
     private final LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService;
+    private final RedisTemplate<Object,Object> redisTemplate;
+    private static final String PRICE_ALERT_CHANNEL = "price:alert:channel";
 
     public StockDataProcessService(@Lazy WebSocketMetrics webSocketMetrics,
                                    SimpMessagingTemplate messageTemplate,
                                    MeterRegistry meterRegistry,
-                                   ApplicationEventPublisher applicationEventPublisher,
-                                   LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService) {
+                                   LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, RedisTemplate<Object, Object> redisTemplate) {
         this.webSocketMetrics = webSocketMetrics;
         this.messageTemplate = messageTemplate;
         this.dataProcessingTime = Timer.builder("websocket.data.processing.time")
                 .description("Time to process and send stock data")
                 .publishPercentiles(0.5,0.95,0.99)
                 .register(meterRegistry);
-        this.applicationEventPublisher = applicationEventPublisher;
         this.liveStockPriceWebSocketSaverService = liveStockPriceWebSocketSaverService;
+        this.redisTemplate = redisTemplate;
     }
 
     //웹소켓으로 받은 데이터를 처리하는 메서드
@@ -48,23 +47,24 @@ public class StockDataProcessService {
 
         Timer.Sample sample = Timer.start();
         try {
-
             //이전 데이터와 비교하여 중복 체크
             if (previous != null && previous.equals(dto)) {
-                log.debug("{} 주식 중복 데이터 스킵: {}", marketName, dto.code());
                 return; //똑같은 데이터면 무시
             }
-
             //새로운 데이터를 받으면 -> 감시가 이벤트 발행
-            applicationEventPublisher.publishEvent(
-                    new PriceAlertEvent(this, dto)
-            );
+            // @EventListener는 같은 JVM 내에서만 동작함 -> 다른 통신 방법 필요 -> redis pub/sub 활용
+            /* 알림 기능 -> 잠깐 미룬 상태
+            try {
+
+                redisTemplate.convertAndSend(PRICE_ALERT_CHANNEL, dto);
+            } catch (Exception e) {
+                log.error("Redis Pub/Sub 전송 실패: {}", dto.code(), e);
+            }*/
 
             //스케쥴러 + 웹소켓 연결 시작하자마자 받은 데이터 값(첫 데이터) 저장
             if (previous == null) {
                 try {
                     liveStockPriceWebSocketSaverService.saveStockData(dto); //DB에 바로 저장
-                    log.debug("{} 종목 {} 실시간 저장 완료", marketName, dto.code());
                 } catch (Exception e) {
                     // 실패 시 배치 저장을 위해 pendingData에 보관
                     pendingData.put(dto.code(), dto);
@@ -85,10 +85,8 @@ public class StockDataProcessService {
     public void sendStockData(String stockCode, Object stockData) {
         if (stockData instanceof LiveStockPriceStream stream) {
             if (stream.priceChange() == null || stream.priceChange().compareTo(BigDecimal.ZERO) == 0) {
-                log.debug("변동 없음 - 전송 스킵: {}", stockCode);
                 return;
             }
-
             // 지연 시간을 측정하기 위해 STOMP 헤더에 타임스탬프 추가
             // REVIEW 헤더에 데이터를 추가한 것일 뿐 바디는 바뀌지 않으므로 프론트 코드에는 문제가 없는 것으로 알고 있는데 아니라면 수정 필수
             SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();

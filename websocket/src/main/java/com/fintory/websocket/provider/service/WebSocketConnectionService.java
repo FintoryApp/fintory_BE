@@ -1,12 +1,12 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.provider.service;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
-import com.fintory.websocket.handler.KoreanLiveStockPriceWebSocketHandler;
-import com.fintory.websocket.handler.OverseasLiveStockPriceWebSocketHandler;
-import com.fintory.websocket.state.StockDataHolder;
-import lombok.RequiredArgsConstructor;
+import com.fintory.websocket.provider.handler.KoreanLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.provider.handler.OverseasLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.publisher.service.StockDataProcessService;
+import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.socket.client.WebSocketConnectionManager;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -60,12 +61,7 @@ public class WebSocketConnectionService {
 
     /* WebSocket 연결 관리 */
     public void connectKoreanWebSocket() {
-        log.info("=== connectKoreanWebSocket 시작 ===");
-        log.info("현재 연결 상태: {}", stockDataHolder.getIsKoreanConnected().get());
-        log.info("Handler 연결 상태: {}", koreanHandler.isConnected());
-
         if (stockDataHolder.getIsKoreanConnected().get()) {
-            log.info("국내 주식 WebSocket이 이미 연결되어 있습니다.");
             return;
         }
 
@@ -87,12 +83,11 @@ public class WebSocketConnectionService {
         log.info("국내 주식 WebSocket 연결 완료");
     }
 
+
     public void connectOverseasWebSocket() {
         if (stockDataHolder.getIsOverseasConnected().get()) {
-            log.info("해외 주식 WebSocket이 이미 연결되어 있습니다.");
             return;
         }
-
         Consumer<LiveStockPriceStream> callback = dto ->
                 stockDataProcessService.processStreamData(dto, stockDataHolder.getPreviousOverseasData(), stockDataHolder.getOverseasPendingData(), "해외");
 
@@ -108,6 +103,8 @@ public class WebSocketConnectionService {
         stockDataHolder.getIsOverseasConnected().set(true);
         log.info("해외 주식 WebSocket 연결 완료");
     }
+
+
 
 
     public void disconnectKoreanWebSocket() {

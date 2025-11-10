@@ -1,20 +1,17 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.provider.service;
 
-import com.fintory.common.exception.DomainErrorCode;
-import com.fintory.common.exception.DomainException;
-import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
+
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.infra.domain.stock.repository.StockRepository;
-import com.fintory.websocket.handler.KoreanLiveStockPriceWebSocketHandler;
-import com.fintory.websocket.handler.OverseasLiveStockPriceWebSocketHandler;
-import com.fintory.websocket.state.StockDataHolder;
+import com.fintory.websocket.provider.handler.KoreanLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.provider.handler.OverseasLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.publisher.service.MarketTimeService;
+import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
+
 
 @Service
 @Slf4j
@@ -33,7 +30,6 @@ public class StockSubscriptionService {
         List<Stock> targetStocks = stockRepository.findByCurrencyName("KRW");
 
         if (!marketTimeService.isKoreanMarketOpen()) {
-            log.info("국내 장이 열려있지 않아 자동 구독 스킵");
             return;
         }
 
@@ -62,10 +58,8 @@ public class StockSubscriptionService {
         List<Stock> targetStocks = stockRepository.findByCurrencyName("USD");
 
         if (!marketTimeService.isOverseasMarketOpen()) {
-            log.info("해외 장이 열려있지 않아 자동 구독 스킵");
             return;
         }
-
         connectionService.connectOverseasWebSocket();
 
         int beforeSize = stockDataHolder.getOverseasSubscribedStocks().size();

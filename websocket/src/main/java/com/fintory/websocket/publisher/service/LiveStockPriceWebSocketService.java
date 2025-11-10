@@ -1,7 +1,9 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.publisher.service;
 
 
-import com.fintory.websocket.state.StockDataHolder;
+import com.fintory.websocket.provider.service.StockSubscriptionService;
+import com.fintory.websocket.provider.service.WebSocketConnectionService;
+import com.fintory.websocket.publisher.state.StockDataHolder;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +26,7 @@ public class LiveStockPriceWebSocketService {
     private final StockDataHolder stockDataHolder;
     private final StockSubscriptionService stockSubscriptionService;
     private final StockDataBatchSaveService stockDataBatchSaveService;
-    private final WebSocketConnectionService  webSocketConnectionService;
+    private final WebSocketConnectionService webSocketConnectionService;
     private final MarketTimeService marketTimeService;
 
     /* 구독 자동 실행 메소드 */
@@ -62,7 +64,6 @@ public class LiveStockPriceWebSocketService {
     @Scheduled(cron = "0 * 9-15 * * MON-FRI", zone = "Asia/Seoul")
     public void saveKoreanStockDataBatch() {
         if (!marketTimeService.isKoreanMarketOpen()) {
-            log.debug("국내 장 마감으로 인한 배치 저장 중단");
             return;
         }
         stockDataBatchSaveService.saveBatchData("국내", stockDataHolder.getKoreanPendingData());
@@ -71,7 +72,6 @@ public class LiveStockPriceWebSocketService {
     @Scheduled(cron = "0 * 9-15 * * MON-FRI", zone = "America/New_York")
     public void saveOverseasStockDataBatch() {
         if (!marketTimeService.isOverseasMarketOpen()) {
-            log.debug("해외 장 마감으로 인한 배치 저장 중단");
             return;
         }
         stockDataBatchSaveService.saveBatchData("해외", stockDataHolder.getOverseasPendingData());
@@ -80,7 +80,6 @@ public class LiveStockPriceWebSocketService {
     /* 스케줄링 - 장 마감 정리 */
     @Scheduled(cron = "0 20 15 * * MON-FRI", zone = "Asia/Seoul")
     public void cleanUpAfterKoreanMarketClose() {
-        log.debug("국내 장 마감 - 마지막 데이터 저장 및 정리 시작");
         stockDataBatchSaveService.saveRemainingData("국내", stockDataHolder.getKoreanPendingData());
         webSocketConnectionService.disconnectKoreanWebSocket();
         log.info("국내 장 마감 정리 완료");
@@ -88,7 +87,6 @@ public class LiveStockPriceWebSocketService {
 
     @Scheduled(cron = "0 0 16 * * MON-FRI", zone = "America/New_York")
     public void cleanUpAfterOverseasMarketClose() {
-        log.debug("해외 장 마감 - 마지막 데이터 저장 및 정리 시작");
         stockDataBatchSaveService.saveRemainingData("해외", stockDataHolder.getOverseasPendingData());
         webSocketConnectionService.disconnectOverseasWebSocket();
         log.info("해외 장 마감 정리 완료");
@@ -97,7 +95,6 @@ public class LiveStockPriceWebSocketService {
 
     @PreDestroy
     public void cleanUp() {
-        log.info("애플리케이션 종료로 인한 WebSocket 연결 해제 시작");
         try {
             // 남은 데이터 저장
             stockDataBatchSaveService.saveRemainingData("국내", stockDataHolder.getKoreanPendingData());

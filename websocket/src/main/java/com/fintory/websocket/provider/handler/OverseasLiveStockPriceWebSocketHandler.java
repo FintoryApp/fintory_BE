@@ -1,4 +1,4 @@
-package com.fintory.websocket.handler;
+package com.fintory.websocket.provider.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +52,13 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
         return isConnected.get() && session != null && session.isOpen();
     }
 
+    @Override
+    public void afterConnectionEstablished(WebSocketSession session) {
+        this.session = session;
+        this.isConnected.set(true);
+        this.connectionLatch.countDown();
+    }
+
     // 연결 대기
     public boolean waitForConnection(long timeoutSeconds) {
         try {
@@ -61,19 +68,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
             log.warn("웹소켓 연결 대기 중 인터럽트 발생");
             return false;
         }
-    }
-
-    @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
-        this.session = session;
-        isConnected.set(true);
-        connectionLatch.countDown();
-        log.info("해외 주식 웹소켓 연결 성공");
-        log.info("세션 ID: {}", session.getId());
-        log.info("웹소켓 handshake 헤더: {}", session.getHandshakeHeaders());
-        log.info("웹소켓 URI: {}", session.getUri());
-        log.info("웹소켓 로컬 주소: {}", session.getLocalAddress());
-        log.info("웹소켓 리모트 주소: {}", session.getRemoteAddress());
     }
 
     @Override
@@ -129,7 +123,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
 
                 String message = objectMapper.writeValueAsString(request);
                 session.sendMessage(new TextMessage(message));
-                log.info("해외 주식 구독 메시지 전송 완료 - 종목: {}", code);
 
             } catch (Exception e) {
                 log.error("DB API 실시간 현재가 데이터 조회 메시지 요청 중 에러 발생 - 종목: {}, 에러: {}", code, e.getMessage());
@@ -176,7 +169,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
                 String jsonMessage = objectMapper.writeValueAsString(request);
 
                 session.sendMessage(new TextMessage(jsonMessage));
-                log.info("해외 주식 구독 해제 메시지 전송 완료 - 종목: {}", code);
 
             } catch (Exception e) {
                 log.error("DB API 실시간 현재가 데이터 구독 해제 요청 중 에러 발생 - 종목: {}, 에러: {}", code, e.getMessage());
@@ -189,9 +181,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
         String payload = message.getPayload();
-        //log.info("수신된 payload: {}", payload);
-
-
         synchronized (sendLock) {
             try {
                 JsonNode root = objectMapper.readTree(payload);
@@ -216,9 +205,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
 
         try {
             JsonNode root = objectMapper.readTree(payload);
-            JsonNode header = root.get("header");
-
-
             JsonNode body = root.get("body");
 
             // 안전한 필드 추출
@@ -237,8 +223,6 @@ public class OverseasLiveStockPriceWebSocketHandler extends TextWebSocketHandler
 
             // 콜백 실행
             executeCallbacks(stockData);
-
-            //log.debug("해외 주식 데이터 처리 완료: {}", stockData);
 
         } catch (Exception e) {
             log.error("메시지 파싱 중 에러 발생: {}", e.getMessage());

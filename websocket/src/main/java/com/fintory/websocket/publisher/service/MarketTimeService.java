@@ -1,7 +1,7 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.publisher.service;
 
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
-import com.fintory.websocket.state.StockDataHolder;
+import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

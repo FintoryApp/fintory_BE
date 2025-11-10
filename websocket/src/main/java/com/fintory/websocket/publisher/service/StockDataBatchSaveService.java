@@ -1,4 +1,4 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.publisher.service;
 
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import lombok.RequiredArgsConstructor;

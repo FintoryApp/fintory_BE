@@ -1,4 +1,4 @@
-package com.fintory.websocket.service;
+package com.fintory.websocket.publisher.service;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;

@@ -1,4 +1,4 @@
-package com.fintory.websocket.config;
+package com.fintory.websocket.publisher.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,15 +15,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
 
-    // REVIEW 현재 dev를 pull 받으니까 순환 참조 문제 발생
-    /*
-    private final TaskScheduler messageBrokerTaskScheduler;
-
-    @Autowired
-    public WebSocketBrokerConfig(TaskScheduler webSocketTaskScheduler) {
-        this.messageBrokerTaskScheduler = webSocketTaskScheduler;
-    }
-*/
     @Bean(name = "webSocketTaskScheduler")
     public TaskScheduler messageBrokerTaskScheduler() {
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
