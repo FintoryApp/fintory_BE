@@ -4,7 +4,7 @@ import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.stock.dto.korean.response.StockSearchResponse;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.service.common.CommonStockService;
-import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
+import com.fintory.websocket.service.MarketTimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,22 +20,22 @@ import java.util.List;
 public class CommonStockControllerImpl implements CommonStockController {
 
     private final CommonStockService commonStockService;
-    private final LiveStockPriceWebsocketService websocketService;
+    private final MarketTimeService marketTimeService;
 
 
     //주식 종목 검색
     @Override
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<StockSearchResponse>>> searchStock(@RequestParam String keyword) {
-        List<StockSearchResponse> stockSearchRespons = commonStockService.searchStock(keyword);
-        return ResponseEntity.ok(ApiResponse.ok(stockSearchRespons));
+        List<StockSearchResponse> stockSearchResponse = commonStockService.searchStock(keyword);
+        return ResponseEntity.ok(ApiResponse.ok(stockSearchResponse));
     }
 
     //장시간 리턴
     @Override
     @GetMapping("/opened-market")
     public ResponseEntity<ApiResponse<MarketStatusResponse>> getMarketStatus(){
-        return ResponseEntity.ok(ApiResponse.ok(websocketService.getMarketStatus()));
+        return ResponseEntity.ok(ApiResponse.ok(marketTimeService.getMarketStatus()));
     }
 
 }
