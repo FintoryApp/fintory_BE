@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: local
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${RDS_URL}
+    username: ${RDS_USERNAME}
+    password: ${RDS_PASSWORD}
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+  main:
+    allow-bean-definition-overriding: true
+
+  data:
+    redis:
+      host: ${AWS_REDIS_HOST}
+      port: 6379
+      password: ${AWS_REDIS_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+hantu-openapi:
+  appkey: ${HANTU_APPKEY}
+  appsecret: ${HANTU_APPSECRET}
+  base-url: https://openapi.koreainvestment.com:9443
+
+db-openapi:
+  db-appkey: ${DB_APPKEY}
+  db-appsecret: ${DB_APPSECRET}
+  base-url: https://openapi.dbsec.co.kr:8443
+
+eos:
+  api-key: ${EOS_API_KEY}
+

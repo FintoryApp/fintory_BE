@@ -15,7 +15,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication(scanBasePackages = {
         "com.fintory.infra",
         "com.fintory.auth",
-        "com.fintory.child"
+        "com.fintory.child",
+        "com.fintory.websocket"
 })
 @ConfigurationPropertiesScan(basePackages = {
         "com.fintory.auth"
