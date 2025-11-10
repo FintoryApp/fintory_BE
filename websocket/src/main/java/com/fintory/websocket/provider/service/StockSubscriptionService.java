@@ -2,9 +2,9 @@ package com.fintory.websocket.provider.service;
 
 
 import com.fintory.domain.stock.model.Stock;
-import com.fintory.infra.domain.stock.repository.StockRepository;
 import com.fintory.websocket.provider.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.websocket.provider.handler.OverseasLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.publisher.repository.StockRepository;
 import com.fintory.websocket.publisher.service.MarketTimeService;
 import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.RequiredArgsConstructor;
