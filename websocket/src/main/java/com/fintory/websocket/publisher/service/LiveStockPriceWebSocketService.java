@@ -9,6 +9,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -28,6 +29,7 @@ public class LiveStockPriceWebSocketService {
     private final StockDataBatchSaveService stockDataBatchSaveService;
     private final WebSocketConnectionService webSocketConnectionService;
     private final MarketTimeService marketTimeService;
+    private final RedisTemplate<Object, Object> redisTemplate;
 
     /* 구독 자동 실행 메소드 */
     @Scheduled(cron="0 30 09 * * MON-FRI", zone="America/New_York")
@@ -100,12 +102,20 @@ public class LiveStockPriceWebSocketService {
             stockDataBatchSaveService.saveRemainingData("국내", stockDataHolder.getKoreanPendingData());
             stockDataBatchSaveService.saveRemainingData("해외", stockDataHolder.getOverseasPendingData());
 
-            // 웹소켓 연결 해제
-            if (stockDataHolder.getIsKoreanConnected().get()) {
-                webSocketConnectionService.disconnectKoreanWebSocket();
-            }
-            if (stockDataHolder.getIsOverseasConnected().get()) {
-                webSocketConnectionService.disconnectOverseasWebSocket();
+            try {
+                if (redisTemplate.getConnectionFactory().getConnection().isClosed()) {
+                    log.warn("Redis connection 이미 정리됨 - cleanup 작업 스킵하기");
+                } else {
+                    // 웹소켓 연결 해제
+                    if (stockDataHolder.getIsKoreanConnected().get()) {
+                        webSocketConnectionService.disconnectKoreanWebSocket();
+                    }
+                    if (stockDataHolder.getIsOverseasConnected().get()) {
+                        webSocketConnectionService.disconnectOverseasWebSocket();
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("레디스 이미 종료 완료. disconnect 작업 스킵하기", e);
             }
 
             // 최종 리소스 정리 -> (안전장치)
