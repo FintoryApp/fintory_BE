@@ -77,7 +77,8 @@ jobs:
             export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
             export RDS_URL=${{ secrets.RDS_URL }}
             export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
-            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }}         
+            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} 
+            export AWS_REDIS_HOST=${{ secrets.FINTORY_CHILD_PRIVATE_HOST }}
             export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
             export HANTU_APPKEY=${{ secrets.HANTU_APPKEY}}
             export HANTU_APPSECRET=${{ secrets.HANTU_APPSECRET}}
