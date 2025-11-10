@@ -1,4 +1,4 @@
-package com.fintory.infra.monitoring.config;
+package com.fintory.websocket.monitoring.config;
 
 import io.micrometer.core.instrument.FunctionCounter;
 import io.micrometer.core.instrument.MeterRegistry;

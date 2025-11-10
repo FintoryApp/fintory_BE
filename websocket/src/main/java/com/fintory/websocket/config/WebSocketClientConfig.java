@@ -1,6 +1,7 @@
-package com.fintory.infra.domain.stock.config;
+package com.fintory.websocket.config;
 
-import com.fintory.infra.domain.stock.handler.*;
+import com.fintory.websocket.handler.KoreanLiveStockPriceWebSocketHandler;
+import com.fintory.websocket.handler.OverseasLiveStockPriceWebSocketHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

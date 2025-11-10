@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.service.websocket;
+package com.fintory.websocket.service;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
@@ -7,7 +7,6 @@ import com.fintory.domain.stock.model.IntervalType;
 import com.fintory.domain.stock.model.LiveStockPrice;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.model.StockPriceHistory;
-import com.fintory.domain.stock.service.websocket.LiveStockPriceWebSocketSaverService;
 import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
 import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
@@ -26,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWebSocketSaverService {
+public class LiveStockPriceWebSocketSaverService {
 
     private final StockPriceHistoryRepository stockPriceHistoryRepository;
     private final StockRepository stockRepository;
@@ -35,7 +34,6 @@ public class LiveStockPriceWebSocketSaverServiceImpl implements LiveStockPriceWe
     private static final Map<String, BigDecimal> todayOpenPrices = new ConcurrentHashMap<>();
 
     //데이터 DB에 저장 메소드
-    @Override
     @Transactional
     public void saveStockData(LiveStockPriceStream dto) {
         Stock stock = stockRepository.findByCode(dto.code())

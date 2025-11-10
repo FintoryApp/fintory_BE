@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.handler;
+package com.fintory.websocket.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fintory.common.exception.DomainErrorCode;
@@ -83,6 +83,7 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
         this.session = null;
         isConnected.set(false);
         this.connectionLatch = new CountDownLatch(1);
+        log.warn("웹소켓 연결 종료 - Code: {}, Reason: {}", status.getCode(), status.getReason());
         log.info("웹소켓 연결 종료");
     }
 
@@ -91,7 +92,7 @@ public class KoreanLiveStockPriceWebSocketHandler extends TextWebSocketHandler {
     public void subscribe(String code){
         try {
             sendSubscribeMessage(code);
-            Thread.sleep(100);
+            Thread.sleep(200);
         }catch (InterruptedException e){
             Thread.currentThread().interrupt();
 

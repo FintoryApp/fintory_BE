@@ -1,4 +1,4 @@
-package com.fintory.infra.domain.stock.handler;
+package com.fintory.websocket.handler;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

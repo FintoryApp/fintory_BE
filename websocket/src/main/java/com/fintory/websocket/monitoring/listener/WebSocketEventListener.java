@@ -1,6 +1,6 @@
-package com.fintory.infra.monitoring.listener;
+package com.fintory.websocket.monitoring.listener;
 
-import com.fintory.infra.monitoring.config.WebSocketMetrics;
+import com.fintory.websocket.monitoring.config.WebSocketMetrics;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -17,6 +17,7 @@ public class WebSocketEventListener {
 
     private final WebSocketMetrics webSocketMetrics;
 
+    // 클라이언트 stomp 연결(STMOP CONNECTED로 응답 완료 후 ) -> SessionConntecdEvent 발행
     @EventListener
     public void handleSessionConnect(SessionConnectedEvent event) {
         webSocketMetrics.incrementConnection();

@@ -1,4 +1,4 @@
-package com.fintory.infra.monitoring.config;
+package com.fintory.websocket.monitoring.config;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;

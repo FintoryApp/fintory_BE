@@ -1,6 +1,6 @@
-package com.fintory.infra.monitoring.config;
+package com.fintory.websocket.monitoring.config;
 
-import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
+import com.fintory.websocket.service.LiveStockPriceWebSocketService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -14,14 +14,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class WebSocketMetrics {
 
-    private final LiveStockPriceWebsocketService websocketService;
+    private final LiveStockPriceWebSocketService websocketService;
     private final MeterRegistry meterRegistry;
     private final AtomicInteger activeConnections = new AtomicInteger(0);
     private Counter messageSent;
 
     //REVIEW @Lazy를 쓰기 위해 명시적 생성자 사용 -> @Lazy는 생성자 파라미터에 직접 붙어 있어야 동작함
     // @RequiredConstructor는 생성자 파라미터별 어노테이션을 직접 지원하지 않는 것으로 알고 있음.
-    public WebSocketMetrics(@Lazy LiveStockPriceWebsocketService websocketService, MeterRegistry meterRegistry) {
+    public WebSocketMetrics(@Lazy LiveStockPriceWebSocketService websocketService, MeterRegistry meterRegistry) {
         this.websocketService = websocketService;
         this.meterRegistry = meterRegistry;
     }
@@ -35,6 +35,7 @@ public class WebSocketMetrics {
                 .description("Active STOMP connections (클라이언트 수)")
                 .register(meterRegistry);
 
+        // TODO 활성 구독 종목 수 -> 그라파나로 확인한 후 없애기
         // 국내 주식 활성 구독 종목 수
         Gauge.builder("websocket.korean.subscriptions.active",
                         websocketService, service -> service.getKoreanSubscribedStocks().size())
