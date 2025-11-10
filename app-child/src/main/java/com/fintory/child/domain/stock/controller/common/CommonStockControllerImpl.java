@@ -4,7 +4,7 @@ import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.stock.dto.korean.response.StockSearchResponse;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.service.common.CommonStockService;
-import com.fintory.websocket.service.MarketTimeService;
+import com.fintory.websocket.publisher.service.MarketTimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

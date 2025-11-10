@@ -1,6 +1,6 @@
 package com.fintory.websocket.monitoring.config;
 
-import com.fintory.websocket.service.LiveStockPriceWebSocketService;
+import com.fintory.websocket.publisher.service.LiveStockPriceWebSocketService;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
