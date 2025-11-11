@@ -9,6 +9,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@DependsOn({"DBTokenIssueServiceImpl", "kisTokenIssueServiceImpl"})
 public class LiveStockPriceWebSocketService {
 
 
@@ -48,6 +50,7 @@ public class LiveStockPriceWebSocketService {
         // 국내 장 체크 및 구독
         if (marketTimeService.isKoreanMarketOpen()) {
             log.info("애플리케이션 시작 - 국내 장 열림, 자동 구독 시작");
+            stockDataHolder.setCachedAccessToken((String) redisTemplate.opsForValue().get("kis-access-token"));
             stockSubscriptionService.startKoreanMarketSubscription();
         } else {
             log.info("국내 장이 열려있지 않아 자동 구독 스킵");
@@ -56,6 +59,7 @@ public class LiveStockPriceWebSocketService {
         // 해외 장 체크 및 구독
         if (marketTimeService.isOverseasMarketOpen()) {
             log.info("애플리케이션 시작 - 해외 장 열림, 자동 구독 시작");
+            stockDataHolder.setCachedAccessToken((String) redisTemplate.opsForValue().get("db-access-token"));
             stockSubscriptionService.startOverseasMarketSubscription();
         } else {
             log.info("해외 장이 열려있지 않아 자동 구독 스킵");
@@ -101,11 +105,6 @@ public class LiveStockPriceWebSocketService {
             // 남은 데이터 저장
             stockDataBatchSaveService.saveRemainingData("국내", stockDataHolder.getKoreanPendingData());
             stockDataBatchSaveService.saveRemainingData("해외", stockDataHolder.getOverseasPendingData());
-
-            try {
-                if (redisTemplate.getConnectionFactory().getConnection().isClosed()) {
-                    log.warn("Redis connection 이미 정리됨 - cleanup 작업 스킵하기");
-                } else {
                     // 웹소켓 연결 해제
                     if (stockDataHolder.getIsKoreanConnected().get()) {
                         webSocketConnectionService.disconnectKoreanWebSocket();
@@ -113,10 +112,6 @@ public class LiveStockPriceWebSocketService {
                     if (stockDataHolder.getIsOverseasConnected().get()) {
                         webSocketConnectionService.disconnectOverseasWebSocket();
                     }
-                }
-            } catch (Exception e) {
-                log.warn("레디스 이미 종료 완료. disconnect 작업 스킵하기", e);
-            }
 
             // 최종 리소스 정리 -> (안전장치)
             stockDataHolder.getKoreanSubscribedStocks().clear();

@@ -142,13 +142,12 @@ public class WebSocketConnectionService {
         try {
             new ArrayList<>(stockDataHolder.getOverseasSubscribedStocks()).forEach(code -> {
                 try {
-                    overseasHandler.unsubscribe(code);
+                    //overseasHandler.unsubscribe(code);
                     stockDataHolder.getOverseasSubscribedStocks().remove(code);
                 } catch (Exception e) {
                     log.warn("해외 종목 {} 구독 해제 중 에러 발생: {}", code, e.getMessage());
                 }
             });
-
             Thread.sleep(1000); //서버 처리 대기
             try {
                 disconnectDBSession();  //db증권은 세션 정리를 하지 않을 경우 에러 발생함
@@ -156,7 +155,6 @@ public class WebSocketConnectionService {
             } catch (Exception e) {
                 log.warn("세션 종료 실패 (무시): {}", e.getMessage()); // 에러 무시
             }
-
         } catch (Exception e) {
             log.error("구독 해제 중 에러: {}", e.getMessage());
         } finally {
@@ -177,7 +175,8 @@ public class WebSocketConnectionService {
             //ERROR LettuceConnectionFactory has been STOPPED. Use start() to initialize it
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("authorization", "Bearer " + (String) redisTemplate.opsForValue().get("db-access-token"));
+            String token = stockDataHolder.getCachedAccessToken();
+            headers.set("authorization", "Bearer " +token);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(new HashMap<>(), headers);
 

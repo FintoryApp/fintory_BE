@@ -29,5 +29,7 @@ public class StockDataHolder {
     private final AtomicBoolean isKoreanConnected = new AtomicBoolean(false);
     private final AtomicBoolean  isOverseasConnected = new AtomicBoolean(false);
 
+    private String cachedAccessToken;
+
 
 }
