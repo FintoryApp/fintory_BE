@@ -95,6 +95,7 @@ jobs:
             export OPENAI_MODEL=${{ secrets.OPENAI_MODEL}}
             export OPENAI_TEMPERATURE=${{secrets.OPENAI_TEMPERATURE}}
             export OPENAI_MAX_TOKENS=${{secrets.OPENAI_MAX_TOKENS}}
+            export WEBSOCKET_PRIVATE_HOST=${{secrets.WEBSOCKET_PRIVATE_HOST}}
             export FIREBASE_CONFIG='${{secrets.FIREBASE_CONFIG}}' 
             
             aws ecr get-login-password --region ap-northeast-2 | \

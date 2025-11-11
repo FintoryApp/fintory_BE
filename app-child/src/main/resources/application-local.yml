@@ -100,6 +100,9 @@ db-openapi:
 firebase:
   config: ${FIREBASE_CONFIG}
 
+websocket:
+  server:
+    url: http://localhost:8081
 
 
 
