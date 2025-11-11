@@ -21,19 +21,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EntityScan(basePackages = "com.fintory.domain")
 @EnableJpaRepositories(
         basePackages = {
-                "com.fintory.websocket.publisher.repository",
-                "com.fintory.infra"
-        },
-        excludeFilters = @ComponentScan.Filter(
-                type = FilterType.ASSIGNABLE_TYPE,
-                classes = {
-                        com.fintory.infra.domain.stock.repository.StockRepository.class,
-                        com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository.class,
-                        com.fintory.infra.domain.stock.repository.LiveStockPriceRepository.class
-                }
-        )
+                "com.fintory.websocket.publisher.repository"
+        }
 )
-
 public class WebsocketApplication {
     public static void main(String[] args) {
         SpringApplication.run(WebsocketApplication.class, args);
