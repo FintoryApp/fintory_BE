@@ -39,7 +39,7 @@ public class CommonStockControllerImpl implements CommonStockController {
     @Override
     @GetMapping("/opened-market")
     public ResponseEntity<ApiResponse<MarketStatusResponse>> getMarketStatus(){
-        String url = websocketServerUrl + "/api/websocket/market/status";
+        String url = "http://"+websocketServerUrl+":8080" + "/api/websocket/market/status";
         MarketStatusResponse response = restTemplate.getForObject(url, MarketStatusResponse.class);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }

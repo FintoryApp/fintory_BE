@@ -100,4 +100,4 @@ firebase:
 
 websocket:
   server:
-    url: http://${WEBSOCKET_PRIVATE_HOST}:8080
+    url: ${WEBSOCKET_PRIVATE_HOST}
