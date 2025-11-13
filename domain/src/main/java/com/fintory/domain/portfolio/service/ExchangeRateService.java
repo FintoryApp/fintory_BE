@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public interface ExchangeRateService {
 
     /**
-     * ECOS 에서 제공하는 오늘의 환율 값 조회 메소드
+     * ECOS 에서 제공하는 오늘의 환율 값 조회 메소드(레디스에 저장된 값 불러오기)
      * @return 환율 값
      */
     BigDecimal getExchangeRate();

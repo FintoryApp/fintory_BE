@@ -3,6 +3,7 @@ package com.fintory.child.exceptionhandler;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.ExceptionResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
@@ -66,12 +67,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ExceptionResponse> handleUnhandledException(Exception e) {
+    public ResponseEntity<ExceptionResponse> handleUnhandledException(Exception e, HttpServletRequest request) {
         log.error("Unknown server error", e);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ExceptionResponse(DomainErrorCode.INTERNAL_SERVER_ERROR));
     }
-
 
 }

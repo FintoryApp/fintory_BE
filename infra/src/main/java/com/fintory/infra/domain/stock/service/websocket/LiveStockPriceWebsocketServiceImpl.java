@@ -2,6 +2,7 @@ package com.fintory.infra.domain.stock.service.websocket;
 
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
+import com.fintory.infra.monitoring.config.WebSocketMetrics;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.model.Stock;
@@ -17,11 +18,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -81,6 +84,8 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
     //그라파나용 매트릭 -> 레이턴시, 효율성
     private final Timer dataProcessingTime;
 
+    private final WebSocketMetrics webSocketMetrics;
+
 
     public LiveStockPriceWebsocketServiceImpl(
             @Qualifier("koreanLiveStockPriceWebSocketConnectionManager") WebSocketConnectionManager koreanConnectionManager,
@@ -88,7 +93,13 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
             KoreanLiveStockPriceWebSocketHandler koreanHandler,
             OverseasLiveStockPriceWebSocketHandler overseasHandler,
             StockRepository stockRepository,
-            SimpMessagingTemplate messageTemplate, RestTemplate restTemplate, RedisTemplate<Object, Object> redisTemplate, LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, ApplicationEventPublisher applicationEventPublisher,MeterRegistry meterRegistry) {
+            SimpMessagingTemplate messageTemplate,
+            RestTemplate restTemplate,
+            RedisTemplate<Object, Object> redisTemplate,
+            LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService,
+            ApplicationEventPublisher applicationEventPublisher,
+            MeterRegistry meterRegistry,
+            @Lazy WebSocketMetrics webSocketMetrics) {
 
         this.koreanConnectionManager = koreanConnectionManager;
         this.overseasConnectionManager = overseasConnectionManager;
@@ -103,7 +114,9 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
 
         this.dataProcessingTime = Timer.builder("websocket.data.processing.time")
                 .description("Time to process and send stock data")
+                .publishPercentiles(0.5,0.95,0.99)
                 .register(meterRegistry);
+        this.webSocketMetrics = webSocketMetrics;
     }
 
     /* 구독 관리 메서드 */
@@ -138,7 +151,14 @@ public class LiveStockPriceWebsocketServiceImpl implements LiveStockPriceWebsock
                 log.debug("변동 없음 - 전송 스킵: {}", stockCode);
                 return;
             }
-            messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData);
+
+            // 지연 시간을 측정하기 위해 STOMP 헤더에 타임스탬프 추가
+            // REVIEW 헤더에 데이터를 추가한 것일 뿐 바디는 바뀌지 않으므로 프론트 코드에는 문제가 없는 것으로 알고 있는데 아니라면 수정 필수
+            SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();
+            headerAccessor.setNativeHeader("sentTimestamp", String.valueOf(System.currentTimeMillis()));
+
+            webSocketMetrics.incrementMessageSent();
+            messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData, headerAccessor.getMessageHeaders());
         }
     }
 

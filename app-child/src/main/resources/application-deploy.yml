@@ -6,6 +6,10 @@ spring:
     activate:
       on-profile: deploy
 
+  websocket:
+    stomp:
+      stats-log-period: 30000
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${RDS_URL}
@@ -73,7 +77,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health, prometheus
+        include: health, prometheus,metrics
   endpoint:
     health:
       show-details: always
