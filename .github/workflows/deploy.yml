@@ -2,7 +2,7 @@ name: Fintory CI/CD
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "*" ]
   pull_request:
     branches: [ "*" ]
 
