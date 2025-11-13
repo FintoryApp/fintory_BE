@@ -9,7 +9,6 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@DependsOn({"DBTokenIssueServiceImpl", "kisTokenIssueServiceImpl"})
 public class LiveStockPriceWebSocketService {
 
 
