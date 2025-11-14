@@ -23,7 +23,6 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-@DependsOn({"DBTokenIssueServiceImpl", "kisTokenIssueServiceImpl"})
 public class LiveStockPriceWebSocketService {
 
 
