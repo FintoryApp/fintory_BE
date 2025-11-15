@@ -1,0 +1,22 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: deploy-webflux
+
+  main:
+    web-application-type: reactive
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+
+

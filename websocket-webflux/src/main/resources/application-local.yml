@@ -1,0 +1,20 @@
+server:
+  port: 8081
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  main:
+    web-application-type: reactive
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+  endpoint:
+    health:
+      show-details: always
+
