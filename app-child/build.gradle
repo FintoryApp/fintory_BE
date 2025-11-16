@@ -26,7 +26,6 @@ dependencies {
     implementation project(':domain')
     implementation project(':infra')
     implementation project(':auth')
-    implementation project(":websocket")
 
 
     /* .env 자동 로딩 */
