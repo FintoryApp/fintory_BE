@@ -9,6 +9,12 @@ spring:
   main:
     web-application-type: reactive
 
+  rsocket:
+    server:
+      transport: websocket
+      port: 8082
+      mapping-path: /rsocket
+
 management:
   endpoints:
     web:
