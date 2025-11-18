@@ -25,3 +25,8 @@ public class WebSocketStatsConfig {
         }
     }
 }
+그럼 rsocket이 브로드캐스팅할때
+
+기존의 stomp + simplemessagebroker에서는 구독하는 클라이언트가 많아질수록(k6테스트)
+
+websocketmessagebrokerstats의 websocketsession 개수가 많아지고
