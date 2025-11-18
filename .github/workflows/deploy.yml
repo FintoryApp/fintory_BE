@@ -53,6 +53,13 @@ jobs:
           docker tag app-child:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
           docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:latest
 
+      - name: Build and push websocket-webflux
+        run: |
+          ./gradlew :websocket-webflux:clean build
+          docker build -t websocket-webflux:latest ./websocket-webflux
+          docker tag websocket-webflux:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
+
   deploy-child:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -107,4 +114,44 @@ jobs:
             docker compose up -d
 
             docker image prune -f
-          
+
+  deploy-webflux:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy fintory-webflux to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FINTORY_WEBFLUX_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+            
+            TARGET_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
+            docker pull ${TARGET_IMAGE}
+
+            docker stop webflux-app || true
+            docker rm webflux-app || true
+            
+            docker run -d \
+              --name webflux-app \
+              -p 8080:8080 \
+              --restart always \
+              ${TARGET_IMAGE}
+
+            docker image prune -f
+    
