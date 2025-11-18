@@ -151,6 +151,7 @@ jobs:
               --name webflux-app \
               -p 8080:8080 \
               --restart always \
+              -e SPRING_PROFILES_ACTIVE=deploy-webflux \
               ${TARGET_IMAGE}
 
             docker image prune -f
