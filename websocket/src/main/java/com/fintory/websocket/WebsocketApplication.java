@@ -14,7 +14,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.fintory.websocket",
         "com.fintory.domain",
         "com.fintory.common",
-        "com.fintory.infra.config",
+        "com.fintory.infra.config", //TODO infra 모듈의 경우 로컬 실행을 위해서 남겨둠 -> 최종 때 삭제 예정
         "com.fintory.infra.domain.stock.service.token"
 })
 @EntityScan(basePackages = "com.fintory.domain")
