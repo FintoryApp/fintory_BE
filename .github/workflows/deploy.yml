@@ -150,6 +150,7 @@ jobs:
             docker run -d \
               --name webflux-app \
               -p 8080:8080 \
+              -p 8082:8082 \
               --restart always \
               -e SPRING_PROFILES_ACTIVE=deploy-webflux \
               ${TARGET_IMAGE}
