@@ -67,7 +67,6 @@ public class OverseasLiveStockPriceWebSocketHandler implements WebSocketHandler 
 
          sendMessage(code,"1")
                 .flatMap(message-> session.send(Mono.just(session.textMessage(message))))
-                .delayElement(Duration.ofSeconds(5)) //TODO 필요없으면 지우기
                 .doOnError(e->{
                     log.error("DB API 실시간 현재가 데이터 조회 메시지 요청 중 에러 발생 - 종목: {}, 에러: {}", code, e.getMessage());
                 })

@@ -40,11 +40,8 @@ public class KoreanLiveStockPriceWebSocketHandler implements WebSocketHandler {
     public Mono<Void> handle(WebSocketSession session) {
         this.session = session;
         return session.receive()
-                .doOnNext(msg -> log.info("Raw WebSocket 메시지 수신"))
                 .map(WebSocketMessage::getPayloadAsText)
-                .doOnNext(message->log.info("메시지: {}",message))
                 .flatMap(this::parseAndProcessMessage)
-                .doOnNext(message->log.info("국내 주식 메시지: {}",message))
                 .doOnError(e -> log.error("국내 주식 구독 메시지 처리 중 에러:{}", e.getMessage()))
                 .onErrorResume(e -> Mono.empty())
                 .doOnTerminate(()->{

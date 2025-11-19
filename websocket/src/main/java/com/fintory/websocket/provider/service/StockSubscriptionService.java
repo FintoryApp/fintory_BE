@@ -10,6 +10,10 @@ import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+
+import java.time.Duration;
 import java.util.List;
 
 
@@ -64,21 +68,20 @@ public class StockSubscriptionService {
 
         int beforeSize = stockDataHolder.getOverseasSubscribedStocks().size();
 
-        targetStocks.forEach(stock -> {
-            if (!stockDataHolder.getOverseasSubscribedStocks().contains(stock.getCode())) {
-                try {
-                    overseasHandler.subscribe(stock.getCode());
-                    stockDataHolder.getOverseasSubscribedStocks().add(stock.getCode());
-                }catch(Exception e){
-                    log.error("종목 {} 구독 실패: {}", stock.getCode(), e.getMessage());
-                }
-            }
-        });
-
-        int successCount = stockDataHolder.getOverseasSubscribedStocks().size() - beforeSize;
-        log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
-                targetStocks.size(), successCount);
+        Flux.fromIterable(targetStocks)
+            .filter(stock -> !stockDataHolder.getOverseasSubscribedStocks().contains(stock.getCode()))
+            .delayElements(Duration.ofSeconds(1)) //최대 호출 횟수(분당 6회) 제한 때문에 추가
+            .doOnNext(stock->{
+                 overseasHandler.subscribe(stock.getCode());
+                 stockDataHolder.getOverseasSubscribedStocks().add(stock.getCode());
+                 })
+                .doOnError(e->log.error("해외 주식 구독 실패: {}",  e.getMessage()))
+                .onErrorResume(e-> Mono.empty())
+                .doOnComplete(()->{
+                      int successCount = stockDataHolder.getOverseasSubscribedStocks().size() - beforeSize;
+                      log.info("장 시작 - 총 {} 종목 중 {} 종목 구독 완료",
+                            targetStocks.size(), successCount);
+                      })
+                .subscribe();
     }
-
-
 }
