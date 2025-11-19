@@ -42,8 +42,8 @@ public class StockRealtimeService {
     // 특정 종목으로 채널 생성 혹은 채널 가져오기
     private Sinks.Many<String> getOrCreateSink(String code) {
         return sinks.computeIfAbsent(code, k -> Sinks.many()
-                .replay()
-                .latest()
+                .multicast()
+                .onBackpressureBuffer(1)
         );
     }
 
