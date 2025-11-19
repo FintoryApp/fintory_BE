@@ -8,6 +8,6 @@ ENV TZ=Asia/Seoul
 WORKDIR /app
 
 COPY build/libs/*.jar app.jar
-COPY src/main/resources/application-deploy.yml /app/application-deploy.yml
+COPY src/main/resources/application-deploy-webflux.yml.yml /app/application-deploy-webflux.yml
 
 ENTRYPOINT ["java", "-jar","app.jar", "--spring.profiles.active=deploy"]
