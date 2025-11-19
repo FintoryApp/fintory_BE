@@ -3,12 +3,13 @@ package com.fintory.websocket.provider.service;
 import com.fintory.common.exception.DomainErrorCode;
 import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
+import com.fintory.websocket.provider.config.KoreanWebSocketConnection;
+import com.fintory.websocket.provider.config.OverseasWebSocketConnection;
 import com.fintory.websocket.provider.handler.KoreanLiveStockPriceWebSocketHandler;
 import com.fintory.websocket.provider.handler.OverseasLiveStockPriceWebSocketHandler;
 import com.fintory.websocket.publisher.service.StockDataProcessService;
 import com.fintory.websocket.publisher.state.StockDataHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
@@ -17,9 +18,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.socket.client.WebSocketConnectionManager;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,74 +33,82 @@ public class WebSocketConnectionService {
     private String baseUrl;
 
     private final StockDataHolder stockDataHolder;
-    private final WebSocketConnectionManager koreanConnectionManager;
-    private final WebSocketConnectionManager overseasConnectionManager;
     private final StockDataProcessService stockDataProcessService;
     private final RestTemplate restTemplate;
     private final KoreanLiveStockPriceWebSocketHandler koreanHandler;
     private final OverseasLiveStockPriceWebSocketHandler overseasHandler;
+    private final KoreanWebSocketConnection koreanWebSocketConnection;
+    private final OverseasWebSocketConnection overseasWebSocketConnection;
 
     public WebSocketConnectionService(StockDataHolder stockDataHolder,
-                                      @Qualifier("koreanLiveStockPriceWebSocketConnectionManager")WebSocketConnectionManager koreanConnectionManager,
-                                      @Qualifier("overseasLiveStockPriceWebSocketConnectionManager")WebSocketConnectionManager overseasConnectionManager,
                                       StockDataProcessService stockDataProcessService, RestTemplate restTemplate,
                                       KoreanLiveStockPriceWebSocketHandler koreanHandler,
                                       OverseasLiveStockPriceWebSocketHandler overseasHandler,
-                                      RedisTemplate<Object, Object> redisTemplate) {
+                                      RedisTemplate<Object, Object> redisTemplate, KoreanWebSocketConnection koreanWebSocketConnection, OverseasWebSocketConnection overseasWebSocketConnection) {
         this.stockDataHolder = stockDataHolder;
-        this.koreanConnectionManager = koreanConnectionManager;
-        this.overseasConnectionManager = overseasConnectionManager;
         this.stockDataProcessService = stockDataProcessService;
         this.restTemplate = restTemplate;
         this.koreanHandler = koreanHandler;
         this.overseasHandler = overseasHandler;
         this.redisTemplate = redisTemplate;
+        this.koreanWebSocketConnection = koreanWebSocketConnection;
+        this.overseasWebSocketConnection = overseasWebSocketConnection;
     }
 
 
     /* WebSocket 연결 관리 */
     public void connectKoreanWebSocket() {
-        if (stockDataHolder.getIsKoreanConnected().get()) {
-            return;
+        try {
+            if (stockDataHolder.getIsKoreanConnected().get()) {
+                return;
+            }
+
+            Consumer<LiveStockPriceStream> callback = dto ->
+                    stockDataProcessService.processStreamData(dto,
+                            stockDataHolder.getPreviousKoreanData(),
+                            stockDataHolder.getKoreanPendingData(), "국내");
+
+            koreanHandler.setDataCallBack(callback);
+            koreanWebSocketConnection.connect();
+
+            Thread.sleep(5000);
+            boolean connected = koreanHandler.isConnected();
+            if (!connected) {
+                log.error("연결 실패!");
+                throw new DomainException(DomainErrorCode.WEBSOCKET_CONNECTION_FAILED);
+            }
+
+            stockDataHolder.getIsKoreanConnected().set(true);
+            log.info("국내 주식 WebSocket 연결 완료");
+        }catch (InterruptedException e){
+            
         }
-
-        Consumer<LiveStockPriceStream> callback = dto ->
-                stockDataProcessService.processStreamData(dto,
-                        stockDataHolder.getPreviousKoreanData(),
-                        stockDataHolder.getKoreanPendingData(), "국내");
-
-        koreanHandler.setDataCallBack(callback);
-        koreanConnectionManager.start();
-
-        boolean connected = koreanHandler.waitForConnection(30);
-        if (!connected) {
-            log.error("연결 실패!");
-            throw new DomainException(DomainErrorCode.WEBSOCKET_CONNECTION_FAILED);
-        }
-
-        stockDataHolder.getIsKoreanConnected().set(true);
-        log.info("국내 주식 WebSocket 연결 완료");
     }
 
 
     public void connectOverseasWebSocket() {
-        if (stockDataHolder.getIsOverseasConnected().get()) {
-            return;
+        try {
+            if (stockDataHolder.getIsOverseasConnected().get()) {
+                return;
+            }
+            Consumer<LiveStockPriceStream> callback = dto ->
+                    stockDataProcessService.processStreamData(dto, stockDataHolder.getPreviousOverseasData(), stockDataHolder.getOverseasPendingData(), "해외");
+
+            overseasHandler.setDataCallBack(callback);
+            overseasWebSocketConnection.connect();
+
+            Thread.sleep(5000);
+            boolean connected = overseasHandler.isConnected();
+            if (!connected) {
+                log.info("해외 장시간임에도 WebSocket 연결 실패 - 공휴일이거나 기술적 문제일 수 있음");
+                throw new DomainException(DomainErrorCode.WEBSOCKET_CONNECTION_FAILED);
+            }
+
+            stockDataHolder.getIsOverseasConnected().set(true);
+            log.info("해외 주식 WebSocket 연결 완료");
+        }catch (InterruptedException e){
+
         }
-        Consumer<LiveStockPriceStream> callback = dto ->
-                stockDataProcessService.processStreamData(dto, stockDataHolder.getPreviousOverseasData(), stockDataHolder.getOverseasPendingData(), "해외");
-
-        overseasHandler.setDataCallBack(callback);
-        overseasConnectionManager.start();
-
-        boolean connected = overseasHandler.waitForConnection(30);
-        if (!connected) {
-            log.info("해외 장시간임에도 WebSocket 연결 실패 - 공휴일이거나 기술적 문제일 수 있음");
-            throw new DomainException(DomainErrorCode.WEBSOCKET_CONNECTION_FAILED);
-        }
-
-        stockDataHolder.getIsOverseasConnected().set(true);
-        log.info("해외 주식 WebSocket 연결 완료");
     }
 
 
@@ -125,7 +132,7 @@ public class WebSocketConnectionService {
             log.error("구독 해제 중 에러: {}", e.getMessage());
         } finally {
             // 반드시 실행
-            koreanConnectionManager.stop();
+            koreanWebSocketConnection.disconnect();
             stockDataHolder.getKoreanSubscribedStocks().clear();
             stockDataHolder.getPreviousKoreanData().clear();
             stockDataHolder.getKoreanPendingData().clear();
@@ -158,7 +165,7 @@ public class WebSocketConnectionService {
         } catch (Exception e) {
             log.error("구독 해제 중 에러: {}", e.getMessage());
         } finally {
-            overseasConnectionManager.stop();
+            overseasWebSocketConnection.disconnect();
             stockDataHolder.getIsOverseasConnected().set(false);
             stockDataHolder.getOverseasSubscribedStocks().clear();
             stockDataHolder.getPreviousOverseasData().clear();
