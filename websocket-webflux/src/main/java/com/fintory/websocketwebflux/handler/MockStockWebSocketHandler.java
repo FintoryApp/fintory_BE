@@ -23,11 +23,7 @@ public class MockStockWebSocketHandler implements WebSocketHandler {
     public Mono<Void> handle(WebSocketSession session) {
         return session.receive()
                 .map(WebSocketMessage::getPayloadAsText)
-                .doOnNext(json -> {
-                    log.info("제너레이터 → 서버 수신: {}",
-                            json.length() > 100 ? json.substring(0, 100) + "..." : json);
-                    stockRealtimeService.publish(json);
-                })
+                .doOnNext(stockRealtimeService::publish)
                 .then();
     }
 
