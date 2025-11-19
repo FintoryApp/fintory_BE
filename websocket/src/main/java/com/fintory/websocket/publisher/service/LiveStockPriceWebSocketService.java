@@ -23,6 +23,7 @@ import java.util.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@DependsOn({"kisTokenIssueServiceImpl","DBTokenIssueServiceImpl"})
 public class LiveStockPriceWebSocketService {
 
 
@@ -134,22 +135,5 @@ public class LiveStockPriceWebSocketService {
         }
 
         log.info("WebSocket 연결 해제 완료");
-    }
-
-    /* 메트릭용 Getter 추가  */
-    public Set<String> getKoreanSubscribedStocks() {
-        return stockDataHolder.getKoreanSubscribedStocks();
-    }
-
-    public Set<String> getOverseasSubscribedStocks() {
-        return stockDataHolder.getOverseasSubscribedStocks();
-    }
-
-    public boolean isKoreanConnected() {
-        return stockDataHolder.getIsKoreanConnected().get();
-    }
-
-    public boolean isOverseasConnected() {
-        return stockDataHolder.getIsOverseasConnected().get();
     }
 }

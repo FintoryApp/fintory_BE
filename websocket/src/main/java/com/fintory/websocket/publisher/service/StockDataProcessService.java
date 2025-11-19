@@ -1,13 +1,12 @@
 package com.fintory.websocket.publisher.service;
 
 import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
-import com.fintory.websocket.monitoring.config.WebSocketMetrics;
+import com.fintory.websocket.monitoring.config.SSEMetrics;
+import com.fintory.websocket.publisher.handler.StockStreamBridge;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import io.micrometer.core.instrument.Timer;
 
@@ -17,19 +16,18 @@ import java.util.Map;
 @Service
 @Slf4j
 public class StockDataProcessService {
-    private final WebSocketMetrics webSocketMetrics;
-    private final SimpMessagingTemplate messageTemplate;
+    private final SSEMetrics SSEMetrics;
+    private final StockStreamBridge stockStreamBridge;
     private final Timer dataProcessingTime;
     private final LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService;
     private final RedisTemplate<Object,Object> redisTemplate;
     private static final String PRICE_ALERT_CHANNEL = "price:alert:channel";
 
-    public StockDataProcessService(@Lazy WebSocketMetrics webSocketMetrics,
-                                   SimpMessagingTemplate messageTemplate,
+    public StockDataProcessService(@Lazy SSEMetrics SSEMetrics, StockStreamBridge stockStreamBridge,
                                    MeterRegistry meterRegistry,
                                    LiveStockPriceWebSocketSaverService liveStockPriceWebSocketSaverService, RedisTemplate<Object, Object> redisTemplate) {
-        this.webSocketMetrics = webSocketMetrics;
-        this.messageTemplate = messageTemplate;
+        this.SSEMetrics = SSEMetrics;
+        this.stockStreamBridge = stockStreamBridge;
         this.dataProcessingTime = Timer.builder("websocket.data.processing.time")
                 .description("Time to process and send stock data")
                 .publishPercentiles(0.5,0.95,0.99)
@@ -87,13 +85,8 @@ public class StockDataProcessService {
             if (stream.priceChange() == null || stream.priceChange().compareTo(BigDecimal.ZERO) == 0) {
                 return;
             }
-            // 지연 시간을 측정하기 위해 STOMP 헤더에 타임스탬프 추가
-            // REVIEW 헤더에 데이터를 추가한 것일 뿐 바디는 바뀌지 않으므로 프론트 코드에는 문제가 없는 것으로 알고 있는데 아니라면 수정 필수
-            SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create();
-            headerAccessor.setNativeHeader("sentTimestamp", String.valueOf(System.currentTimeMillis()));
-
-            webSocketMetrics.incrementMessageSent();
-            messageTemplate.convertAndSend("/topic/stock/live-Price/" + stockCode, stockData, headerAccessor.getMessageHeaders());
+            SSEMetrics.incrementMessageSent();
+            stockStreamBridge.publish((LiveStockPriceStream) stockData);
         }
     }
 
