@@ -17,6 +17,6 @@ public class StockRSocketController {
 
     @MessageMapping("stock.subscribe.{code}")
     public Flux<String> subscribe(@DestinationVariable String code) {
-        return stockRealtimeService.stream(code);
+        return stockRealtimeService.subscribe(code);
     }
 }
