@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 public record LiveStockPriceStream(
         String code,
         BigDecimal currentPrice,
+        BigDecimal priceChange,
         long sentTimestamp,
         BigDecimal priceChangeRate
 ) implements Serializable {
