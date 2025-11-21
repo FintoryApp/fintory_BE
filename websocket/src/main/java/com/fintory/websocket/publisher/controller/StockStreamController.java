@@ -33,9 +33,6 @@ public class StockStreamController {
                     sseMetrics.incrementConnection();
                     sseMetrics.incrementSubscriber();
                 })
-                .doOnNext(data->{
-                    sseMetrics.incrementMessageSent();
-                })
                 .doOnCancel(()->{
                     sseMetrics.decrementConnection();
                     sseMetrics.decrementSubscriber();
