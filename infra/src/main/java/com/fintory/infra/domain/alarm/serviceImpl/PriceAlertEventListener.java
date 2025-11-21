@@ -4,16 +4,15 @@ import com.fintory.domain.alarm.dto.PriceAlertCache;
 import com.fintory.domain.alarm.model.NotificationType;
 import com.fintory.domain.alarm.model.PriceAlert;
 import com.fintory.domain.alarm.service.AlarmService;
-import com.fintory.infra.domain.alarm.event.PriceAlertEvent;
+import com.fintory.domain.stock.dto.websocket.LiveStockPriceStream;
 import com.fintory.infra.domain.alarm.repository.PriceAlertRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
+import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.data.redis.connection.Message;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.List;
@@ -21,20 +20,30 @@ import java.util.List;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PriceAlertEventListener {
+public class PriceAlertEventListener implements MessageListener {
 
     private final RedisTemplate<Object, Object> redisTemplate;
     private final PriceAlertRepository priceAlertRepository;
     private final AlarmService alarmService;
 
 
-    @Async("alertExecutor")
-    @EventListener
-    @Transactional
-    public void handlePriceAlert(PriceAlertEvent event){
+    @Override
+    public void onMessage(Message message, byte[] pattern){
+        try{
+            LiveStockPriceStream stockPriceStream = (LiveStockPriceStream) redisTemplate.getValueSerializer()
+                            .deserialize(message.getBody());
+            log.debug("Redis로부터 감시가 체크 요청 수신: {}", stockPriceStream.code());
+            handlePriceAlert(stockPriceStream);
+        } catch (Exception e) {
+            log.error("Redis 메시지 처리 실패", e);
+        }
+    }
 
-        String stockCode = event.getStockPriceStream().code();
-        BigDecimal currentPrice = event.getStockPriceStream().currentPrice();
+    @Transactional
+    public void handlePriceAlert(LiveStockPriceStream stockData){
+
+        String stockCode = stockData.code();
+        BigDecimal currentPrice = stockData.currentPrice();
 
         String cachedKey = "priceAlert:"+stockCode;
         List<PriceAlertCache> priceAlertList = getPriceAlertFromCache(cachedKey,stockCode);

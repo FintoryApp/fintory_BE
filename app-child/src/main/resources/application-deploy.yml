@@ -6,9 +6,6 @@ spring:
     activate:
       on-profile: deploy
 
-  websocket:
-    stomp:
-      stats-log-period: 30000
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -97,3 +94,7 @@ eos:
 
 firebase:
   config: ${FIREBASE_CONFIG}
+
+websocket:
+  server:
+    url: ${WEBSOCKET_PRIVATE_HOST}

@@ -5,8 +5,6 @@ import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.overseas.response.*;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.overseas.*;
-import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
-import com.fintory.infra.domain.stock.repository.StockRankRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,10 +13,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -27,13 +23,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OverseasStockServiceImpl implements OverseasStockService {
 
-    private final OverseasStockRankService overseasStockRankService;
     private final OverseasLiveStockPriceService overseasLiveStockPriceService;
     private final OverseasStockPriceHistoryService overseasStockPriceHistoryService;
-
-    private final StockRankRepository stockRankRepository;
     private final StockRepository stockRepository;
-    private final StockPriceHistoryRepository stockPriceHistoryRepository;
 
 
     @EventListener(ApplicationReadyEvent.class)
@@ -129,7 +121,6 @@ public class OverseasStockServiceImpl implements OverseasStockService {
     private boolean executeWithErrorHandling(String taskName, Runnable task){
         try{
             task.run();
-            log.info("{} 초기화 성공",taskName);
             return true;
         }catch(Exception e){
             log.error("{} 초기화 실패 {}",taskName,e.getMessage());

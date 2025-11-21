@@ -6,9 +6,6 @@ import com.fintory.common.exception.DomainException;
 import com.fintory.domain.stock.dto.korean.response.*;
 import com.fintory.domain.stock.model.Stock;
 import com.fintory.domain.stock.service.korean.*;
-import com.fintory.infra.domain.stock.repository.LiveStockPriceRepository;
-import com.fintory.infra.domain.stock.repository.StockPriceHistoryRepository;
-import com.fintory.infra.domain.stock.repository.StockRankRepository;
 import com.fintory.infra.domain.stock.repository.StockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,13 +23,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class KoreanStockServiceImpl implements KoreanStockService {
 
-    private final KoreanStockRankService koreanStockRankService;
     private final KoreanLiveStockPriceService koreanLiveStockPriceService;
     private final KoreanStockPriceHistoryService koreanStockPriceHistoryService;
-    private final LiveStockPriceRepository liveStockPriceRepository;
-    private final StockPriceHistoryRepository  stockPriceHistoryRepository;
-
-    private final StockRankRepository stockRankRepository;
     private final StockRepository stockRepository;
 
     // 어플리케이션이 완전히 준비된 후 한번만 실행됨
@@ -109,7 +101,6 @@ public class KoreanStockServiceImpl implements KoreanStockService {
     private boolean executeWithErrorHandling(String taskName,Runnable task){
         try{
             task.run();
-            log.info("{} 초기화 성공",taskName);
             return true;
         }catch(Exception e){
             log.error("{} 초기화 실패 {}",taskName,e.getMessage());

@@ -4,13 +4,14 @@ import com.fintory.common.api.ApiResponse;
 import com.fintory.domain.stock.dto.korean.response.StockSearchResponse;
 import com.fintory.domain.stock.dto.websocket.MarketStatusResponse;
 import com.fintory.domain.stock.service.common.CommonStockService;
-import com.fintory.domain.stock.service.websocket.LiveStockPriceWebsocketService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -20,22 +21,27 @@ import java.util.List;
 public class CommonStockControllerImpl implements CommonStockController {
 
     private final CommonStockService commonStockService;
-    private final LiveStockPriceWebsocketService websocketService;
+    private final RestTemplate restTemplate;
+
+    @Value("${websocket.server.url}")
+    private String websocketServerUrl;
 
 
     //주식 종목 검색
     @Override
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<StockSearchResponse>>> searchStock(@RequestParam String keyword) {
-        List<StockSearchResponse> stockSearchRespons = commonStockService.searchStock(keyword);
-        return ResponseEntity.ok(ApiResponse.ok(stockSearchRespons));
+        List<StockSearchResponse> stockSearchResponse = commonStockService.searchStock(keyword);
+        return ResponseEntity.ok(ApiResponse.ok(stockSearchResponse));
     }
 
     //장시간 리턴
     @Override
     @GetMapping("/opened-market")
     public ResponseEntity<ApiResponse<MarketStatusResponse>> getMarketStatus(){
-        return ResponseEntity.ok(ApiResponse.ok(websocketService.getMarketStatus()));
+        String url = "http://"+websocketServerUrl+":8080" + "/api/websocket/market/status";
+        MarketStatusResponse response = restTemplate.getForObject(url, MarketStatusResponse.class);
+        return ResponseEntity.ok(ApiResponse.ok(response));
     }
 
 }
