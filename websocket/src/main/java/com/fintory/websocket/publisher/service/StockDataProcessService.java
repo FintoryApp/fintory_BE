@@ -82,9 +82,10 @@ public class StockDataProcessService {
 
     public void sendStockData(String stockCode, Object stockData) {
         if (stockData instanceof LiveStockPriceStream stream) {
+            /*
             if (stream.priceChange() == null || stream.priceChange().compareTo(BigDecimal.ZERO) == 0) {
                 return;
-            }
+            }*/
             SSEMetrics.incrementMessageSent();
             stockStreamBridge.publish((LiveStockPriceStream) stockData);
         }
