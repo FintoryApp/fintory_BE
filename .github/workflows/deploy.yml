@@ -144,16 +144,19 @@ jobs:
             TARGET_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
             docker pull ${TARGET_IMAGE}
 
-            docker stop webflux-app || true
-            docker rm webflux-app || true
+#            docker stop webflux-app || true
+#            docker rm webflux-app || true
             
-            docker run -d \
-              --name webflux-app \
-              -p 8080:8080 \
-              -p 8082:8082 \
-              --restart always \
-              -e SPRING_PROFILES_ACTIVE=deploy-webflux \
-              ${TARGET_IMAGE}
+#            docker run -d \
+#              --name webflux-app \
+#              -p 8080:8080 \
+#              -p 8082:8082 \
+#              --restart always \
+#              -e SPRING_PROFILES_ACTIVE=deploy-webflux \
+#              ${TARGET_IMAGE}
+            
+            docker compose down
+            docker compose up -d
 
             docker image prune -f
     
