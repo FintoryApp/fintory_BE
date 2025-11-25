@@ -10,4 +10,4 @@ WORKDIR /app
 COPY build/libs/*.jar app.jar
 COPY src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
 
-ENTRYPOINT ["java", "-jar","app.jar", "--spring.profiles.active=deploy-webflux"]
+ENTRYPOINT ["java", "-Xms700m", "-Xmx700m", "-jar","app.jar", "--spring.profiles.active=deploy-webflux"]
