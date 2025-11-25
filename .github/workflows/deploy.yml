@@ -145,6 +145,8 @@ jobs:
             TARGET_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
             docker pull ${TARGET_IMAGE}
 
+            echo "TARGET_IMAGE=${TARGET_IMAGE}" > .env
+  
             docker compose down
             docker compose up -d
 
