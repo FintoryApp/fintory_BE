@@ -38,7 +38,7 @@ public class StockRealtimeService {
     private Sinks.Many<String> createAndPublishSinks(String code) {
         return sinks.computeIfAbsent(code, k -> Sinks.many()
                 .multicast()
-                .onBackpressureBuffer(1) // 백프레셔로 drop을 택했으니 버퍼가 클 필요 없음 + 구취해도 sink 살아있음 -> 재사용
+                .onBackpressureBuffer(1, false) // 백프레셔로 drop을 택했으니 버퍼가 클 필요 없음 + 구취해도 sink 살아있음 -> 재사용
         );
     }
 
