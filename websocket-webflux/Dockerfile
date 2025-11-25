@@ -10,4 +10,4 @@ WORKDIR /app
 COPY build/libs/*.jar app.jar
 COPY src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
 
-ENTRYPOINT ["java", "-Xms350m", "-Xmx350m", "-jar","app.jar", "--spring.profiles.active=deploy-webflux"]
+ENTRYPOINT ["java", "-Xms350m", "-Xmx350m", "-XX:NativeMemoryTracking=summary", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/tmp/jvm-dump.hprof", "-jar","app.jar", "--spring.profiles.active=deploy-webflux"]
