@@ -5,6 +5,7 @@ import com.fintory.websocketwebflux.dto.Tick;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.SignalType;
 import reactor.core.publisher.Sinks;
 
 import java.util.Map;
@@ -44,9 +45,22 @@ public class StockRealtimeService {
 
     // 클라이언트가 채널을 구독
     public Flux<String> subscribe(String code) {
-        return subscribeSinks(code) //채널 가져오기
-                .asFlux()
-                .onBackpressureDrop(); // 클라이언트 속도가 느려서 못가져가는거면 그냥 버리고 새 값만 취급
+        Sinks.Many<String> sink = subscribeSinks(code);
+
+        if (sink == null){
+            log.info("요청한 채널이 존재하지 않습니다");
+            return Flux.empty();
+        }
+        return sink.asFlux()
+                .onBackpressureDrop()
+                .doFinally(signalType -> {
+                    if (signalType == SignalType.CANCEL || signalType == SignalType.ON_COMPLETE || signalType == SignalType.ON_ERROR) {
+                        Sinks.Many<String> currentSink = sinks.get(code);
+                        if (currentSink != null && currentSink.currentSubscriberCount() == 0) {
+                            sinks.remove(code);
+                        }
+                    }
+                });
     }
 
     /*
