@@ -47,7 +47,7 @@ jobs:
 
       - name: Build and push websocket-webflux
         run: |
-          ./gradlew :websocket-webflux:clean build
+#          ./gradlew :websocket-webflux:clean build
           docker build -t websocket-webflux:latest ./websocket-webflux
           docker tag websocket-webflux:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
           docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
