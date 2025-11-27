@@ -47,7 +47,7 @@ jobs:
           docker buildx build \
             -t "${FINAL_IMAGE}" \
             -f ./websocket-webflux/Dockerfile . \
-            --platform linux/amd64 \
+            --platform linux/arm64 \
             --push \
             --cache-from type=registry,ref="${CACHE_IMAGE}" \
             --cache-to type=registry,ref="${CACHE_IMAGE}",mode=max
