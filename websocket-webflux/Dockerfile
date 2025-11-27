@@ -5,16 +5,18 @@ COPY gradlew gradlew
 COPY gradle/wrapper gradle/wrapper
 COPY build.gradle settings.gradle ./
 
+COPY websocket-webflux/build.gradle ./websocket-webflux/
+
 RUN ./gradlew dependencies --no-daemon
 
-COPY src src
+COPY websocket-webflux/src ./websocket-webflux/src
 
-RUN ./gradlew --no-daemon -x test bootJar
+RUN ./gradlew :websocket-webflux:bootJar --no-daemon -x test
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar app.jar
+COPY --from=builder /app/websocket-webflux/build/libs/*.jar app.jar
 
 COPY websocket-webflux/src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
 
