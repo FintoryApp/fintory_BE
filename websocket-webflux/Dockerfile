@@ -6,12 +6,12 @@ COPY gradle gradle
 COPY build.gradle settings.gradle ./
 COPY websocket-webflux/build.gradle ./websocket-webflux/
 
-RUN ./gradlew --no-daemon dependencies || true
+RUN --mount=type=cache,target=/root/.gradle/caches \
+  ./gradlew --no-daemon dependencies || true
 
 COPY websocket-webflux/src ./websocket-webflux/src
 
-RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
-  ./gradlew :websocket-webflux:bootJar --no-daemon --build-cache -x test
+RUN ./gradlew :websocket-webflux:bootJar --no-daemon --build-cache -x test
 
 FROM eclipse-temurin:17-jdk-alpine
 
