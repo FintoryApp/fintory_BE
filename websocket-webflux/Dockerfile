@@ -22,4 +22,4 @@ WORKDIR /app
 
 COPY --from=builder /app/websocket-webflux/build/libs/*.jar app.jar
 
-ENTRYPOINT ["java $JAVA_OPTS -jar app.jar", "--spring.profiles.active=deploy-webflux"]
+ENTRYPOINT java $JAVA_OPTS -jar app.jar --spring.profiles.active=deploy-webflux
