@@ -10,7 +10,7 @@ env:
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -45,11 +45,20 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build and push websocket-webflux
+      - name: Docker build and push websocket-webflux
         run: |
-          docker build -t websocket-webflux:latest -f ./websocket-webflux/Dockerfile .
-          docker tag websocket-webflux:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
-          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:webflux-latest
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          FINAL_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
+          CACHE_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-cache"
+          
+          docker buildx build \
+            -t websocket-webflux:latest \
+            -t "${FINAL_IMAGE}" \
+            -f ./websocket-webflux/Dockerfile . \
+            --platform linux/amd64 \
+            --push \
+            --cache-from type=registry,ref="${CACHE_IMAGE}" \
+            --cache-to type=registry,ref="${CACHE_IMAGE}",mode=max
 
   deploy-webflux:
     needs: build-and-push

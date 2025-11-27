@@ -1,31 +1,26 @@
-FROM gradle:8.5-jdk17-alpine AS builder
+FROM eclipse-temurin:17-jre-alpine AS builder
 WORKDIR /app
 
 COPY gradlew gradlew
-COPY gradle/wrapper gradle/wrapper
+COPY gradle gradle
 COPY build.gradle settings.gradle ./
 
 COPY websocket-webflux/build.gradle ./websocket-webflux/
 
-RUN ./gradlew dependencies --no-daemon
+RUN ./gradlew --no-daemon dependencies || true
 
 COPY websocket-webflux/src ./websocket-webflux/src
 
-RUN ./gradlew :websocket-webflux:bootJar --no-daemon -x test
+RUN --mount=type=cache,target=/home/gradle/.gradle/caches \
+  ./gradlew :websocket-webflux:bootJar --no-daemon --build-cache -x test
 
 FROM eclipse-temurin:17-jre-alpine
+
+ENV TZ=Asia/Seoul
+ENV JAVA_OPTS="-XX:ReservedCodeCacheSize=128m -XX:MaxMetaspaceSize=200m -XX:+UseG1GC -Xms350m -Xmx350m -XX:NativeMemoryTracking=summary -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/jvm-dump.hprof"
+
 WORKDIR /app
 
 COPY --from=builder /app/websocket-webflux/build/libs/*.jar app.jar
 
-COPY websocket-webflux/src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
-
-ENTRYPOINT ["java", \
-     "-XX:ReservedCodeCacheSize=128m", \
-     "-XX:MaxMetaspaceSize=200m", \
-     "-XX:+UseG1GC", \
-     "-Xms350m", "-Xmx350m", \
-     "-XX:NativeMemoryTracking=summary", \
-     "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/tmp/jvm-dump.hprof", \
-     "-jar","app.jar", \
-     "--spring.profiles.active=deploy-webflux"]
+ENTRYPOINT ["java $JAVA_OPTS -jar app.jar", "--spring.profiles.active=deploy-webflux"]
