@@ -55,7 +55,6 @@ jobs:
           CACHE_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-cache"
           
           docker buildx build \
-            -t websocket-webflux:latest \
             -t "${FINAL_IMAGE}" \
             -f ./websocket-webflux/Dockerfile . \
             --platform linux/amd64 \
