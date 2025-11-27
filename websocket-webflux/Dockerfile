@@ -16,7 +16,7 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-COPY src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
+COPY websocket-webflux/src/main/resources/application-deploy-webflux.yml /app/application-deploy-webflux.yml
 
 ENTRYPOINT ["java", \
      "-XX:ReservedCodeCacheSize=128m", \
