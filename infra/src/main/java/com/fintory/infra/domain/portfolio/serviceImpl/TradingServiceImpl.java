@@ -74,13 +74,13 @@ public class TradingServiceImpl implements TradingService {
             throw new DomainException(DomainErrorCode.INSUFFICIENT_BALANCE);
         }
 
-        //account 업데이트 -> setter
-        updateAccountForPurchase(account, totalTradeAmountInKRW);
-        //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
+        // 2번
         updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate,marketType);
-//        // 현금거래 내역 생성 -> 정적 팩토리 메소드
+        // 3번
         DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
         depositTransactionRepository.save(depositTransaction);
+        // 1번
+        updateAccountForPurchase(account, totalTradeAmountInKRW);
     }
 
 
