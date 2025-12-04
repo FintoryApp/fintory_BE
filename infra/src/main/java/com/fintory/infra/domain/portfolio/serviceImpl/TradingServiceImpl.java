@@ -75,12 +75,12 @@ public class TradingServiceImpl implements TradingService {
         }
 
         //account 업데이트 -> setter
-        updateAccountForPurchase(account, totalTradeAmountInKRW);
+//        updateAccountForPurchase(account, totalTradeAmountInKRW);
         //ownedStock 업데이트/생성 -> setter/빌더, stockTransaction 생성 -> 빌더
         updateStockAndTransactionForPurchase(tradeRequest, account, stock, totalTradeAmount, exchangeRate,marketType);
 //        // 현금거래 내역 생성 -> 정적 팩토리 메소드
-//        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
-//        depositTransactionRepository.save(depositTransaction);
+        DepositTransaction depositTransaction = DepositTransaction.create(totalTradeAmountInKRW.negate(), stock.getName() + "매수", DepositTransactionType.WITHDRAW, account);
+        depositTransactionRepository.save(depositTransaction);
     }
 
 
