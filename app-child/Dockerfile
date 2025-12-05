@@ -10,4 +10,4 @@ WORKDIR /app
 COPY build/libs/*.jar app.jar
 COPY src/main/resources/application-deploy.yml /app/application-deploy.yml
 
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=deploy"]
+ENTRYPOINT ["java", "-Xms500m", "-Xmx500m", "-XX:NewRatio=3", "-jar", "app.jar", "--spring.profiles.active=deploy"]
