@@ -1,0 +1,90 @@
+name: Fintory Webflux Module CI/CD
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+env:
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker build and push websocket-webflux
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          FINAL_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
+          CACHE_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-cache"
+          
+          docker buildx build \
+            -t "${FINAL_IMAGE}" \
+            -f ./websocket-webflux/Dockerfile . \
+            --platform linux/amd64 \
+            --push \
+            --cache-from type=registry,ref="${CACHE_IMAGE}" \
+            --cache-to type=registry,ref="${CACHE_IMAGE}",mode=max
+
+  deploy-webflux:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy fintory-webflux to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FINTORY_WEBFLUX_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            TARGET_IMAGE="${ECR_REGISTRY}/fintory-child:webflux-latest"
+            docker pull ${TARGET_IMAGE}
+
+            echo "TARGET_IMAGE=${TARGET_IMAGE}" > .env
+
+            docker compose down
+            docker compose up -d
+
+            docker image prune -f

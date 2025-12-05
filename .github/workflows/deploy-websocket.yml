@@ -1,0 +1,99 @@
+name: Fintory Websocket Module CI/CD
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+env:
+  AWS_REGION: ap-northeast-2
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Grant permission to gradlew
+        run: chmod +x ./gradlew
+
+      - name: Cache Gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push websocket
+        run: |
+          ./gradlew :websocket:clean build
+          docker build -t websocket:latest ./websocket
+          docker tag websocket:latest ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
+          docker push ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
+
+  deploy-websocket:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Deploy fintory-websocket to EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.FINTORY_WEBSOCKET_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_WEBSOCKET_SSH_KEY }}
+          script: |
+            export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+            export RDS_URL=${{ secrets.RDS_URL }}
+            export RDS_USERNAME=${{ secrets.RDS_USERNAME }}
+            export RDS_PASSWORD=${{ secrets.RDS_PASSWORD }} 
+            export AWS_REDIS_HOST=${{ secrets.FINTORY_CHILD_PRIVATE_HOST }}
+            export AWS_REDIS_PASSWORD=${{ secrets.AWS_REDIS_PASSWORD }}
+            export HANTU_APPKEY=${{ secrets.HANTU_APPKEY}}
+            export HANTU_APPSECRET=${{ secrets.HANTU_APPSECRET}}
+            export DB_APPKEY=${{ secrets.DB_APPKEY}}
+            export DB_APPSECRET=${{ secrets.DB_APPSECRET}}
+            export EOS_API_KEY=${{ secrets.EOS_API_KEY}}
+           
+
+            aws ecr get-login-password --region ap-northeast-2 | \
+            docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
+
+            docker pull ${{ steps.login-ecr.outputs.registry }}/fintory-child:websocket-latest
+
+            docker compose down
+            docker compose up -d
+
+            docker image prune -f
+

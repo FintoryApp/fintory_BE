@@ -1,0 +1,29 @@
+server:
+  port: 8080
+
+spring:
+  config:
+    activate:
+      on-profile: deploy-webflux
+
+  main:
+    web-application-type: reactive
+
+  rsocket:
+    server:
+      transport: websocket
+      port: 8082
+      mapping-path: /rsocket
+      address: 0.0.0.0
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus, metrics
+
+  endpoint:
+    health:
+      show-details: always
+
+

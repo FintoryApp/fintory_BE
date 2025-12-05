@@ -39,6 +39,7 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
     @PostConstruct
     public void refreshKisToken() {
         try {
+
             if(redisTemplate.opsForValue().get("kis-access-token")== null || redisTemplate.opsForValue().get("kis-websocket-access-token") == null
                     || redisTemplate.getExpire("kis-access-token")<=0 || redisTemplate.getExpire("kis-websocket-access-token")<=0) {
                 // REST API 토큰 발급
@@ -61,8 +62,8 @@ public class KisTokenIssueServiceImpl implements KisTokenIssueService {
         }
     }
 
-    // 23시간마다 토큰 갱신
-    @Scheduled(fixedRate = 82800000, initialDelay = 82800000)
+    // 8시간마다 토큰 갱신
+    @Scheduled(fixedRate = 28800000, initialDelay = 28800000)
     public void changeRefreshToken() {
         try {
             // REST API 토큰 갱신

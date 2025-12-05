@@ -97,3 +97,7 @@ eos:
 
 firebase:
   config: ${FIREBASE_CONFIG}
+
+websocket:
+  server:
+    url: ${WEBSOCKET_PRIVATE_HOST}
